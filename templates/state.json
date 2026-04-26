@@ -1,0 +1,15 @@
+{
+  "version": "{{VERSION}}",
+  "project": "",
+  "user_name": "",
+  "language": "Português",
+  "phase": null,
+  "completed": [],
+  "pending": ["reconhecimento", "escavacao", "interpretacao", "geracao", "revisao"],
+  "agents": [],
+  "engines": [],
+  "output_folder": "_reversa_sdd",
+  "answer_mode": "chat",
+  "checkpoints": {},
+  "created_files": []
+}
