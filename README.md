@@ -1,4 +1,4 @@
-# Reversa <sub>by sandeco</sub>
+# Reversa <small><sub>by sandeco</sub></small>
 
 **Turn legacy systems into executable specifications for AI agents.**
 
