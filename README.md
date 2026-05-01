@@ -147,6 +147,7 @@ The file hash record used to detect intact, modified, missing, and newly generat
 ```bash
 npx agentforge install    # Install AgentForge and create the initial team
 agentforge bootstrap      # Complete or refresh the project base
+agentforge adopt          # Read existing agentic structure and generate an adoption plan
 agentforge improve        # Review the .agentforge/ structure and suggest upgrades
 agentforge status         # Show the current AgentForge state
 agentforge add-agent      # Create a custom project agent

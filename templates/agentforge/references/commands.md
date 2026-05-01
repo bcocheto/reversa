@@ -3,6 +3,7 @@
 ## Comandos principais
 
 - `agentforge install`
+- `agentforge adopt`
 - `agentforge status`
 - `agentforge add-agent`
 - `agentforge add-flow`

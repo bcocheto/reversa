@@ -293,6 +293,48 @@ test('improve --apply creates only safe documentation placeholders', async () =>
   }
 });
 
+test('adopt generates a read-only adoption plan', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const agentsPath = join(projectRoot, 'AGENTS.md');
+    const agentsBefore = readFileSync(agentsPath, 'utf8');
+
+    const readmePath = join(projectRoot, 'README.md');
+    writeFileSync(readmePath, '# Manual Project\nConteúdo manual.\n', 'utf8');
+    const readmeBefore = readFileSync(readmePath, 'utf8');
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'adopt'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+
+    const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'adoption-plan.md');
+    assert.equal(existsSync(reportPath), true);
+
+    const report = readFileSync(reportPath, 'utf8');
+    assert.match(report, /AgentForge Adoption Plan/);
+    assert.match(report, /## 1\. Ingest/);
+    assert.match(report, /## 2\. Audit context/);
+    assert.match(report, /## 3\. Refactor context \(dry run\)/);
+    assert.match(report, /agentforge refactor-context --apply/);
+    assert.match(report, /agentforge create-skill <id>/);
+    assert.match(report, /Read-only guarantee/);
+
+    assert.equal(readFileSync(agentsPath, 'utf8'), agentsBefore);
+    assert.equal(readFileSync(readmePath, 'utf8'), readmeBefore);
+
+    const manifest = loadManifest(projectRoot);
+    assert.ok(manifest['.agentforge/reports/adoption-plan.md']);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('manifest includes generated AgentForge files', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-manifest-'));
 
