@@ -170,6 +170,15 @@ test('install writes the AgentForge state, config, plan, and engine entry templa
     assert.equal(state.git_strategy, 'commit');
     assert.deepEqual(state.checkpoints, {});
     assert.ok(state.created_files.includes('.agentforge/scope.md'));
+    assert.ok(state.created_files.includes('.agentforge/README.md'));
+    assert.ok(state.created_files.includes('.agentforge/harness/router.md'));
+    assert.ok(state.created_files.includes('.agentforge/context/project-overview.md'));
+    assert.ok(state.created_files.includes('.agentforge/references/commands.md'));
+    assert.ok(state.created_files.includes('.agentforge/policies/protected-files.md'));
+    assert.ok(state.created_files.includes('.agentforge/flows/feature-development.md'));
+    assert.ok(state.created_files.includes('.agentforge/skills/run-tests/SKILL.md'));
+    assert.ok(state.created_files.includes('.agentforge/memory/lessons.md'));
+    assert.ok(state.created_files.includes('.agentforge/reports/README.md'));
     assert.ok(state.created_files.includes('.agentforge/agents/orchestrator.yaml'));
     assert.ok(state.created_files.includes('.agentforge/agents/qa.yaml'));
     assert.ok(state.created_files.includes('.agentforge/agents/security.yaml'));
@@ -208,6 +217,27 @@ test('install writes the AgentForge state, config, plan, and engine entry templa
     assert.match(scope, /Agentes iniciais: Orchestrator, Product Owner, Architect, Engineer, Reviewer/);
     assert.match(scope, /Fluxos iniciais: Feature Development, Release/);
 
+    const rootReadme = readFileSync(join(projectRoot, PRODUCT.internalDir, 'README.md'), 'utf8');
+    assert.match(rootReadme, /AgentForge Workspace/);
+    assert.match(rootReadme, /Modo de instalação/);
+
+    const harnessRouter = readFileSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'router.md'), 'utf8');
+    assert.match(harnessRouter, /Router/);
+    assert.match(harnessRouter, /bootstrap/);
+
+    const contextOverview = readFileSync(join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md'), 'utf8');
+    assert.match(contextOverview, /Project Overview/);
+    assert.match(contextOverview, /<nome do projeto>/);
+
+    const skillsReadme = readFileSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'README.md'), 'utf8');
+    assert.match(skillsReadme, /Skills/);
+
+    const runTestsSkill = readFileSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'run-tests', 'SKILL.md'), 'utf8');
+    assert.match(runTestsSkill, /^---/m);
+    assert.match(runTestsSkill, /name: run-tests/);
+    assert.match(runTestsSkill, /license: MIT/);
+    assert.match(runTestsSkill, /compatibility:/);
+
     const orchestrator = readFileSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'orchestrator.yaml'), 'utf8');
     assert.match(orchestrator, /name: orchestrator/);
     assert.match(orchestrator, /slash_command: \/agentforge/);
@@ -218,6 +248,15 @@ test('install writes the AgentForge state, config, plan, and engine entry templa
 
     const manifest = loadManifest(projectRoot);
     assert.ok(manifest['.agentforge/scope.md']);
+    assert.ok(manifest['.agentforge/README.md']);
+    assert.ok(manifest['.agentforge/harness/router.md']);
+    assert.ok(manifest['.agentforge/context/project-overview.md']);
+    assert.ok(manifest['.agentforge/references/commands.md']);
+    assert.ok(manifest['.agentforge/policies/protected-files.md']);
+    assert.ok(manifest['.agentforge/flows/feature-development.md']);
+    assert.ok(manifest['.agentforge/skills/run-tests/SKILL.md']);
+    assert.ok(manifest['.agentforge/memory/lessons.md']);
+    assert.ok(manifest['.agentforge/reports/README.md']);
     assert.ok(manifest['.agentforge/agents/orchestrator.yaml']);
     assert.ok(manifest['.agentforge/agents/qa.yaml']);
     assert.ok(manifest['.agentforge/agents/security.yaml']);

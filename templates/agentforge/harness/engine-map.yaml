@@ -1,0 +1,20 @@
+version: 1
+engines:
+  codex:
+    activation: agentforge
+    slash_command: /agentforge
+    entry_file: AGENTS.md
+  claude-code:
+    activation: agentforge
+    slash_command: /agentforge
+    entry_file: CLAUDE.md
+  cursor:
+    activation: agentforge
+    slash_command: /agentforge
+    entry_file: .cursor/rules/agentforge.md
+  github-copilot:
+    activation: agentforge
+    slash_command: /agentforge
+    entry_file: .github/copilot-instructions.md
+notes:
+  - Se uma engine nova for adicionada, registre aqui o arquivo de entrada correspondente.

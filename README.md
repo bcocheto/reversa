@@ -41,6 +41,13 @@ Install guides you through:
 
 It then creates:
 
+- `.agentforge/README.md`
+- `.agentforge/harness/`
+- `.agentforge/context/`
+- `.agentforge/references/`
+- `.agentforge/skills/`
+- `.agentforge/memory/`
+- `.agentforge/reports/`
 - `.agentforge/state.json`
 - `.agentforge/config.toml`
 - `.agentforge/plan.md`
@@ -49,8 +56,6 @@ It then creates:
 - `.agentforge/subagents/`
 - `.agentforge/flows/`
 - `.agentforge/policies/`
-- `.agentforge/memory/`
-- `.agentforge/reports/`
 - `.agentforge/_config/files-manifest.json`
 - `AGENTS.md` for Codex when enabled or selected by default
 - `CLAUDE.md` for Claude Code when enabled

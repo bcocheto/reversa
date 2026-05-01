@@ -1,0 +1,23 @@
+version: 1
+items:
+  - id: project-overview
+    path: context/project-overview.md
+    purpose: Visão geral do projeto, objetivo e público.
+  - id: architecture
+    path: context/architecture.md
+    purpose: Componentes, fronteiras e fluxo principal.
+  - id: conventions
+    path: context/conventions.md
+    purpose: Convenções de nomes, pastas e organização.
+  - id: coding-standards
+    path: context/coding-standards.md
+    purpose: Padrões de código e revisão.
+  - id: testing
+    path: context/testing.md
+    purpose: Estratégia de testes e comandos úteis.
+  - id: deployment
+    path: context/deployment.md
+    purpose: Como publicar e reverter mudanças.
+  - id: glossary
+    path: context/glossary.md
+    purpose: Termos recorrentes do projeto.

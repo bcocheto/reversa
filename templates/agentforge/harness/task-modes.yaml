@@ -1,0 +1,18 @@
+bootstrap:
+  label: Bootstrap
+  purpose: Criar a base agent-ready de um projeto novo.
+  use_when:
+    - O projeto ainda não possui uma camada AgentForge.
+    - O time quer começar com estrutura, contexto e fluxos.
+adopt:
+  label: Adopt
+  purpose: Ler e auditar uma base existente antes de organizar a equipe.
+  use_when:
+    - Já existem arquivos de engine e documentação útil.
+    - É preciso entender o que já está instalado.
+hybrid:
+  label: Hybrid
+  purpose: Criar uma base nova e importar artefatos existentes.
+  use_when:
+    - Há um projeto vivo com arquivos legados relevantes.
+    - É desejável combinar base nova e material já existente.

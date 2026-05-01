@@ -1,0 +1,30 @@
+version: 1
+order:
+  - README.md
+  - harness/router.md
+  - harness/context-index.yaml
+  - context/README.md
+  - context/project-overview.md
+  - context/architecture.md
+  - context/conventions.md
+  - context/coding-standards.md
+  - context/testing.md
+  - context/deployment.md
+  - references/README.md
+  - references/commands.md
+  - references/important-files.md
+  - policies/README.md
+  - policies/protected-files.md
+  - policies/human-approval.md
+  - flows/README.md
+  - flows/feature-development.md
+  - flows/bugfix.md
+  - flows/refactor.md
+  - flows/review.md
+  - skills/README.md
+  - memory/README.md
+  - memory/decisions.md
+  - memory/lessons.md
+  - memory/open-questions.md
+notes:
+  - Ajuste a ordem quando novos documentos virarem parte da rotina.
