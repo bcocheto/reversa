@@ -1,43 +1,43 @@
-# AgentForge Operating Plan — {{PROJECT}}
+# Plano Operacional do AgentForge — {{PROJECT}}
 
-> Created by AgentForge on {{DATE}}
-> Check each task when completed.
-> You can edit this plan before starting: add, remove, or reorder tasks as needed.
+> Criado pelo AgentForge em {{DATE}}
+> Marque cada tarefa quando concluir.
+> Você pode editar este plano antes de começar: adicione, remova ou reorganize tarefas conforme necessário.
 
 ---
 
-## Phase 1: Discovery
+## Fase 1 — Discovery
 
-- [ ] **Discovery** - Map project goals, constraints, and scope.
-- [ ] **Discovery** - Inventory existing engines, agents, and external integrations.
-- [ ] **Discovery** - Identify memory sources, checkpoints, and persistent context.
+- [ ] **Discovery** - Mapear objetivos, restrições e escopo do projeto.
+- [ ] **Discovery** - Inventariar engines, agentes e integrações externas existentes.
+- [ ] **Discovery** - Identificar fontes de memória, checkpoints e contexto persistente.
 
-## Phase 2: Agent Design
+## Fase 2 — Agent Design
 
-- [ ] **Agent Design** - Define the core orchestrator responsibilities.
-- [ ] **Agent Design** - Define internal agents and their ownership boundaries.
-- [ ] **Agent Design** - Define generated agents and generated subagents.
+- [ ] **Agent Design** - Definir as responsabilidades do orquestrador central.
+- [ ] **Agent Design** - Definir os agentes internos e seus limites de responsabilidade.
+- [ ] **Agent Design** - Definir os agentes gerados e os subagentes gerados.
 
-## Phase 3: Flow Design
+## Fase 3 — Flow Design
 
-- [ ] **Flow Design** - Design activation, delegation, and handoff flows.
-- [ ] **Flow Design** - Define checkpoints, persistence, and memory updates.
-- [ ] **Flow Design** - Model failure recovery and retry behavior.
+- [ ] **Flow Design** - Desenhar fluxos de ativação, delegação e handoff.
+- [ ] **Flow Design** - Definir checkpoints, persistência e atualizações de memória.
+- [ ] **Flow Design** - Modelar recuperação de falhas e comportamento de retry.
 
-## Phase 4: Policies
+## Fase 4 — Policies
 
-- [ ] **Policies** - Define write-scope and non-destructive behavior.
-- [ ] **Policies** - Define memory retention, storage, and access rules.
-- [ ] **Policies** - Define review, approval, and escalation policies.
+- [ ] **Policies** - Definir escopo de escrita e comportamento não destrutivo.
+- [ ] **Policies** - Definir retenção de memória, armazenamento e regras de acesso.
+- [ ] **Policies** - Definir políticas de revisão, aprovação e escalonamento.
 
-## Phase 5: Export
+## Fase 5 — Export
 
-- [ ] **Export** - Generate exports for Codex, Claude Code, Cursor, and GitHub Copilot.
-- [ ] **Export** - Build the installation bundle and product manifest.
-- [ ] **Export** - Validate engine-specific activation commands and paths.
+- [ ] **Export** - Gerar exports para Codex, Claude Code, Cursor e GitHub Copilot.
+- [ ] **Export** - Montar o pacote de instalação e o manifest do produto.
+- [ ] **Export** - Validar comandos de ativação e caminhos específicos por engine.
 
-## Phase 6: Review
+## Fase 6 — Review
 
-- [ ] **Review** - Validate generated agents and subagents.
-- [ ] **Review** - Review flows, policies, and memory behavior.
-- [ ] **Review** - Confirm exports, installation, and update paths.
+- [ ] **Review** - Validar os agentes e subagentes gerados.
+- [ ] **Review** - Revisar fluxos, políticas e comportamento de memória.
+- [ ] **Review** - Confirmar exports, instalação e caminhos de atualização.

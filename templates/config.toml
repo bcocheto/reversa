@@ -1,5 +1,5 @@
-# AgentForge — Project Configuration
-# Managed by the installer. Customize personal overrides in config.user.toml.
+# AgentForge — Configuração do projeto
+# Gerenciado pelo instalador. Personalizações individuais devem ficar em config.user.toml.
 
 [project]
 name = "{{PROJECT_NAME}}"
