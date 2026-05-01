@@ -1,0 +1,14 @@
+name: permissions
+description: Define o que a equipe AgentForge pode ler e escrever por padrão.
+read:
+  - .
+write:
+  - .agentforge/
+  - _agentforge/
+deny:
+  - .git/
+  - node_modules/
+  - .env
+  - secrets/
+notes:
+  - Ajuste esta política conforme o projeto evoluir.

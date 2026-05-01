@@ -1,0 +1,16 @@
+name: feature-development
+goal: Entregar uma nova funcionalidade de forma sequencial, segura e rastreável.
+trigger: Quando o usuário pedir uma feature nova ou uma expansão de comportamento.
+steps:
+  - Clarificar escopo e critérios de aceite.
+  - Definir a solução e as fronteiras de responsabilidade.
+  - Implementar a mudança aprovada.
+  - Revisar impactos, segurança e cobertura.
+  - Registrar decisões e encerrar o ciclo.
+checkpoints:
+  - Escopo aprovado
+  - Solução aprovada
+  - Segurança validada
+  - Revisão concluída
+done_when:
+  - O comportamento novo está implementado e revisado.

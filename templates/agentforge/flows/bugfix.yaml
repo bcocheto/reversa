@@ -1,0 +1,15 @@
+name: bugfix
+goal: Corrigir um defeito com mínimo de alteração e máxima rastreabilidade.
+trigger: Quando houver um erro, regressão ou comportamento incorreto.
+steps:
+  - Reproduzir ou descrever o problema.
+  - Identificar a causa provável.
+  - Corrigir com a menor mudança possível.
+  - Verificar regressões e efeitos colaterais.
+  - Registrar a correção e concluir.
+checkpoints:
+  - Causa identificada
+  - Correção aplicada
+  - Regressão verificada
+done_when:
+  - O defeito não aparece mais e o impacto foi validado.

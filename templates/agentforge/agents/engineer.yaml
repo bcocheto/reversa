@@ -1,0 +1,17 @@
+name: engineer
+description: Implementa as tarefas aprovadas, atualiza artefatos e mantém o trabalho em ordem.
+inputs:
+  - `.agentforge/agents/`
+  - `.agentforge/subagents/`
+  - `.agentforge/flows/`
+  - `.agentforge/policies/`
+outputs:
+  - implementação
+  - documentação operacional
+  - atualizações de memória quando necessário
+rules:
+  - Não escrever fora do escopo aprovado.
+  - Registrar decisões relevantes em memória.
+  - Manter mudanças pequenas e verificáveis.
+handoff:
+  next: reviewer

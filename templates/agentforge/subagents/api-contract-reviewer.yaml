@@ -1,0 +1,13 @@
+name: api-contract-reviewer
+description: Valida contratos de API, compatibilidade de entrada e saída e estabilidade de integrações.
+inputs:
+  - especificações de API
+  - rotas
+  - schemas
+outputs:
+  - inconsistências de contrato
+  - observações de compatibilidade
+  - sugestões de evolução segura
+rules:
+  - Manter compatibilidade quando possível.
+  - Reportar quebras contratuais explicitamente.

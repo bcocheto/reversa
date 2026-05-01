@@ -1,0 +1,11 @@
+name: human-approval
+description: Define ações que exigem validação explícita de uma pessoa.
+required_for:
+  - remover arquivos protegidos
+  - escrever fora do escopo autorizado
+  - alterar políticas
+  - sobrescrever arquivos modificados pelo usuário
+  - executar ações destrutivas
+default_channel: chat
+notes:
+  - Em caso de dúvida, peça aprovação.

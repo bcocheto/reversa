@@ -1,0 +1,23 @@
+name: orchestrator
+description: Coordena a equipe AgentForge em sequência, mantém checkpoints e decide a próxima etapa.
+activation:
+  command: agentforge
+  slash_command: /agentforge
+reads:
+  - .agentforge/state.json
+  - .agentforge/scope.md
+  - .agentforge/agents/
+  - .agentforge/subagents/
+  - .agentforge/flows/
+  - .agentforge/policies/
+sequence:
+  - product-owner
+  - architect
+  - engineer
+  - reviewer
+rules:
+  - Nunca executar agentes em background.
+  - Nunca executar etapas em paralelo.
+  - Sempre respeitar políticas e checkpoints.
+handoff:
+  default_next: product-owner

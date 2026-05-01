@@ -1,0 +1,15 @@
+name: refactor
+goal: Melhorar estrutura interna sem alterar o comportamento observado.
+trigger: Quando o código precisar de limpeza, simplificação ou reorganização.
+steps:
+  - Mapear os pontos de risco.
+  - Definir o comportamento que não pode mudar.
+  - Refatorar em passos pequenos.
+  - Validar que o comportamento permaneceu estável.
+  - Registrar convenções e encerrar.
+checkpoints:
+  - Comportamento congelado
+  - Refatoração incremental concluída
+  - Validação final aprovada
+done_when:
+  - A estrutura ficou melhor sem regressão funcional.

@@ -1,0 +1,11 @@
+name: protected-files
+description: Lista arquivos e padrões que exigem cuidado extra antes de qualquer alteração.
+patterns:
+  - "package-lock.json"
+  - ".env"
+  - ".env.*"
+  - "secrets/**"
+  - "**/*.pem"
+  - "**/*.key"
+notes:
+  - Preserve arquivos protegidos sempre que possível.
