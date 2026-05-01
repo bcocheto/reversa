@@ -10,7 +10,7 @@ agentforge works with the leading AI engines on the market. The installer automa
 |--------|-------------|-------------|-----------------|
 | **Claude Code** ⭐ | `CLAUDE.md` | `.claude/skills/agentforge-*/` and `.agents/skills/agentforge-*/` | `/agentforge` |
 | **Codex** ⭐ | `AGENTS.md` | `.agents/skills/agentforge-*/` | `agentforge` |
-| **Cursor** ⭐ | `.cursorrules` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Cursor** ⭐ | `.cursorrules` and `.cursor/rules/agentforge.md` | `.agents/skills/agentforge-*/` | `/agentforge` |
 | **Gemini CLI** | `GEMINI.md` | `.agents/skills/agentforge-*/` | `/agentforge` |
 | **Windsurf** | `.windsurfrules` | `.agents/skills/agentforge-*/` | `/agentforge` |
 | **Antigravity** | `AGENTS.md` | `.agents/skills/agentforge-*/` | `/agentforge` |
@@ -33,7 +33,7 @@ Fully compatible. Since Codex doesn't use slash commands, activation is by the a
 
 ## Cursor
 
-Compatible via `.cursorrules`. Cursor reads the rules from this file and the agents are available as skills.
+Compatible via `.cursorrules` and `.cursor/rules/agentforge.md`. Cursor reads the rules from these files and the agents are available as skills.
 
 ---
 

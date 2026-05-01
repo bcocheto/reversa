@@ -16,6 +16,20 @@ import { AGENT_SKILL_IDS, PRODUCT } from '../lib/product.js';
 
 const AGENTFORGE_BIN = fileURLToPath(new URL('../bin/agentforge.js', import.meta.url));
 
+const MINIMUM_HARNESS_REL_PATHS = [
+  'harness/README.md',
+  'harness/router.md',
+  'harness/context-index.yaml',
+  'harness/task-modes.yaml',
+  'harness/load-order.yaml',
+  'harness/engine-map.yaml',
+  'reports/README.md',
+];
+
+const MINIMUM_HARNESS_MANIFEST_PATHS = MINIMUM_HARNESS_REL_PATHS.map(
+  (relPath) => `${PRODUCT.internalDir}/${relPath}`,
+);
+
 function baseAnswers(overrides = {}) {
   return {
     project_name: 'AgentForge Demo',
@@ -65,6 +79,12 @@ async function installFixture(projectRoot, {
   return answers;
 }
 
+function assertMinimumHarness(projectRoot) {
+  for (const relPath of MINIMUM_HARNESS_REL_PATHS) {
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, relPath)), true);
+  }
+}
+
 test('install creates the AgentForge structure, state, Codex entry file, agents, and flows', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-install-'));
 
@@ -74,6 +94,7 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir)), true);
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'state.json')), true);
     assert.equal(existsSync(join(projectRoot, 'AGENTS.md')), true);
+    assertMinimumHarness(projectRoot);
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'orchestrator.yaml')), true);
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'reviewer.yaml')), true);
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'flows', 'feature-development.yaml')), true);
@@ -129,27 +150,23 @@ test('compile after install updates only the managed bootloader block', async ()
   }
 });
 
-test('install in adopt mode creates the minimum harness structure', async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-install-adopt-'));
+for (const setupMode of ['bootstrap', 'adopt', 'hybrid']) {
+  test(`install in ${setupMode} mode creates the minimum harness structure`, async () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), `agentforge-install-${setupMode}-`));
 
-  try {
-    const answers = await installFixture(projectRoot, { setupMode: 'adopt' });
+    try {
+      const answers = await installFixture(projectRoot, { setupMode });
 
-    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'README.md')), true);
-    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'router.md')), true);
-    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml')), true);
-    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'task-modes.yaml')), true);
-    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'load-order.yaml')), true);
-    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'engine-map.yaml')), true);
-    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'README.md')), true);
+      assert.equal(answers.setup_mode, setupMode);
+      assertMinimumHarness(projectRoot);
 
-    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
-    assert.equal(state.setup_mode, 'adopt');
-    assert.equal(answers.setup_mode, 'adopt');
-  } finally {
-    rmSync(projectRoot, { recursive: true, force: true });
-  }
-});
+      const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+      assert.equal(state.setup_mode, setupMode);
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true });
+    }
+  });
+}
 
 test('compile merges into an existing AGENTS.md without a managed block', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-compile-merge-'));
@@ -502,6 +519,9 @@ test('manifest includes generated AgentForge files', async () => {
     assert.ok(manifest['.agentforge/agents/orchestrator.yaml']);
     assert.ok(manifest['.agentforge/flows/feature-development.yaml']);
     assert.ok(manifest['AGENTS.md']);
+    for (const relPath of MINIMUM_HARNESS_MANIFEST_PATHS) {
+      assert.ok(manifest[relPath], `${relPath} should be tracked in the manifest`);
+    }
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }

@@ -11,4 +11,5 @@ Respeite `.agentforge/policies/`.
 Use skills de `.agentforge/skills/` quando apropriado.
 Siga flows de `.agentforge/flows/`.
 Consulte `.agentforge/references/` quando necessário.
+Considere `.agentforge/memory/` quando relevante.
 <!-- agentforge:end -->

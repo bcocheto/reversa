@@ -10,7 +10,7 @@ O agentforge funciona com as principais engines de IA do mercado. O instalador d
 |--------|---------------|-------------|-------------|
 | **Claude Code** ⭐ | `CLAUDE.md` | `.claude/skills/agentforge-*/` e `.agents/skills/agentforge-*/` | `/agentforge` |
 | **Codex** ⭐ | `AGENTS.md` | `.agents/skills/agentforge-*/` | `agentforge` |
-| **Cursor** ⭐ | `.cursorrules` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Cursor** ⭐ | `.cursorrules` e `.cursor/rules/agentforge.md` | `.agents/skills/agentforge-*/` | `/agentforge` |
 | **Gemini CLI** | `GEMINI.md` | `.agents/skills/agentforge-*/` | `/agentforge` |
 | **Windsurf** | `.windsurfrules` | `.agents/skills/agentforge-*/` | `/agentforge` |
 | **Antigravity** | `AGENTS.md` | `.agents/skills/agentforge-*/` | `/agentforge` |
@@ -38,7 +38,7 @@ Totalmente compatível. Como o Codex não usa slash commands, a ativação é pe
 
 ## Cursor
 
-Compatível via `.cursorrules`. O Cursor lê as regras desse arquivo e os agentes ficam disponíveis como skills.
+Compatível via `.cursorrules` e `.cursor/rules/agentforge.md`. O Cursor lê as regras desses arquivos e os agentes ficam disponíveis como skills.
 
 ---
 

@@ -162,6 +162,21 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
       { entryTemplate: "CLAUDE.md", entryFile: "CLAUDE.md" },
       { force: true },
     );
+    await writer.installEntryFile(
+      { entryTemplate: "cursorrules", entryFile: ".cursorrules" },
+      { force: true },
+    );
+    await writer.installEntryFile(
+      { entryTemplate: "cursorrules", entryFile: ".cursor/rules/agentforge.md" },
+      { force: true },
+    );
+    await writer.installEntryFile(
+      {
+        entryTemplate: "copilot-instructions",
+        entryFile: ".github/copilot-instructions.md",
+      },
+      { force: true },
+    );
     writer.saveCreatedFiles();
     saveManifest(projectRoot, buildManifest(projectRoot, writer.manifestPaths));
 
@@ -369,6 +384,11 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
     assert.ok(manifest[".agentforge/flows/release.yaml"]);
     assert.ok(manifest[".agentforge/policies/permissions.yaml"]);
     assert.ok(manifest[".agentforge/memory/decisions.md"]);
+    assert.ok(manifest["AGENTS.md"]);
+    assert.ok(manifest["CLAUDE.md"]);
+    assert.ok(manifest[".cursorrules"]);
+    assert.ok(manifest[".cursor/rules/agentforge.md"]);
+    assert.ok(manifest[".github/copilot-instructions.md"]);
     assert.equal(
       existsSync(join(projectRoot, PRODUCT.internalDir, "reports")),
       true,
@@ -381,7 +401,10 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
       agentsEntry,
       /Use `\.agentforge\/harness\/context-index\.yaml`/,
     );
-    assert.doesNotMatch(agentsEntry, /agentforge/);
+    assert.match(
+      agentsEntry,
+      /Considere `\.agentforge\/memory\/` quando relevante\./,
+    );
     assert.equal(
       (agentsEntry.match(/<!-- agentforge:start -->/g) ?? []).length,
       1,
@@ -398,13 +421,68 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
       claudeEntry,
       /Use `\.agentforge\/harness\/context-index\.yaml`/,
     );
-    assert.doesNotMatch(claudeEntry, /agentforge/);
+    assert.match(
+      claudeEntry,
+      /Considere `\.agentforge\/memory\/` quando relevante\./,
+    );
     assert.equal(
       (claudeEntry.match(/<!-- agentforge:start -->/g) ?? []).length,
       1,
     );
     assert.equal(
       (claudeEntry.match(/<!-- agentforge:end -->/g) ?? []).length,
+      1,
+    );
+
+    const cursorEntry = readFileSync(join(projectRoot, ".cursorrules"), "utf8");
+    assert.match(cursorEntry, /<!-- agentforge:start -->/);
+    assert.match(
+      cursorEntry,
+      /Considere `\.agentforge\/memory\/` quando relevante\./,
+    );
+    assert.equal(
+      (cursorEntry.match(/<!-- agentforge:start -->/g) ?? []).length,
+      1,
+    );
+    assert.equal(
+      (cursorEntry.match(/<!-- agentforge:end -->/g) ?? []).length,
+      1,
+    );
+
+    const cursorRulesEntry = readFileSync(
+      join(projectRoot, ".cursor", "rules", "agentforge.md"),
+      "utf8",
+    );
+    assert.match(cursorRulesEntry, /<!-- agentforge:start -->/);
+    assert.match(cursorRulesEntry, /alwaysApply: true/);
+    assert.match(
+      cursorRulesEntry,
+      /Considere `\.agentforge\/memory\/` quando relevante\./,
+    );
+    assert.equal(
+      (cursorRulesEntry.match(/<!-- agentforge:start -->/g) ?? []).length,
+      1,
+    );
+    assert.equal(
+      (cursorRulesEntry.match(/<!-- agentforge:end -->/g) ?? []).length,
+      1,
+    );
+
+    const copilotEntry = readFileSync(
+      join(projectRoot, ".github", "copilot-instructions.md"),
+      "utf8",
+    );
+    assert.match(copilotEntry, /<!-- agentforge:start -->/);
+    assert.match(
+      copilotEntry,
+      /Considere `\.agentforge\/memory\/` quando relevante\./,
+    );
+    assert.equal(
+      (copilotEntry.match(/<!-- agentforge:start -->/g) ?? []).length,
+      1,
+    );
+    assert.equal(
+      (copilotEntry.match(/<!-- agentforge:end -->/g) ?? []).length,
       1,
     );
   } finally {
@@ -445,7 +523,6 @@ test("agentforge status shows the AgentForge team state on a fresh install", asy
     assert.match(result.stdout, /Output folder:/);
     assert.match(result.stdout, /orchestrator/);
     assert.match(result.stdout, /release/);
-    assert.doesNotMatch(result.stdout, /agentforge/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -496,7 +573,6 @@ test("agentforge status reports when AgentForge is not installed", async () => {
       result.stdout,
       /AgentForge is not installed in this directory\. Run npx agentforge install\./,
     );
-    assert.doesNotMatch(result.stdout, /agentforge/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -785,6 +861,7 @@ test("agentforge compile generates bootloader entrypoints and preserves modified
     assert.match(agentsEntry, /skills\//);
     assert.match(agentsEntry, /flows\//);
     assert.match(agentsEntry, /references\//);
+    assert.match(agentsEntry, /memory\//);
     assert.doesNotMatch(agentsEntry, /conteúdo.*dump/i);
 
     const manualLine = "Linha manual do usuário.";

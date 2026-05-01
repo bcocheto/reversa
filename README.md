@@ -59,7 +59,7 @@ It then creates:
 - `.agentforge/_config/files-manifest.json`
 - `AGENTS.md` for Codex when enabled or selected by default
 - `CLAUDE.md` for Claude Code when enabled
-- `.cursor/rules/agentforge.md` for Cursor when enabled
+- `.cursorrules` and `.cursor/rules/agentforge.md` for Cursor when enabled
 - `.github/copilot-instructions.md` for GitHub Copilot when enabled
 
 After install, `agentforge bootstrap` can complete the human-readable project context,
@@ -107,6 +107,7 @@ Engine-specific entry files and bootloaders are derived from that structure:
 
 - `AGENTS.md`
 - `CLAUDE.md`
+- `.cursorrules`
 - `.cursor/rules/agentforge.md`
 - `.github/copilot-instructions.md`
 - `.claude/agents/*.md` when Claude Code agent exports are configured
