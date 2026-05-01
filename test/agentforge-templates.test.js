@@ -7,7 +7,7 @@ import { tmpdir } from 'os';
 import { Writer } from '../lib/installer/writer.js';
 import { PRODUCT } from '../lib/product.js';
 
-test('install writes the AgentForge state, config, and plan templates', () => {
+test('install writes the AgentForge state, config, plan, and engine entry templates', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-templates-'));
 
   try {
@@ -66,6 +66,21 @@ test('install writes the AgentForge state, config, and plan templates', () => {
     assert.match(plan, /Fase 1 — Discovery/);
     assert.match(plan, /Fase 6 — Review/);
     assert.doesNotMatch(plan, /Reconhecimento|Escavação|Geração|Revisão/);
+
+    await writer.installEntryFile({ entryTemplate: 'AGENTS.md', entryFile: 'AGENTS.md' }, { force: true });
+    await writer.installEntryFile({ entryTemplate: 'CLAUDE.md', entryFile: 'CLAUDE.md' }, { force: true });
+
+    const agentsEntry = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
+    assert.match(agentsEntry, /AgentForge/);
+    assert.match(agentsEntry, /\.agentforge\/state\.json/);
+    assert.match(agentsEntry, /\/agentforge/);
+    assert.doesNotMatch(agentsEntry, /Reversa/);
+
+    const claudeEntry = readFileSync(join(projectRoot, 'CLAUDE.md'), 'utf8');
+    assert.match(claudeEntry, /AgentForge/);
+    assert.match(claudeEntry, /\.agentforge\/state\.json/);
+    assert.match(claudeEntry, /\/agentforge/);
+    assert.doesNotMatch(claudeEntry, /Reversa/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }

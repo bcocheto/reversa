@@ -1,19 +1,24 @@
 # AgentForge
 
-> Framework de Engenharia AgentForge instalado neste projeto.
+Este projeto usa AgentForge para gerenciar agentes customizados, subagentes, fluxos, políticas e memória operacional.
 
-## Como usar
+## Como ativar
 
-Digite `agentforge` para ativar o AgentForge e iniciar ou retomar a análise do projeto.
+Quando o usuário digitar `agentforge` ou `/agentforge` (se a engine suportar slash commands), ative o orquestrador AgentForge.
 
-## Comportamento ao ativar
+## Ao ativar
 
-Quando o usuário digitar `agentforge` sozinho em uma mensagem:
+1. Leia `.agentforge/state.json`.
+2. Leia `.agentforge/scope.md`, se existir.
+3. Leia `.agentforge/agents/`.
+4. Leia `.agentforge/subagents/`, se existir.
+5. Leia `.agentforge/flows/`.
+6. Leia `.agentforge/policies/`.
+7. Se o usuário pedir uma tarefa, escolha o fluxo apropriado.
+8. Se um agente específico for necessário, siga a definição desse agente.
+9. Nunca ignore as políticas em `.agentforge/policies/`.
 
-1. Ative o skill `agentforge` disponível em `.agents/skills/agentforge/SKILL.md`
-2. Leia o SKILL.md na íntegra e siga exatamente as instruções do AgentForge
+## Regra de segurança
 
-## Regra não-negociável
-
-Nunca apague, modifique ou sobrescreva arquivos pré-existentes do projeto legado.
-O AgentForge escreve **apenas** em `.agentforge/` e `_agentforge/`.
+Não altere arquivos fora do escopo autorizado pelas políticas do AgentForge.
+Peça aprovação humana quando uma política exigir.
