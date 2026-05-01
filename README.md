@@ -147,6 +147,7 @@ The file hash record used to detect intact, modified, missing, and newly generat
 ```bash
 npx agentforge install    # Install AgentForge and create the initial team
 agentforge bootstrap      # Complete or refresh the project base
+agentforge improve        # Review the .agentforge/ structure and suggest upgrades
 agentforge status         # Show the current AgentForge state
 agentforge add-agent      # Create a custom project agent
 agentforge add-flow       # Create a custom operational flow
@@ -194,6 +195,16 @@ And export the derived files for your engine:
 ```bash
 agentforge export
 ```
+
+If you want AgentForge to suggest structural improvements without changing human-owned
+content, run:
+
+```bash
+agentforge improve
+```
+
+Use `agentforge improve --apply` only for safe structural additions like missing README
+files and placeholder documentation.
 
 That gives you a project-local team definition that Codex, Claude Code, Cursor, and GitHub Copilot can read from the same canonical source of truth.
 

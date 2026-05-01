@@ -181,6 +181,92 @@ test('bootstrap populates human-readable context, updates state, and preserves m
   }
 });
 
+test('improve generates a useful report without applying changes', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-improve-report-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const hugePath = join(projectRoot, PRODUCT.internalDir, 'context', 'oversized.md');
+    writeFileSync(
+      hugePath,
+      Array.from({ length: 260 }, (_, index) => `Linha ${index + 1}`).join('\n'),
+      'utf8',
+    );
+    writeFileSync(join(projectRoot, PRODUCT.internalDir, 'context', 'duplicate-a.md'), 'Conteúdo duplicado.\n', 'utf8');
+    writeFileSync(join(projectRoot, PRODUCT.internalDir, 'context', 'duplicate-b.md'), 'Conteúdo duplicado.\n', 'utf8');
+    mkdirSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'mystery'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, PRODUCT.internalDir, 'skills', 'mystery', 'SKILL.md'),
+      ['---', 'name: mystery', 'license: MIT', '---', '', '# Mystery', ''].join('\n'),
+      'utf8',
+    );
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'improve'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+    const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'improvement-plan.md');
+    assert.equal(existsSync(reportPath), true);
+
+    const report = readFileSync(reportPath, 'utf8');
+    assert.match(report, /Improvement Plan/);
+    assert.match(report, /Arquivos muito grandes/);
+    assert.match(report, /oversized\.md/);
+    assert.match(report, /Pastas sem README/);
+    assert.match(report, /agents/);
+    assert.match(report, /Conteúdo duplicado/);
+    assert.match(report, /duplicate-a\.md/);
+    assert.match(report, /Skills sem trigger claro/);
+    assert.match(report, /skills\/mystery\/SKILL\.md/);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'README.md')), false);
+
+    const manifest = loadManifest(projectRoot);
+    assert.ok(manifest['.agentforge/reports/improvement-plan.md']);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('improve --apply creates only safe documentation placeholders', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-improve-apply-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const overviewPath = join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md');
+    writeFileSync(overviewPath, `${readFileSync(overviewPath, 'utf8')}\nLinha manual preservada.\n`, 'utf8');
+    mkdirSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'mystery'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, PRODUCT.internalDir, 'skills', 'mystery', 'SKILL.md'),
+      ['---', 'name: mystery', 'license: MIT', '---', '', '# Mystery', ''].join('\n'),
+      'utf8',
+    );
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'improve', '--apply'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'README.md')), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'subagents', 'README.md')), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'mystery', 'README.md')), true);
+    assert.match(readFileSync(overviewPath, 'utf8'), /Linha manual preservada\./);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'improvement-plan.md')), true);
+
+    const manifest = loadManifest(projectRoot);
+    assert.ok(manifest['.agentforge/agents/README.md']);
+    assert.ok(manifest['.agentforge/subagents/README.md']);
+    assert.ok(manifest['.agentforge/skills/mystery/README.md']);
+    assert.ok(manifest['.agentforge/reports/improvement-plan.md']);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('manifest includes generated AgentForge files', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-manifest-'));
 

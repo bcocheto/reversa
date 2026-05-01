@@ -799,5 +799,6 @@ test('agentforge help advertises the export command', () => {
 
   assert.equal(result.status, 0);
   assert.match(result.stdout, /export\s+Gera arquivos derivados para engines configuradas/);
+  assert.match(result.stdout, /improve\s+Analisa a estrutura e sugere melhorias/);
   assert.match(result.stdout, /add-flow\s+Cria um fluxo operacional customizado/);
 });
