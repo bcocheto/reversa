@@ -227,3 +227,91 @@ test('agentforge validate fails when a flow references a missing agent', async (
     rmSync(projectRoot, { recursive: true, force: true });
   }
 });
+
+test('agentforge export generates derived files and preserves modified AGENTS.md', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-export-'));
+
+  try {
+    const writer = new Writer(projectRoot);
+    const answers = {
+      project_name: 'Demo Project',
+      user_name: 'Ana',
+      chat_language: 'pt-br',
+      doc_language: 'pt-br',
+      output_folder: '_agentforge',
+      engines: ['codex'],
+      internal_agents: [PRODUCT.skillsPrefix],
+      response_mode: 'chat',
+    };
+
+    writer.createProductDir(answers, '1.0.0');
+    writer.saveCreatedFiles();
+    saveManifest(projectRoot, buildManifest(projectRoot, writer.manifestPaths));
+
+    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
+    const state = JSON.parse(readFileSync(statePath, 'utf8'));
+    state.engines = ['codex', 'claude-code', 'cursor', 'copilot'];
+    writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+
+    rmSync(join(projectRoot, 'AGENTS.md'), { force: true });
+    rmSync(join(projectRoot, 'CLAUDE.md'), { force: true });
+    rmSync(join(projectRoot, '.cursor'), { recursive: true, force: true });
+    rmSync(join(projectRoot, '.github'), { recursive: true, force: true });
+    rmSync(join(projectRoot, '.claude'), { recursive: true, force: true });
+
+    const first = spawnSync(process.execPath, [AGENTFORGE_BIN, 'export'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(first.status, 0);
+    assert.equal(existsSync(join(projectRoot, 'AGENTS.md')), true);
+    assert.equal(existsSync(join(projectRoot, 'CLAUDE.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.cursor', 'rules', 'agentforge.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.github', 'copilot-instructions.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.claude', 'agents', 'orchestrator.md')), true);
+
+    const manifest = loadManifest(projectRoot);
+    assert.ok(manifest['AGENTS.md']);
+    assert.ok(manifest['CLAUDE.md']);
+    assert.ok(manifest['.cursor/rules/agentforge.md']);
+    assert.ok(manifest['.github/copilot-instructions.md']);
+    assert.ok(manifest['.claude/agents/orchestrator.md']);
+
+    const agentsEntry = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
+    assert.match(agentsEntry, /AgentForge/);
+    assert.match(agentsEntry, /orchestrator/);
+    assert.match(agentsEntry, /feature-development/);
+    assert.match(agentsEntry, /permissions/);
+
+    const manualLine = 'Linha manual do usuário.';
+    writeFileSync(join(projectRoot, 'AGENTS.md'), `${agentsEntry}\n${manualLine}\n`, 'utf8');
+
+    const second = spawnSync(process.execPath, [AGENTFORGE_BIN, 'export'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(second.status, 0);
+    assert.match(readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8'), /Linha manual do usuário\./);
+
+    const third = spawnSync(process.execPath, [AGENTFORGE_BIN, 'export', '--force'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(third.status, 0);
+    assert.match(readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8'), /Linha manual do usuário\./);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge help advertises the export command', () => {
+  const result = spawnSync(process.execPath, [AGENTFORGE_BIN, '--help'], {
+    encoding: 'utf8',
+  });
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /export\s+Gera arquivos derivados para engines configuradas/);
+});

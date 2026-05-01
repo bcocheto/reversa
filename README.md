@@ -205,12 +205,14 @@ npx reversa status       # Show current analysis state
 npx reversa update       # Update agents to the latest version
 npx reversa add-agent    # Add an agent to the project
 npx reversa add-engine   # Add support for a new engine
+npx agentforge export    # Generate engine-derived files from .agentforge/
 npx reversa uninstall    # Remove Reversa from the project
 ```
 
 The `update` command detects files you modified via SHA-256 and never overwrites customizations.
 The `uninstall` command removes only files created by Reversa — nothing from the legacy project is touched.
 The `agentforge validate` command checks `.agentforge/` consistency and writes `.agentforge/reports/validation.md`.
+The `agentforge export` command renders files such as `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/agentforge.md`, and `.github/copilot-instructions.md` from the canonical `.agentforge/` tree. Use `--force` to refresh only files that are still intact.
 
 ---
 
