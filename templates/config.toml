@@ -3,6 +3,8 @@
 
 [project]
 name = "{{PROJECT_NAME}}"
+type = "{{PROJECT_TYPE}}"
+stack = "{{STACK}}"
 version = "{{VERSION}}"
 
 [user]
@@ -12,6 +14,12 @@ doc_language = "{{DOC_LANGUAGE}}"
 
 [output]
 folder = "{{OUTPUT_FOLDER}}"
+
+[initial_agents]
+selected = {{INITIAL_AGENT_ARRAY}}
+
+[initial_flows]
+selected = {{INITIAL_FLOW_ARRAY}}
 
 [engines]
 installed = {{ENGINE_ARRAY}}
@@ -29,7 +37,9 @@ items = {{GENERATED_SUBAGENT_ARRAY}}
 items = {{FLOW_ARRAY}}
 
 [analysis]
+objective = "{{OBJECTIVE}}"
 response_mode = "{{RESPONSE_MODE}}"
 detail_level = "{{DETAIL_LEVEL}}"
 memory_policy = "{{MEMORY_POLICY}}"
 review_policy = "{{REVIEW_POLICY}}"
+git_strategy = "{{GIT_STRATEGY}}"

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, readFileSync, writeFileSync, existsSync } from 'fs';
+import { mkdtempSync, rmSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { spawnSync } from 'child_process';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
@@ -8,32 +8,112 @@ import { tmpdir } from 'os';
 
 import { Writer } from '../lib/installer/writer.js';
 import { buildManifest, saveManifest, loadManifest } from '../lib/installer/manifest.js';
-import { buildUninstallPlan, applyUninstallPlan } from '../lib/commands/uninstall.js';
+import { buildUninstallPlan, applyUninstallPlan, runUninstall } from '../lib/commands/uninstall.js';
 import { createProjectAgent } from '../lib/commands/add-agent.js';
 import { createProjectFlow } from '../lib/commands/add-flow.js';
-import { PRODUCT } from '../lib/product.js';
+import { exportAgentForge } from '../lib/exporter/index.js';
+import { ENGINES } from '../lib/installer/detector.js';
+import { AGENT_SKILL_IDS, PRODUCT } from '../lib/product.js';
 
 const AGENTFORGE_BIN = fileURLToPath(new URL('../bin/agentforge.js', import.meta.url));
+
+const BASE_INSTALL_ANSWERS = {
+  project_name: 'Demo Project',
+  user_name: 'Ana',
+  project_type: 'SaaS/Web App',
+  stack: 'Node.js, TypeScript, PostgreSQL',
+  objective: 'develop-features',
+  initial_agents: [
+    'orchestrator',
+    'product-owner',
+    'architect',
+    'engineer',
+    'reviewer',
+  ],
+  initial_flows: [
+    'feature-development',
+    'release',
+  ],
+  chat_language: 'pt-br',
+  doc_language: 'pt-br',
+  git_strategy: 'commit',
+  output_folder: '_agentforge',
+  engines: ['codex'],
+  internal_agents: AGENT_SKILL_IDS,
+  response_mode: 'chat',
+  detail_level: 'complete',
+  memory_policy: 'persistent',
+  review_policy: 'strict',
+};
+
+function createInstallAnswers(overrides = {}) {
+  return {
+    ...BASE_INSTALL_ANSWERS,
+    ...overrides,
+    initial_agents: overrides.initial_agents ?? [...BASE_INSTALL_ANSWERS.initial_agents],
+    initial_flows: overrides.initial_flows ?? [...BASE_INSTALL_ANSWERS.initial_flows],
+    engines: overrides.engines ?? [...BASE_INSTALL_ANSWERS.engines],
+    internal_agents: overrides.internal_agents ?? [...BASE_INSTALL_ANSWERS.internal_agents],
+  };
+}
+
+async function createInstalledProject(projectRoot, { modifiedAgentsMd = false, keepOutput = false } = {}) {
+  const writer = new Writer(projectRoot);
+  const answers = createInstallAnswers({
+    engines: ['codex', 'claude-code', 'cursor', 'github-copilot'],
+  });
+
+  writer.createProductDir(answers, '1.0.0');
+
+  for (const engineId of ['codex', 'claude-code']) {
+    const engine = ENGINES.find((entry) => entry.id === engineId);
+    assert.ok(engine);
+    await writer.installEntryFile(engine, { force: true });
+    for (const agentId of answers.internal_agents) {
+      await writer.installSkill(agentId, engine.skillsDir);
+      if (engine.universalSkillsDir && engine.universalSkillsDir !== engine.skillsDir) {
+        await writer.installSkill(agentId, engine.universalSkillsDir);
+      }
+    }
+  }
+
+  writer.saveCreatedFiles();
+  saveManifest(projectRoot, buildManifest(projectRoot, writer.manifestPaths));
+
+  exportAgentForge(projectRoot);
+
+  if (modifiedAgentsMd) {
+    const agentsPath = join(projectRoot, 'AGENTS.md');
+    writeFileSync(agentsPath, `${readFileSync(agentsPath, 'utf8')}\nLinha manual do usuário.\n`, 'utf8');
+  }
+
+  if (keepOutput) {
+    const outputDir = join(projectRoot, PRODUCT.outputDir);
+    mkdirSync(outputDir, { recursive: true });
+    writeFileSync(join(projectRoot, PRODUCT.outputDir, 'notes.md'), '# Output\n', 'utf8');
+  }
+
+  return { writer, answers };
+}
 
 test('install writes the AgentForge state, config, plan, and engine entry templates', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-templates-'));
 
   try {
     const writer = new Writer(projectRoot);
-    const answers = {
-      project_name: 'Demo Project',
-      user_name: 'Ana',
-      chat_language: 'pt-br',
-      doc_language: 'pt-br',
-      output_folder: '_agentforge',
-      engines: ['codex'],
-      internal_agents: [
-        PRODUCT.skillsPrefix,
-        `${PRODUCT.skillsPrefix}-scope-scout`,
-        `${PRODUCT.skillsPrefix}-agent-architect`,
+    const answers = createInstallAnswers({
+      initial_agents: [
+        'orchestrator',
+        'product-owner',
+        'architect',
+        'engineer',
+        'reviewer',
       ],
-      response_mode: 'chat',
-    };
+      initial_flows: [
+        'feature-development',
+        'release',
+      ],
+    });
 
     writer.createProductDir(answers, '1.0.0');
     await writer.installEntryFile({ entryTemplate: 'AGENTS.md', entryFile: 'AGENTS.md' }, { force: true });
@@ -45,6 +125,9 @@ test('install writes the AgentForge state, config, plan, and engine entry templa
     assert.equal(state.version, '1.0.0');
     assert.equal(state.project, 'Demo Project');
     assert.equal(state.user_name, 'Ana');
+    assert.equal(state.project_type, 'SaaS/Web App');
+    assert.equal(state.stack, 'Node.js, TypeScript, PostgreSQL');
+    assert.equal(state.objective, 'develop-features');
     assert.equal(state.phase, null);
     assert.deepEqual(state.pending, [
       'discovery',
@@ -54,24 +137,52 @@ test('install writes the AgentForge state, config, plan, and engine entry templa
       'export',
       'review',
     ]);
-    assert.deepEqual(state.internal_agents, [
-      PRODUCT.skillsPrefix,
-      `${PRODUCT.skillsPrefix}-scope-scout`,
-      `${PRODUCT.skillsPrefix}-agent-architect`,
+    assert.deepEqual(state.internal_agents, AGENT_SKILL_IDS);
+    assert.deepEqual(state.initial_agents, [
+      'orchestrator',
+      'product-owner',
+      'architect',
+      'engineer',
+      'reviewer',
     ]);
-    assert.deepEqual(state.generated_agents, []);
+    assert.deepEqual(state.generated_agents, [
+      'orchestrator',
+      'product-owner',
+      'architect',
+      'engineer',
+      'reviewer',
+      'qa',
+      'security',
+      'devops',
+    ]);
     assert.deepEqual(state.generated_subagents, []);
-    assert.deepEqual(state.flows, []);
+    assert.deepEqual(state.initial_flows, [
+      'feature-development',
+      'release',
+    ]);
+    assert.deepEqual(state.flows, [
+      'feature-development',
+      'release',
+    ]);
     assert.equal(state.output_folder, '_agentforge');
+    assert.equal(state.git_strategy, 'commit');
     assert.deepEqual(state.checkpoints, {});
     assert.ok(state.created_files.includes('.agentforge/scope.md'));
     assert.ok(state.created_files.includes('.agentforge/agents/orchestrator.yaml'));
+    assert.ok(state.created_files.includes('.agentforge/agents/qa.yaml'));
+    assert.ok(state.created_files.includes('.agentforge/agents/security.yaml'));
+    assert.ok(state.created_files.includes('.agentforge/agents/devops.yaml'));
+    assert.ok(state.created_files.includes('.agentforge/flows/release.yaml'));
     assert.ok(state.created_files.includes('.agentforge/memory/conventions.md'));
     assert.equal(Object.hasOwn(state, 'agents'), false);
     assert.equal(Object.hasOwn(state, 'answer_mode'), false);
     assert.equal(Object.hasOwn(state, 'doc_level'), false);
 
     const config = readFileSync(join(projectRoot, PRODUCT.internalDir, 'config.toml'), 'utf8');
+    assert.match(config, /\[initial_agents\]/);
+    assert.match(config, /type = "SaaS\/Web App"/);
+    assert.match(config, /stack = "Node\.js, TypeScript, PostgreSQL"/);
+    assert.match(config, /objective = "develop-features"/);
     assert.match(config, /\[internal_agents\]/);
     assert.match(config, /response_mode = "chat"/);
     assert.match(config, /detail_level = "complete"/);
@@ -80,19 +191,35 @@ test('install writes the AgentForge state, config, plan, and engine entry templa
     const plan = readFileSync(join(projectRoot, PRODUCT.internalDir, 'plan.md'), 'utf8');
     assert.match(plan, /Fase 1 — Discovery/);
     assert.match(plan, /Fase 6 — Review/);
+    assert.match(plan, /Tipo de projeto: SaaS\/Web App/);
+    assert.match(plan, /Stack principal: Node\.js, TypeScript, PostgreSQL/);
+    assert.match(plan, /Objetivo principal: develop-features/);
     assert.doesNotMatch(plan, /Reconhecimento|Escavação|Geração|Revisão/);
 
     const scope = readFileSync(join(projectRoot, PRODUCT.internalDir, 'scope.md'), 'utf8');
     assert.match(scope, /Escopo do AgentForge/);
+    assert.match(scope, /Tipo: SaaS\/Web App/);
+    assert.match(scope, /Stack principal: Node\.js, TypeScript, PostgreSQL/);
+    assert.match(scope, /Objetivo principal: develop-features/);
+    assert.match(scope, /Agentes iniciais: Orchestrator, Product Owner, Architect, Engineer, Reviewer/);
+    assert.match(scope, /Fluxos iniciais: Feature Development, Release/);
 
     const orchestrator = readFileSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'orchestrator.yaml'), 'utf8');
     assert.match(orchestrator, /name: orchestrator/);
     assert.match(orchestrator, /slash_command: \/agentforge/);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'qa.yaml')), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'security.yaml')), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'devops.yaml')), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'flows', 'release.yaml')), true);
 
     const manifest = loadManifest(projectRoot);
     assert.ok(manifest['.agentforge/scope.md']);
     assert.ok(manifest['.agentforge/agents/orchestrator.yaml']);
+    assert.ok(manifest['.agentforge/agents/qa.yaml']);
+    assert.ok(manifest['.agentforge/agents/security.yaml']);
+    assert.ok(manifest['.agentforge/agents/devops.yaml']);
     assert.ok(manifest['.agentforge/flows/feature-development.yaml']);
+    assert.ok(manifest['.agentforge/flows/release.yaml']);
     assert.ok(manifest['.agentforge/policies/permissions.yaml']);
     assert.ok(manifest['.agentforge/memory/decisions.md']);
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports')), true);
@@ -113,21 +240,95 @@ test('install writes the AgentForge state, config, plan, and engine entry templa
   }
 });
 
+test('agentforge status shows the AgentForge team state on a fresh install', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-status-fresh-'));
+
+  try {
+    const writer = new Writer(projectRoot);
+    const answers = createInstallAnswers();
+
+    writer.createProductDir(answers, '1.0.0');
+    writer.saveCreatedFiles();
+    saveManifest(projectRoot, buildManifest(projectRoot, writer.manifestPaths));
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'status'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /AgentForge status/);
+    assert.match(result.stdout, /Project:/);
+    assert.match(result.stdout, /User:/);
+    assert.match(result.stdout, /Version:/);
+    assert.match(result.stdout, /Current phase:/);
+    assert.match(result.stdout, /Engines:/);
+    assert.match(result.stdout, /Generated agents:/);
+    assert.match(result.stdout, /Generated subagents:/);
+    assert.match(result.stdout, /Flows:/);
+    assert.match(result.stdout, /Policies status:/);
+    assert.match(result.stdout, /Last validation status:/);
+    assert.match(result.stdout, /Output folder:/);
+    assert.match(result.stdout, /orchestrator/);
+    assert.match(result.stdout, /release/);
+    assert.doesNotMatch(result.stdout, /Reversa/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge status reports the last validation status when report exists', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-status-validation-'));
+
+  try {
+    const writer = new Writer(projectRoot);
+    const answers = createInstallAnswers();
+
+    writer.createProductDir(answers, '1.0.0');
+    writer.saveCreatedFiles();
+    saveManifest(projectRoot, buildManifest(projectRoot, writer.manifestPaths));
+
+    spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'status'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /Last validation status:/);
+    assert.match(result.stdout, /válido/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge status reports when AgentForge is not installed', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-status-missing-'));
+
+  try {
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'status'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 1);
+    assert.match(result.stdout, /AgentForge is not installed in this directory\. Run npx agentforge install\./);
+    assert.doesNotMatch(result.stdout, /Reversa/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('uninstall preserves modified canonical files and removes intact ones', () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-uninstall-'));
 
   try {
     const writer = new Writer(projectRoot);
-    const answers = {
-      project_name: 'Demo Project',
-      user_name: 'Ana',
-      chat_language: 'pt-br',
-      doc_language: 'pt-br',
-      output_folder: '_agentforge',
-      engines: ['codex'],
-      internal_agents: [PRODUCT.skillsPrefix],
-      response_mode: 'chat',
-    };
+    const answers = createInstallAnswers();
 
     writer.createProductDir(answers, '1.0.0');
     writer.saveCreatedFiles();
@@ -152,21 +353,68 @@ test('uninstall preserves modified canonical files and removes intact ones', () 
   }
 });
 
+test('agentforge uninstall removes a fresh installation when remove is confirmed', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-uninstall-full-'));
+
+  try {
+    await createInstalledProject(projectRoot, { keepOutput: true });
+
+    const prompts = [
+      { confirmed: 'remove' },
+      { removeOutput: true },
+    ];
+    const result = await runUninstall(projectRoot, {
+      prompt: async () => prompts.shift(),
+    });
+
+    assert.equal(result.errors, 0);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir)), false);
+    assert.equal(existsSync(join(projectRoot, 'AGENTS.md')), false);
+    assert.equal(existsSync(join(projectRoot, 'CLAUDE.md')), false);
+    assert.equal(existsSync(join(projectRoot, '.cursor', 'rules', 'agentforge.md')), false);
+    assert.equal(existsSync(join(projectRoot, '.github', 'copilot-instructions.md')), false);
+    assert.equal(existsSync(join(projectRoot, '.agents')), false);
+    assert.equal(existsSync(join(projectRoot, '.claude')), false);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.outputDir)), false);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge uninstall preserves modified AGENTS.md and keeps output folder when declined', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-uninstall-preserve-'));
+
+  try {
+    await createInstalledProject(projectRoot, { modifiedAgentsMd: true, keepOutput: true });
+
+    const prompts = [
+      { confirmed: 'remove' },
+      { removeOutput: false },
+    ];
+    const result = await runUninstall(projectRoot, {
+      prompt: async () => prompts.shift(),
+    });
+
+    assert.equal(result.errors, 0);
+    assert.equal(existsSync(join(projectRoot, 'AGENTS.md')), true);
+    assert.match(readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8'), /Linha manual do usuário\./);
+    assert.equal(existsSync(join(projectRoot, 'CLAUDE.md')), false);
+    assert.equal(existsSync(join(projectRoot, '.cursor', 'rules', 'agentforge.md')), false);
+    assert.equal(existsSync(join(projectRoot, '.github', 'copilot-instructions.md')), false);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir)), false);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.outputDir)), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.outputDir, 'notes.md')), true);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('agentforge validate succeeds on a fresh install and writes validation.md', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-ok-'));
 
   try {
     const writer = new Writer(projectRoot);
-    const answers = {
-      project_name: 'Demo Project',
-      user_name: 'Ana',
-      chat_language: 'pt-br',
-      doc_language: 'pt-br',
-      output_folder: '_agentforge',
-      engines: ['codex'],
-      internal_agents: [PRODUCT.skillsPrefix],
-      response_mode: 'chat',
-    };
+    const answers = createInstallAnswers();
 
     writer.createProductDir(answers, '1.0.0');
     writer.saveCreatedFiles();
@@ -194,16 +442,7 @@ test('agentforge validate fails when a flow references a missing agent', async (
 
   try {
     const writer = new Writer(projectRoot);
-    const answers = {
-      project_name: 'Demo Project',
-      user_name: 'Ana',
-      chat_language: 'pt-br',
-      doc_language: 'pt-br',
-      output_folder: '_agentforge',
-      engines: ['codex'],
-      internal_agents: [PRODUCT.skillsPrefix],
-      response_mode: 'chat',
-    };
+    const answers = createInstallAnswers();
 
     writer.createProductDir(answers, '1.0.0');
     writer.saveCreatedFiles();
@@ -235,16 +474,7 @@ test('agentforge export generates derived files and preserves modified AGENTS.md
 
   try {
     const writer = new Writer(projectRoot);
-    const answers = {
-      project_name: 'Demo Project',
-      user_name: 'Ana',
-      chat_language: 'pt-br',
-      doc_language: 'pt-br',
-      output_folder: '_agentforge',
-      engines: ['codex'],
-      internal_agents: [PRODUCT.skillsPrefix],
-      response_mode: 'chat',
-    };
+    const answers = createInstallAnswers();
 
     writer.createProductDir(answers, '1.0.0');
     writer.saveCreatedFiles();
@@ -314,16 +544,7 @@ test('agentforge add-agent creates a project agent and updates state and manifes
 
   try {
     const writer = new Writer(projectRoot);
-    const answers = {
-      project_name: 'Demo Project',
-      user_name: 'Ana',
-      chat_language: 'pt-br',
-      doc_language: 'pt-br',
-      output_folder: '_agentforge',
-      engines: ['codex'],
-      internal_agents: [PRODUCT.skillsPrefix],
-      response_mode: 'chat',
-    };
+    const answers = createInstallAnswers();
 
     writer.createProductDir(answers, '1.0.0');
     writer.saveCreatedFiles();
@@ -373,16 +594,7 @@ test('agentforge add-agent refuses duplicate ids', async () => {
 
   try {
     const writer = new Writer(projectRoot);
-    const answers = {
-      project_name: 'Demo Project',
-      user_name: 'Ana',
-      chat_language: 'pt-br',
-      doc_language: 'pt-br',
-      output_folder: '_agentforge',
-      engines: ['codex'],
-      internal_agents: [PRODUCT.skillsPrefix],
-      response_mode: 'chat',
-    };
+    const answers = createInstallAnswers();
 
     writer.createProductDir(answers, '1.0.0');
     writer.saveCreatedFiles();
@@ -427,16 +639,7 @@ test('agentforge add-flow creates a project flow and updates state and manifest'
 
   try {
     const writer = new Writer(projectRoot);
-    const answers = {
-      project_name: 'Demo Project',
-      user_name: 'Ana',
-      chat_language: 'pt-br',
-      doc_language: 'pt-br',
-      output_folder: '_agentforge',
-      engines: ['codex'],
-      internal_agents: [PRODUCT.skillsPrefix],
-      response_mode: 'chat',
-    };
+    const answers = createInstallAnswers();
 
     writer.createProductDir(answers, '1.0.0');
     writer.saveCreatedFiles();
@@ -514,16 +717,7 @@ test('agentforge add-flow rejects references to missing agents', async () => {
 
   try {
     const writer = new Writer(projectRoot);
-    const answers = {
-      project_name: 'Demo Project',
-      user_name: 'Ana',
-      chat_language: 'pt-br',
-      doc_language: 'pt-br',
-      output_folder: '_agentforge',
-      engines: ['codex'],
-      internal_agents: [PRODUCT.skillsPrefix],
-      response_mode: 'chat',
-    };
+    const answers = createInstallAnswers();
 
     writer.createProductDir(answers, '1.0.0');
     writer.saveCreatedFiles();

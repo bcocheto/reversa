@@ -1,6 +1,9 @@
 # Plano Operacional do AgentForge — {{PROJECT}}
 
 > Criado pelo AgentForge em {{DATE}}
+> Tipo de projeto: {{PROJECT_TYPE}}
+> Stack principal: {{STACK}}
+> Objetivo principal: {{OBJECTIVE}}
 > Marque cada tarefa quando concluir.
 > Você pode editar este plano antes de começar: adicione, remova ou reorganize tarefas conforme necessário.
 

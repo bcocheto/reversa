@@ -23,6 +23,9 @@ sequence:
   - product-owner
   - architect
   - engineer
+  - qa
+  - security
+  - devops
   - reviewer
 rules:
   - Nunca executar agentes em background.

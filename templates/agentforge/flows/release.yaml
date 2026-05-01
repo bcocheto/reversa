@@ -1,0 +1,40 @@
+id: release
+name: Release
+goal: Preparar uma entrega segura para publicação.
+trigger: Quando houver uma versão pronta para ir ao ar.
+steps:
+  - id: verify
+    name: Verificação inicial
+    agent: orchestrator
+    description: Confirmar checklist, versão e critérios mínimos.
+  - id: qa
+    name: Validação de qualidade
+    agent: qa
+    depends_on:
+      - verify
+    description: Validar cobertura e regressões relevantes.
+  - id: security
+    name: Revisão de segurança
+    agent: security
+    depends_on:
+      - qa
+    description: Revisar permissões, riscos e exposição de dados.
+  - id: deploy
+    name: Preparação de entrega
+    agent: devops
+    depends_on:
+      - security
+    description: Preparar entrega operacional e plano de rollback.
+  - id: signoff
+    name: Aprovação final
+    agent: reviewer
+    depends_on:
+      - deploy
+    gate: required
+checkpoints:
+  - Checklist validado
+  - Qualidade validada
+  - Segurança validada
+  - Entrega aprovada
+done_when:
+  - A versão está pronta para publicação com risco conhecido e aprovado.
