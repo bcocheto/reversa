@@ -1,5 +1,13 @@
+id: product-owner
 name: product-owner
 description: Transforma o escopo em prioridades, critérios de aceite e decisões de produto.
+responsibilities:
+  - Refinar escopo e prioridades.
+  - Definir critérios de aceite claros.
+  - Registrar decisões de produto relevantes.
+boundaries:
+  - Não alterar políticas técnicas.
+  - Não implementar código.
 inputs:
   - .agentforge/scope.md
   - .agentforge/state.json

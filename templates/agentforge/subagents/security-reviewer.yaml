@@ -1,7 +1,7 @@
 name: security-reviewer
 description: Revisa permissões, segredos, superfícies de escrita e aprovações humanas.
 inputs:
-  - `.agentforge/policies/`
+  - ".agentforge/policies/"
   - arquivos protegidos
   - fluxos sensíveis
 outputs:

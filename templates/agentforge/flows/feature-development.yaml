@@ -1,12 +1,28 @@
+id: feature-development
 name: feature-development
 goal: Entregar uma nova funcionalidade de forma sequencial, segura e rastreável.
 trigger: Quando o usuário pedir uma feature nova ou uma expansão de comportamento.
 steps:
-  - Clarificar escopo e critérios de aceite.
-  - Definir a solução e as fronteiras de responsabilidade.
-  - Implementar a mudança aprovada.
-  - Revisar impactos, segurança e cobertura.
-  - Registrar decisões e encerrar o ciclo.
+  - id: discovery
+    name: Descoberta
+    agent: orchestrator
+    description: Consolidar escopo, restrições e checkpoints iniciais.
+  - id: design
+    name: Design de produto
+    agent: product-owner
+    description: Refinar critérios de aceite e prioridades.
+  - id: architecture
+    name: Arquitetura
+    agent: architect
+    description: Definir fronteiras técnicas e contratos.
+  - id: implementation
+    name: Implementação
+    agent: engineer
+    description: Executar a mudança aprovada.
+  - id: review
+    name: Revisão
+    agent: reviewer
+    description: Validar consistência, cobertura e segurança.
 checkpoints:
   - Escopo aprovado
   - Solução aprovada

@@ -1,5 +1,14 @@
+id: orchestrator
 name: orchestrator
 description: Coordena a equipe AgentForge em sequência, mantém checkpoints e decide a próxima etapa.
+responsibilities:
+  - Conduzir o pipeline em ordem sequencial.
+  - Salvar checkpoints e retomar o ponto correto.
+  - Selecionar o próximo agente com base no estado atual.
+boundaries:
+  - Não executar subagentes em background.
+  - Não rodar etapas em paralelo.
+  - Não escrever fora de `.agentforge/` e `_agentforge/`.
 activation:
   command: agentforge
   slash_command: /agentforge

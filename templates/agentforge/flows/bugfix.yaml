@@ -1,12 +1,20 @@
+id: bugfix
 name: bugfix
 goal: Corrigir um defeito com mínimo de alteração e máxima rastreabilidade.
 trigger: Quando houver um erro, regressão ou comportamento incorreto.
 steps:
-  - Reproduzir ou descrever o problema.
-  - Identificar a causa provável.
-  - Corrigir com a menor mudança possível.
-  - Verificar regressões e efeitos colaterais.
-  - Registrar a correção e concluir.
+  - id: triage
+    name: Triagem
+    agent: orchestrator
+    description: Confirmar sintoma e severidade.
+  - id: diagnosis
+    name: Diagnóstico
+    agent: engineer
+    description: Identificar a causa provável e corrigir com a menor mudança possível.
+  - id: validation
+    name: Validação
+    agent: reviewer
+    description: Verificar regressões e efeitos colaterais.
 checkpoints:
   - Causa identificada
   - Correção aplicada

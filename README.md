@@ -210,6 +210,7 @@ npx reversa uninstall    # Remove Reversa from the project
 
 The `update` command detects files you modified via SHA-256 and never overwrites customizations.
 The `uninstall` command removes only files created by Reversa — nothing from the legacy project is touched.
+The `agentforge validate` command checks `.agentforge/` consistency and writes `.agentforge/reports/validation.md`.
 
 ---
 

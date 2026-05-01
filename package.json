@@ -3,7 +3,8 @@
   "version": "1.2.14",
   "description": "Transform legacy systems into executable specifications for AI coding agents",
   "bin": {
-    "reversa": "bin/reversa.js"
+    "reversa": "bin/reversa.js",
+    "agentforge": "bin/agentforge.js"
   },
   "scripts": {
     "test": "node --test"
@@ -45,6 +46,7 @@
     "chalk": "^5.3.0",
     "inquirer": "^9.2.0",
     "ora": "^7.0.1",
-    "semver": "^7.6.0"
+    "semver": "^7.6.0",
+    "yaml": "^2.8.3"
   }
 }

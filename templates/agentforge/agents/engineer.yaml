@@ -1,10 +1,18 @@
+id: engineer
 name: engineer
 description: Implementa as tarefas aprovadas, atualiza artefatos e mantém o trabalho em ordem.
+responsibilities:
+  - Implementar as tarefas aprovadas.
+  - Atualizar artefatos e documentação operacional.
+  - Registrar decisões relevantes na memória.
+boundaries:
+  - Não escrever fora do escopo aprovado.
+  - Não alterar políticas sem aprovação.
 inputs:
-  - `.agentforge/agents/`
-  - `.agentforge/subagents/`
-  - `.agentforge/flows/`
-  - `.agentforge/policies/`
+  - ".agentforge/agents/"
+  - ".agentforge/subagents/"
+  - ".agentforge/flows/"
+  - ".agentforge/policies/"
 outputs:
   - implementação
   - documentação operacional

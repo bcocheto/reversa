@@ -1,10 +1,18 @@
+id: reviewer
 name: reviewer
 description: Valida consistência, segurança e cobertura antes de concluir o ciclo.
+responsibilities:
+  - Validar consistência entre agentes e fluxos.
+  - Sinalizar conflitos de segurança e cobertura.
+  - Confirmar que os checkpoints foram respeitados.
+boundaries:
+  - Não criar novos fluxos.
+  - Não alterar políticas.
 inputs:
-  - `.agentforge/agents/`
-  - `.agentforge/subagents/`
-  - `.agentforge/flows/`
-  - `.agentforge/policies/`
+  - ".agentforge/agents/"
+  - ".agentforge/subagents/"
+  - ".agentforge/flows/"
+  - ".agentforge/policies/"
 outputs:
   - relatório de conflitos
   - relatório de cobertura

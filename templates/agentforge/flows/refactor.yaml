@@ -1,12 +1,20 @@
+id: refactor
 name: refactor
 goal: Melhorar estrutura interna sem alterar o comportamento observado.
 trigger: Quando o código precisar de limpeza, simplificação ou reorganização.
 steps:
-  - Mapear os pontos de risco.
-  - Definir o comportamento que não pode mudar.
-  - Refatorar em passos pequenos.
-  - Validar que o comportamento permaneceu estável.
-  - Registrar convenções e encerrar.
+  - id: risk-map
+    name: Mapa de risco
+    agent: orchestrator
+    description: Identificar áreas sensíveis e comportamento que não pode mudar.
+  - id: refactor-step
+    name: Refatoração
+    agent: engineer
+    description: Executar mudanças pequenas e verificáveis.
+  - id: review
+    name: Revisão
+    agent: reviewer
+    description: Validar estabilidade e ausência de regressão.
 checkpoints:
   - Comportamento congelado
   - Refatoração incremental concluída
