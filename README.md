@@ -2,7 +2,7 @@
 <small>by bcocheto</small>
 
 AgentForge is a CLI for creating, installing, and maintaining custom agent teams inside a project.
-It is inspired by the Reversa workflow, but the goal is different: instead of turning legacy systems into specs, AgentForge creates an operational layer for agents, subagents, flows, policies, memory, and exports.
+It is inspired by the previous workflow, but the goal is different: instead of turning legacy systems into specs, AgentForge creates an operational layer for agents, subagents, flows, policies, memory, and exports.
 
 ## The problem
 

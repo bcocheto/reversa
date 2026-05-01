@@ -14,7 +14,7 @@ Abre un issue primero para discutir lo que quieres cambiar. Esto evita trabajo p
 
 ```bash
 git clone https://github.com/bcocheto/agentforge.git
-cd reversa
+cd agentforge
 npm install
 ```
 
@@ -23,9 +23,9 @@ npm install
 ## Estructura del proyecto
 
 ```
-reversa/
+agentforge/
 ├── agents/             ← cada agente tiene su carpeta con SKILL.md
-├── bin/                ← punto de entrada del CLI (reversa.js)
+├── bin/                ← punto de entrada del CLI (agentforge.js)
 ├── lib/
 │   ├── commands/       ← implementación de los comandos CLI
 │   └── installer/      ← lógica de instalación y detección de motores
@@ -37,7 +37,7 @@ reversa/
 
 ## Agregar un nuevo agente
 
-1. Crea la carpeta `agents/reversa-[nombre]/`
+1. Crea la carpeta `agents/agentforge-[nombre]/`
 2. Crea `SKILL.md` siguiendo el formato de los agentes existentes (frontmatter obligatorio: `name`, `description`, `license`, `compatibility`, `metadata`)
 3. Agrega la carpeta `references/` si el agente necesita schemas o plantillas de referencia
 4. Actualiza `lib/installer/` para incluir el nuevo agente en la lista de instalación

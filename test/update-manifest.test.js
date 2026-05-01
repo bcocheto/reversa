@@ -14,7 +14,7 @@ import {
 import { PRODUCT } from '../lib/product.js';
 
 test('update preserves manifest entries for modified files', () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'reversa-update-'));
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-update-'));
 
   try {
     const intactPath = 'skills/alpha.md';
