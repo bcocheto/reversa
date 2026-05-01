@@ -25,7 +25,7 @@ O Reversa é um framework de engenharia reversa de especificações. Você o ins
 Na raiz do projeto legado:
 
 ```bash
-npx reversa install
+npx agentforge install
 ```
 
 Depois, abra o projeto no seu agente de IA favorito e digite:

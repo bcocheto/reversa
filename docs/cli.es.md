@@ -1,6 +1,6 @@
 # CLI
 
-Reversa tiene un CLI simple para gestionar la instalación y el ciclo de vida de los agentes en tu proyecto. Todos los comandos se ejecutan con `npx reversa` en la raíz del proyecto.
+Reversa tiene un CLI simple para gestionar la instalación y el ciclo de vida de los agentes en tu proyecto. Todos los comandos se ejecutan con `npx agentforge` en la raíz del proyecto.
 
 ---
 
@@ -9,7 +9,7 @@ Reversa tiene un CLI simple para gestionar la instalación y el ciclo de vida de
 ### `install`
 
 ```bash
-npx reversa install
+npx agentforge install
 ```
 
 Instala Reversa en el proyecto heredado actual. Detecta los motores presentes, pregunta tus preferencias y crea toda la estructura necesaria.
@@ -21,7 +21,7 @@ Instala Reversa en el proyecto heredado actual. Detecta los motores presentes, p
 ### `status`
 
 ```bash
-npx reversa status
+npx agentforge status
 ```
 
 Muestra el estado actual del análisis: qué fase está en curso, qué agentes ya corrieron, qué falta completar.
@@ -33,7 +33,7 @@ Muestra el estado actual del análisis: qué fase está en curso, qué agentes y
 ### `update`
 
 ```bash
-npx reversa update
+npx agentforge update
 ```
 
 Actualiza los agentes a la versión más reciente de Reversa.
@@ -45,7 +45,7 @@ El comando es inteligente: verifica el manifiesto SHA-256 de cada archivo y nunc
 ### `add-agent`
 
 ```bash
-npx reversa add-agent
+npx agentforge add-agent
 ```
 
 Agrega un agente específico al proyecto. Útil si no instalaste todos los agentes en la instalación inicial y ahora quieres incluir, por ejemplo, el Data Master o el Design System.
@@ -55,7 +55,7 @@ Agrega un agente específico al proyecto. Útil si no instalaste todos los agent
 ### `add-engine`
 
 ```bash
-npx reversa add-engine
+npx agentforge add-engine
 ```
 
 Agrega soporte para un motor de IA que no estaba presente cuando instalaste.
@@ -65,7 +65,7 @@ Agrega soporte para un motor de IA que no estaba presente cuando instalaste.
 ### `uninstall`
 
 ```bash
-npx reversa uninstall
+npx agentforge uninstall
 ```
 
 Elimina Reversa del proyecto: borra los archivos creados por la instalación.

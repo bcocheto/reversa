@@ -1,6 +1,6 @@
 # CLI
 
-O Reversa tem um CLI simples para gerenciar a instalação e o ciclo de vida dos agentes no seu projeto. Todos os comandos rodam com `npx reversa` na raiz do projeto.
+O Reversa tem um CLI simples para gerenciar a instalação e o ciclo de vida dos agentes no seu projeto. Todos os comandos rodam com `npx agentforge` na raiz do projeto.
 
 ---
 
@@ -9,7 +9,7 @@ O Reversa tem um CLI simples para gerenciar a instalação e o ciclo de vida dos
 ### `install`
 
 ```bash
-npx reversa install
+npx agentforge install
 ```
 
 Instala o Reversa no projeto legado atual. Detecta as engines presentes, pergunta suas preferências e cria toda a estrutura necessária.
@@ -21,7 +21,7 @@ Use uma vez, na raiz do projeto que você quer analisar.
 ### `status`
 
 ```bash
-npx reversa status
+npx agentforge status
 ```
 
 Mostra o estado atual da análise: qual fase está em andamento, quais agentes já rodaram, o que falta completar.
@@ -33,7 +33,7 @@ Mostra o estado atual da análise: qual fase está em andamento, quais agentes j
 ### `update`
 
 ```bash
-npx reversa update
+npx agentforge update
 ```
 
 Atualiza os agentes para a versão mais recente do Reversa.
@@ -45,7 +45,7 @@ O comando é inteligente: ele verifica o manifesto SHA-256 de cada arquivo e nun
 ### `add-agent`
 
 ```bash
-npx reversa add-agent
+npx agentforge add-agent
 ```
 
 Adiciona um agente específico ao projeto. Útil se você não instalou todos os agentes na instalação inicial e agora quer incluir, por exemplo, o Data Master ou o Design System.
@@ -55,7 +55,7 @@ Adiciona um agente específico ao projeto. Útil se você não instalou todos os
 ### `add-engine`
 
 ```bash
-npx reversa add-engine
+npx agentforge add-engine
 ```
 
 Adiciona suporte a uma engine de IA que não estava presente quando você instalou. Por exemplo: instalou só para Claude Code e agora quer adicionar Codex também.
@@ -65,7 +65,7 @@ Adiciona suporte a uma engine de IA que não estava presente quando você instal
 ### `uninstall`
 
 ```bash
-npx reversa uninstall
+npx agentforge uninstall
 ```
 
 Remove o Reversa do projeto: apaga os arquivos criados pela instalação (`.reversa/`, `.agents/skills/reversa-*/`, os arquivos de entrada das engines).

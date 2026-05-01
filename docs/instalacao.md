@@ -13,7 +13,7 @@ If you don't have Node.js, install it at [nodejs.org](https://nodejs.org) and co
 In the root of the legacy project you want to analyze:
 
 ```bash
-npx reversa install
+npx agentforge install
 ```
 
 The installer does all of this for you:
@@ -65,7 +65,7 @@ legacy-project/
 If you want to add support for another engine later (for example, you installed only for Claude Code and now want Codex too):
 
 ```bash
-npx reversa add-engine
+npx agentforge add-engine
 ```
 
 The installer detects what already exists and adds only what's missing.

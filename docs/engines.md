@@ -1,6 +1,6 @@
 # Supported engines
 
-Reversa works with the leading AI engines on the market. The installer automatically detects which ones are present in the environment, but you can add more at any time with `npx reversa add-engine`.
+Reversa works with the leading AI engines on the market. The installer automatically detects which ones are present in the environment, but you can add more at any time with `npx agentforge add-engine`.
 
 ---
 
