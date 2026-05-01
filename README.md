@@ -203,7 +203,7 @@ Every statement in the specs is marked with:
 npx reversa install      # Install Reversa in the project
 npx reversa status       # Show current analysis state
 npx reversa update       # Update agents to the latest version
-npx reversa add-agent    # Add an agent to the project
+npx agentforge add-agent  # Create a custom project agent
 npx reversa add-engine   # Add support for a new engine
 npx agentforge export    # Generate engine-derived files from .agentforge/
 npx reversa uninstall    # Remove Reversa from the project

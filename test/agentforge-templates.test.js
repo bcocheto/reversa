@@ -9,6 +9,7 @@ import { tmpdir } from 'os';
 import { Writer } from '../lib/installer/writer.js';
 import { buildManifest, saveManifest, loadManifest } from '../lib/installer/manifest.js';
 import { buildUninstallPlan, applyUninstallPlan } from '../lib/commands/uninstall.js';
+import { createProjectAgent } from '../lib/commands/add-agent.js';
 import { PRODUCT } from '../lib/product.js';
 
 const AGENTFORGE_BIN = fileURLToPath(new URL('../bin/agentforge.js', import.meta.url));
@@ -302,6 +303,119 @@ test('agentforge export generates derived files and preserves modified AGENTS.md
 
     assert.equal(third.status, 0);
     assert.match(readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8'), /Linha manual do usuário\./);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge add-agent creates a project agent and updates state and manifest', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-add-agent-'));
+
+  try {
+    const writer = new Writer(projectRoot);
+    const answers = {
+      project_name: 'Demo Project',
+      user_name: 'Ana',
+      chat_language: 'pt-br',
+      doc_language: 'pt-br',
+      output_folder: '_agentforge',
+      engines: ['codex'],
+      internal_agents: [PRODUCT.skillsPrefix],
+      response_mode: 'chat',
+    };
+
+    writer.createProductDir(answers, '1.0.0');
+    writer.saveCreatedFiles();
+    saveManifest(projectRoot, buildManifest(projectRoot, writer.manifestPaths));
+
+    const result = createProjectAgent(projectRoot, {
+      id: 'backend-engineer',
+      name: 'Backend Engineer',
+      mission: 'Construir e manter serviços de backend confiáveis.',
+      responsibilities: 'Criar APIs, manter integrações e revisar mudanças de persistência.',
+      can_change: 'src/backend, tests, .agentforge',
+      cannot_change: '.env, secrets, package-lock.json',
+      human_approval: 'Remover dados, alterar contratos públicos, tocar em segredos',
+      activation_commands: 'agentforge backend-engineer, /backend-engineer',
+      create_suggested_subagents: true,
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'backend-engineer.yaml')), true);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.ok(state.generated_agents.includes('backend-engineer'));
+    assert.ok(state.created_files.includes('.agentforge/agents/backend-engineer.yaml'));
+
+    const manifest = loadManifest(projectRoot);
+    assert.ok(manifest['.agentforge/agents/backend-engineer.yaml']);
+
+    const agentFile = readFileSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'backend-engineer.yaml'), 'utf8');
+    assert.match(agentFile, /id: backend-engineer/);
+    assert.match(agentFile, /name: Backend Engineer/);
+    assert.match(agentFile, /responsibilities:/);
+
+    const validateResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(validateResult.status, 0);
+    assert.match(readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8'), /backend-engineer/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge add-agent refuses duplicate ids', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-add-agent-dup-'));
+
+  try {
+    const writer = new Writer(projectRoot);
+    const answers = {
+      project_name: 'Demo Project',
+      user_name: 'Ana',
+      chat_language: 'pt-br',
+      doc_language: 'pt-br',
+      output_folder: '_agentforge',
+      engines: ['codex'],
+      internal_agents: [PRODUCT.skillsPrefix],
+      response_mode: 'chat',
+    };
+
+    writer.createProductDir(answers, '1.0.0');
+    writer.saveCreatedFiles();
+    saveManifest(projectRoot, buildManifest(projectRoot, writer.manifestPaths));
+
+    const first = createProjectAgent(projectRoot, {
+      id: 'backend-engineer',
+      name: 'Backend Engineer',
+      mission: 'Criar serviços de backend.',
+      responsibilities: 'Criar APIs',
+      can_change: 'src/backend',
+      cannot_change: '.env',
+      human_approval: '',
+      activation_commands: '',
+      create_suggested_subagents: false,
+    });
+    assert.equal(first.ok, true);
+
+    const second = createProjectAgent(projectRoot, {
+      id: 'backend-engineer',
+      name: 'Backend Engineer 2',
+      mission: 'Outra missão',
+      responsibilities: 'Outra responsabilidade',
+      can_change: 'src/other',
+      cannot_change: '.env',
+      human_approval: '',
+      activation_commands: '',
+      create_suggested_subagents: false,
+    });
+
+    assert.equal(second.ok, false);
+    assert.match(second.errors.join('\n'), /Já existe um agente com o id/);
+    const agentFile = readFileSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'backend-engineer.yaml'), 'utf8');
+    assert.match(agentFile, /Criar serviços de backend/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
