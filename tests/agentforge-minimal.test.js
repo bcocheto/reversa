@@ -40,9 +40,13 @@ function baseAnswers(overrides = {}) {
   };
 }
 
-async function installFixture(projectRoot, { engines = ['codex'], exportTargets = false } = {}) {
+async function installFixture(projectRoot, {
+  engines = ['codex'],
+  exportTargets = false,
+  setupMode = 'bootstrap',
+} = {}) {
   const writer = new Writer(projectRoot);
-  const answers = baseAnswers({ engines });
+  const answers = baseAnswers({ engines, setup_mode: setupMode });
 
   writer.createProductDir(answers, '1.0.0');
 
@@ -81,6 +85,28 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
     assert.deepEqual(state.initial_agents, answers.initial_agents);
     assert.deepEqual(state.initial_flows, answers.initial_flows);
     assert.deepEqual(state.engines, answers.engines);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('install in adopt mode creates the minimum harness structure', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-install-adopt-'));
+
+  try {
+    const answers = await installFixture(projectRoot, { setupMode: 'adopt' });
+
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'README.md')), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'router.md')), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml')), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'task-modes.yaml')), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'load-order.yaml')), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'engine-map.yaml')), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'README.md')), true);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(state.setup_mode, 'adopt');
+    assert.equal(answers.setup_mode, 'adopt');
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -128,6 +154,29 @@ test('validate succeeds on a fresh AgentForge installation', async () => {
   }
 });
 
+test('validate fails when context-index.yaml is absent', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-missing-harness-'));
+
+  try {
+    await installFixture(projectRoot, { setupMode: 'adopt' });
+
+    rmSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml'));
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 1);
+
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
+    assert.match(report, /context-index\.yaml/);
+    assert.match(report, /Arquivo ausente da estrutura mínima do harness/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('validate fails when a flow references a missing agent', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-fail-'));
 
@@ -145,6 +194,32 @@ test('validate fails when a flow references a missing agent', async () => {
 
     assert.equal(result.status, 1);
     assert.match(readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8'), /ghost-agent/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('compile warns when the minimum harness is absent', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-compile-missing-harness-'));
+
+  try {
+    await installFixture(projectRoot, { setupMode: 'adopt' });
+
+    rmSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml'));
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'compile', '--force'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 1);
+    assert.match(result.stdout, /AgentForge compile encontrou 1 erro\(s\)\./);
+    assert.match(result.stdout, /context-index\.yaml/);
+    assert.match(result.stdout, /Relatório gerado em .*compile\.md/);
+
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'compile.md'), 'utf8');
+    assert.match(report, /context-index\.yaml/);
+    assert.match(report, /Arquivo ausente da estrutura mínima do harness/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
