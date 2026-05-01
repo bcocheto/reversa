@@ -1,4 +1,4 @@
-# Schema — .reversa/context/modules.json
+# Schema — .agentforge/context/modules.json
 
 Arquivo gerado pelo Arqueólogo. Usado pelo Detetive, Arquiteto e Redator.
 
@@ -66,4 +66,4 @@ Arquivo gerado pelo Arqueólogo. Usado pelo Detetive, Arquiteto e Redator.
 
 ## Nota
 
-Salve o checkpoint em `.reversa/state.json` após cada módulo analisado, antes de iniciar o próximo.
+Salve o checkpoint em `.agentforge/state.json` após cada módulo analisado, antes de iniciar o próximo.

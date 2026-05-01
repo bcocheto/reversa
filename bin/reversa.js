@@ -31,15 +31,15 @@ ______
 | |\\ \\  __/\\ V /  __/ |  \\__ \\ (_| |
 \\_| \\_\\___| \\_/ \\___|_|  |___/\\__,_|
 `) + `
-  reversa v${pkg.version}
+  AgentForge v${pkg.version}
 
   Uso: npx reversa <comando>
 
   Comandos:
-    install            Instala o Reversa no projeto atual
+    install            Instala o AgentForge no projeto atual
     update             Atualiza os agentes para a última versão
     status             Mostra o estado atual da análise
-    uninstall          Remove o Reversa do projeto
+    uninstall          Remove o AgentForge do projeto
     add-agent          Adiciona um agente ao projeto
     add-engine         Adiciona suporte a uma engine
     export-diagrams    Exporta diagramas Mermaid como imagens SVG/PNG

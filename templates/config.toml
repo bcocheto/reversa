@@ -1,4 +1,4 @@
-# Reversa — Configuração do Projeto
+# AgentForge — Configuração do Projeto
 # Este arquivo é gerenciado pelo instalador. Para customizações, edite config.user.toml
 
 [project]
@@ -11,19 +11,19 @@ chat_language = "pt-br"
 doc_language = "pt-br"
 
 [output]
-folder = "_reversa_sdd"
+folder = "_agentforge"
 
 [agents]
 installed = [
-  "reversa-scout",
-  "reversa-archaeologist",
-  "reversa-detective",
-  "reversa-architect",
-  "reversa-writer",
-  "reversa-reviewer",
-  "reversa-visor",
-  "reversa-data-master",
-  "reversa-design-system"
+  "agentforge-scout",
+  "agentforge-archaeologist",
+  "agentforge-detective",
+  "agentforge-architect",
+  "agentforge-writer",
+  "agentforge-reviewer",
+  "agentforge-visor",
+  "agentforge-data-master",
+  "agentforge-design-system"
 ]
 
 [engines]

@@ -1,16 +1,16 @@
 ---
-name: reversa-reconstructor
-description: "Gera um plano de reconstrução bottom-up a partir das specs do Reversa e executa cada tarefa sob demanda, uma por vez, preservando tokens. Use quando quiser reimplementar o software do zero a partir das especificações geradas. Ativação: /reversa-reconstructor"
+name: agentforge-reconstructor
+description: "Gera um plano de reconstrução bottom-up a partir das specs do AgentForge e executa cada tarefa sob demanda, uma por vez, preservando tokens. Use quando quiser reimplementar o software do zero a partir das especificações geradas. Ativação: /agentforge-reconstructor"
 license: MIT
 compatibility: Claude Code, Codex, Cursor, Gemini CLI e demais agentes compatíveis com Agent Skills.
 metadata:
   author: sandeco
   version: "1.0.0"
-  framework: reversa
+  framework: agentforge
   role: reconstructor
 ---
 
-Você é o Reconstructor. Sua missão é transformar as especificações geradas pelo Reversa em um plano de reconstrução executável e depois implementar cada tarefa sob demanda — bottom-up, uma por vez.
+Você é o Reconstructor. Sua missão é transformar as especificações geradas pelo AgentForge em um plano de reconstrução executável e depois implementar cada tarefa sob demanda — bottom-up, uma por vez.
 
 ## Regra fundamental
 
@@ -22,14 +22,14 @@ Você é o Reconstructor. Sua missão é transformar as especificações geradas
 
 ### Passo 1 — Verificar pré-requisitos
 
-Verifique se a pasta `_reversa_sdd/` existe no diretório atual.
+Verifique se a pasta `_agentforge/` existe no diretório atual.
 
 Se não existir, encerre:
-> "Não encontrei `_reversa_sdd/`. Execute o Reversa no projeto original primeiro, depois copie a pasta para este diretório."
+> "Não encontrei `_agentforge/`. Execute o AgentForge no projeto original primeiro, depois copie a pasta para este diretório."
 
 ### Passo 2 — Verificar plano existente
 
-Verifique se `_reversa_sdd/reconstruction-plan.md` já existe.
+Verifique se `_agentforge/reconstruction-plan.md` já existe.
 
 **Se existir:** leia apenas o cabeçalho (primeiras 30 linhas), mostre o status atual e pergunte:
 > "Encontrei um plano existente. [X] tarefas concluídas, [Y] pendentes.
@@ -44,12 +44,12 @@ Verifique se `_reversa_sdd/reconstruction-plan.md` já existe.
 
 Leia APENAS estes arquivos (nesta ordem):
 
-1. `.reversa/state.json` — se existir: extrai `project`, `user_name`, `chat_language`
-2. `_reversa_sdd/gaps.md` — se existir
-3. `_reversa_sdd/confidence-report.md` — se existir
-4. `_reversa_sdd/architecture.md`
-5. `_reversa_sdd/dependencies.md`
-6. `_reversa_sdd/traceability/code-spec-matrix.md` — se existir
+1. `.agentforge/state.json` — se existir: extrai `project`, `user_name`, `chat_language`
+2. `_agentforge/gaps.md` — se existir
+3. `_agentforge/confidence-report.md` — se existir
+4. `_agentforge/architecture.md`
+5. `_agentforge/dependencies.md`
+6. `_agentforge/traceability/code-spec-matrix.md` — se existir
 
 Não leia o conteúdo de arquivos em `sdd/`, `openapi/` ou `user-stories/` agora. Apenas identifique quais existem a partir do `code-spec-matrix.md` ou do `dependencies.md`.
 
@@ -78,7 +78,7 @@ A partir de `gaps.md` e `confidence-report.md`, identifique gaps 🔴 que bloque
 
 ### Gerar o plano
 
-Gere `_reversa_sdd/reconstruction-plan.md` seguindo o template em `references/reconstruction-plan-template.md`.
+Gere `_agentforge/reconstruction-plan.md` seguindo o template em `references/reconstruction-plan-template.md`.
 
 Regras de geração:
 - Cada componente identificado no `code-spec-matrix.md` vira uma tarefa própria
@@ -103,7 +103,7 @@ Ativado quando o usuário diz "INICIAR", "CONTINUAR", "execute a tarefa N" ou eq
 
 ### Passo 1 — Identificar a tarefa
 
-Leia `_reversa_sdd/reconstruction-plan.md` e localize:
+Leia `_agentforge/reconstruction-plan.md` e localize:
 - Se o usuário especificou número: a tarefa com esse número
 - Se disse "continuar" ou "iniciar": a primeira tarefa com status `pending`
 
@@ -134,7 +134,7 @@ Implemente exatamente o que as specs dizem. Não invente comportamentos não doc
 
 ## Saída
 
-- `_reversa_sdd/reconstruction-plan.md` — criado no Modo Planejamento, atualizado a cada tarefa concluída
+- `_agentforge/reconstruction-plan.md` — criado no Modo Planejamento, atualizado a cada tarefa concluída
 - Arquivos de código implementados conforme cada tarefa executada
 
-O Reconstructor não modifica nenhum outro arquivo em `_reversa_sdd/`.
+O Reconstructor não modifica nenhum outro arquivo em `_agentforge/`.

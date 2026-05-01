@@ -6,7 +6,7 @@
   "doc_language": "Português",
   "answer_mode": "chat",
   "doc_level": "completo",
-  "output_folder": "_reversa_sdd",
+  "output_folder": "_agentforge",
   "phase": null,
   "completed": [],
   "pending": ["reconhecimento", "escavacao", "interpretacao", "geracao", "revisao"],

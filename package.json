@@ -5,6 +5,9 @@
   "bin": {
     "reversa": "bin/reversa.js"
   },
+  "scripts": {
+    "test": "node --test"
+  },
   "type": "module",
   "keywords": [
     "legacy",

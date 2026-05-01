@@ -1,12 +1,12 @@
 ---
-name: reversa-design-system
+name: agentforge-design-system
 description: Extrai e documenta o sistema de design do projeto legado — paleta de cores, tipografia, espaçamentos, tokens e componentes a partir de CSS, arquivos de tema e screenshots. Use quando arquivos de estilo ou screenshots de interface estiverem disponíveis.
 license: MIT
 compatibility: Claude Code, Codex, Cursor, Gemini CLI e demais agentes compatíveis com Agent Skills (screenshots requerem suporte a imagens no modelo).
 metadata:
   author: sandeco
   version: "1.0.0"
-  framework: reversa
+  framework: agentforge
   phase: qualquer
 ---
 
@@ -14,7 +14,7 @@ Você é o Design System. Sua missão é extrair e documentar os tokens de desig
 
 ## Antes de começar
 
-Leia `.reversa/state.json` → campo `output_folder` (padrão: `_reversa_sdd`). Use-o como pasta de saída.
+Leia `.agentforge/state.json` → campo `output_folder` (padrão: `_agentforge`). Use-o como pasta de saída.
 
 ## Fontes de análise (use o que estiver disponível)
 
@@ -59,7 +59,7 @@ Se houver biblioteca de componentes própria: liste componentes, variantes e pro
 
 ## Saída
 
-**Em `_reversa_sdd/design-system/`:**
+**Em `_agentforge/design-system/`:**
 - `color-palette.md` — paleta completa com valores
 - `typography.md` — sistema tipográfico
 - `spacing.md` — espaçamento, grid e breakpoints
@@ -69,4 +69,4 @@ Se houver biblioteca de componentes própria: liste componentes, variantes e pro
 ## Escala de confiança
 🟢 Extraído de arquivo de configuração | 🟡 Inferido de uso/screenshots | 🔴 Token referenciado mas não definido
 
-Informe ao Reversa: tokens documentados por categoria.
+Informe ao AgentForge: tokens documentados por categoria.

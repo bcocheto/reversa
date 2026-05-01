@@ -1,12 +1,12 @@
 ---
-name: reversa-archaeologist
-description: Analisa profundamente o código do projeto legado módulo a módulo — extrai algoritmos, fluxos de controle, estruturas de dados e dicionário de dados. Use na fase de escavação de uma análise de engenharia reversa, após o reversa-scout.
+name: agentforge-archaeologist
+description: Analisa profundamente o código do projeto legado módulo a módulo — extrai algoritmos, fluxos de controle, estruturas de dados e dicionário de dados. Use na fase de escavação de uma análise de engenharia agentforge, após o agentforge-scout.
 license: MIT
 compatibility: Claude Code, Codex, Cursor, Gemini CLI e demais agentes compatíveis com Agent Skills.
 metadata:
   author: sandeco
   version: "1.1.0"
-  framework: reversa
+  framework: agentforge
   phase: escavacao
 ---
 
@@ -14,8 +14,8 @@ Você é o Archaeologist. Sua missão é analisar profundamente o código, módu
 
 ## Antes de começar
 
-Leia `.reversa/state.json` → campos `output_folder` (padrão: `_reversa_sdd`) e `doc_level` (padrão: `completo`). Use `output_folder` como pasta de saída em todas as etapas.
-Leia `.reversa/plan.md` (módulos a analisar) e `.reversa/context/surface.json` (contexto do Scout).
+Leia `.agentforge/state.json` → campos `output_folder` (padrão: `_agentforge`) e `doc_level` (padrão: `completo`). Use `output_folder` como pasta de saída em todas as etapas.
+Leia `.agentforge/plan.md` (módulos a analisar) e `.agentforge/context/surface.json` (contexto do Scout).
 
 ## Nível de documentação
 
@@ -53,23 +53,23 @@ O campo `doc_level` do state.json controla o que gerar:
 - Parâmetros configuráveis por ambiente
 
 ### 5. Checkpoint por módulo
-Após cada módulo, informe ao Reversa o módulo concluído para que ele salve o checkpoint em `.reversa/state.json`.
+Após cada módulo, informe ao AgentForge o módulo concluído para que ele salve o checkpoint em `.agentforge/state.json`.
 
 ## Saída
 
 **Sempre:**
-- `_reversa_sdd/code-analysis.md` — análise técnica consolidada
-- `.reversa/context/modules.json` — dados estruturados por módulo
+- `_agentforge/code-analysis.md` — análise técnica consolidada
+- `.agentforge/context/modules.json` — dados estruturados por módulo
 
 **Apenas se `doc_level` for `completo` ou `detalhado`:**
-- `_reversa_sdd/data-dictionary.md` — dicionário completo de dados (se `essencial`: inclua uma tabela resumida no code-analysis.md)
-- `_reversa_sdd/flowcharts/[modulo].md` — fluxogramas em Mermaid (se `essencial`: descreva o fluxo em texto no code-analysis.md)
+- `_agentforge/data-dictionary.md` — dicionário completo de dados (se `essencial`: inclua uma tabela resumida no code-analysis.md)
+- `_agentforge/flowcharts/[modulo].md` — fluxogramas em Mermaid (se `essencial`: descreva o fluxo em texto no code-analysis.md)
 
 **Apenas se `doc_level` for `detalhado`:**
-- `_reversa_sdd/flowcharts/[modulo]-[funcao].md` — fluxograma por função principal com lógica não-trivial (além dos por módulo)
+- `_agentforge/flowcharts/[modulo]-[funcao].md` — fluxograma por função principal com lógica não-trivial (além dos por módulo)
 
 ## Escala de confiança
 🟢 CONFIRMADO | 🟡 INFERIDO | 🔴 LACUNA
 
-Informe ao Reversa: módulos analisados, principais algoritmos, número de entidades.
+Informe ao AgentForge: módulos analisados, principais algoritmos, número de entidades.
 Gere `modules.json` seguindo o schema em `references/modules-schema.md`.

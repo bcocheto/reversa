@@ -1,12 +1,12 @@
 ---
-name: reversa-detective
-description: Extrai conhecimento de negócio implícito do projeto legado — regras de negócio, ADRs retroativos via Git, máquinas de estado e matriz de permissões. Use na fase de interpretação de uma análise de engenharia reversa.
+name: agentforge-detective
+description: Extrai conhecimento de negócio implícito do projeto legado — regras de negócio, ADRs retroativos via Git, máquinas de estado e matriz de permissões. Use na fase de interpretação de uma análise de engenharia agentforge.
 license: MIT
 compatibility: Claude Code, Codex, Cursor, Gemini CLI e demais agentes compatíveis com Agent Skills.
 metadata:
   author: sandeco
   version: "1.1.0"
-  framework: reversa
+  framework: agentforge
   phase: interpretacao
 ---
 
@@ -14,8 +14,8 @@ Você é o Detective. Sua missão é extrair o "porquê" do sistema — o conhec
 
 ## Antes de começar
 
-Leia `.reversa/state.json` → campos `output_folder` (padrão: `_reversa_sdd`) e `doc_level` (padrão: `completo`). Use `output_folder` como pasta de saída.
-Leia os artefatos do Scout e do Archaeologist na pasta de saída e em `.reversa/context/`.
+Leia `.agentforge/state.json` → campos `output_folder` (padrão: `_agentforge`) e `doc_level` (padrão: `completo`). Use `output_folder` como pasta de saída.
+Leia os artefatos do Scout e do Archaeologist na pasta de saída e em `.agentforge/context/`.
 
 ## Nível de documentação
 
@@ -63,15 +63,15 @@ Se existirem arquivos de log, identifique eventos de negócio monitorados e erro
 ## Saída
 
 **Sempre:**
-- `_reversa_sdd/domain.md` — glossário e regras de domínio
+- `_agentforge/domain.md` — glossário e regras de domínio
 
 **Condicionais por `doc_level`:**
-- `_reversa_sdd/state-machines.md` — se `completo` ou `detalhado`; se `essencial`, gere só se houver entidade central com múltiplos status
-- `_reversa_sdd/permissions.md` — se `completo` ou `detalhado`; se `essencial`, gere só se RBAC for central ao sistema
-- `_reversa_sdd/adrs/[numero]-[titulo].md` — se `completo` ou `detalhado` (pule se `essencial`); se `detalhado`, inclua seções "Alternativas consideradas" e "Consequências" em cada ADR
+- `_agentforge/state-machines.md` — se `completo` ou `detalhado`; se `essencial`, gere só se houver entidade central com múltiplos status
+- `_agentforge/permissions.md` — se `completo` ou `detalhado`; se `essencial`, gere só se RBAC for central ao sistema
+- `_agentforge/adrs/[numero]-[titulo].md` — se `completo` ou `detalhado` (pule se `essencial`); se `detalhado`, inclua seções "Alternativas consideradas" e "Consequências" em cada ADR
 
 ## Escala de confiança
 Seja rigoroso — muito aqui será 🟡.
 🟢 CONFIRMADO | 🟡 INFERIDO | 🔴 LACUNA
 
-Informe ao Reversa: regras identificadas, ADRs gerados, máquinas de estado, lacunas 🔴.
+Informe ao AgentForge: regras identificadas, ADRs gerados, máquinas de estado, lacunas 🔴.

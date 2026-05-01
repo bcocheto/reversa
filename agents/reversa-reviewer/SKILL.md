@@ -1,12 +1,12 @@
 ---
-name: reversa-reviewer
-description: Revisa criticamente as especificações geradas pelo reversa-writer — encontra inconsistências, reclassifica confiança e gera perguntas para validação humana. Use na fase de revisão de uma análise de engenharia reversa.
+name: agentforge-reviewer
+description: Revisa criticamente as especificações geradas pelo agentforge-writer — encontra inconsistências, reclassifica confiança e gera perguntas para validação humana. Use na fase de revisão de uma análise de engenharia agentforge.
 license: MIT
 compatibility: Claude Code, Codex, Cursor, Gemini CLI e demais agentes compatíveis com Agent Skills.
 metadata:
   author: sandeco
   version: "1.1.0"
-  framework: reversa
+  framework: agentforge
   phase: revisao
 ---
 
@@ -14,9 +14,9 @@ Você é o Reviewer. Sua missão é questionar, testar e melhorar a qualidade da
 
 ## Antes de começar
 
-1. Leia `.reversa/state.json` — especialmente `user_name`, `answer_mode`, `doc_level`, `output_folder` e `engines`
-2. Leia todos os arquivos em `_reversa_sdd/sdd/`
-3. Leia `_reversa_sdd/traceability/code-spec-matrix.md` e `_reversa_sdd/traceability/spec-impact-matrix.md` (se existirem)
+1. Leia `.agentforge/state.json` — especialmente `user_name`, `answer_mode`, `doc_level`, `output_folder` e `engines`
+2. Leia todos os arquivos em `_agentforge/sdd/`
+3. Leia `_agentforge/traceability/code-spec-matrix.md` e `_agentforge/traceability/spec-impact-matrix.md` (se existirem)
 4. Consulte `references/confidence-rules.md` para as regras de classificação
 
 ## Nível de documentação
@@ -59,14 +59,14 @@ Se escolher **Sim**, siga o fluxo abaixo.
 
 Use a ferramenta `codex:rescue` (ou equivalente disponível) para delegar a seguinte tarefa ao Codex:
 
-> Você é um revisor técnico independente. Leia os arquivos em `_reversa_sdd/sdd/` e encontre:
+> Você é um revisor técnico independente. Leia os arquivos em `_agentforge/sdd/` e encontre:
 > 1. Inconsistências internas — regras que se contradizem dentro de uma mesma spec
 > 2. Contradições cruzadas — specs que conflitam entre si
 > 3. Lacunas críticas — comportamentos óbvios não especificados
 > 4. Afirmações frágeis — itens marcados como 🟢 CONFIRMADO que parecem inferência
 >
 > Para cada problema: indique a spec afetada, o trecho exato, o tipo do problema e uma sugestão de correção.
-> Salve o resultado em `_reversa_sdd/cross-review-result.md`.
+> Salve o resultado em `_agentforge/cross-review-result.md`.
 
 Aguarde o Codex concluir.
 
@@ -74,7 +74,7 @@ Aguarde o Codex concluir.
 
 Após o Codex concluir:
 
-1. Leia `_reversa_sdd/cross-review-result.md`
+1. Leia `_agentforge/cross-review-result.md`
 2. Para cada apontamento válido:
    - Atualize a spec correspondente
    - Reclassifique conforme necessário
@@ -87,7 +87,7 @@ Após o Codex concluir:
 ## Processo de revisão
 
 ### 1. Revisão por spec
-Para cada spec em `_reversa_sdd/sdd/`:
+Para cada spec em `_agentforge/sdd/`:
 - As regras de negócio fazem sentido em conjunto? Há contradições internas?
 - Há comportamentos óbvios não especificados?
 - Volte ao código original para checar afirmações 🟡 — reclassifique conforme `references/confidence-rules.md`
@@ -104,7 +104,7 @@ Para cada spec em `_reversa_sdd/sdd/`:
 ### 4. Coleta de lacunas para o usuário
 Para cada 🔴 que só o usuário pode resolver, crie uma entrada seguindo `references/questions-template.md`.
 
-Agrupe todas as perguntas em `_reversa_sdd/questions.md`.
+Agrupe todas as perguntas em `_agentforge/questions.md`.
 
 ### 5. Interação com o usuário
 
@@ -115,15 +115,15 @@ Apresente as perguntas diretamente no chat, uma a uma ou em blocos temáticos:
 Processe cada resposta imediatamente, atualizando a spec e reclassificando.
 
 #### Se `answer_mode = "file"`
-Crie `_reversa_sdd/questions.md` com todas as perguntas formatadas e diga:
-> "[Nome], criei `_reversa_sdd/questions.md` com [N] perguntas que precisam da sua validação.
-> Preencha o campo **Resposta** de cada uma e me avise quando terminar — basta digitar `reversa`."
+Crie `_agentforge/questions.md` com todas as perguntas formatadas e diga:
+> "[Nome], criei `_agentforge/questions.md` com [N] perguntas que precisam da sua validação.
+> Preencha o campo **Resposta** de cada uma e me avise quando terminar — basta digitar `agentforge`."
 
 Aguarde o usuário sinalizar conclusão. Então leia o arquivo e processe todas as respostas conforme `references/questions-template.md`.
 
 ### 6. Relatório de confiança final
 
-Após processar todas as respostas (ou se não houver lacunas), gere `_reversa_sdd/confidence-report.md` seguindo `references/confidence-report-template.md`.
+Após processar todas as respostas (ou se não houver lacunas), gere `_agentforge/confidence-report.md` seguindo `references/confidence-report-template.md`.
 
 Se houve revisão cruzada, inclua uma seção adicional no relatório:
 ```
@@ -136,18 +136,18 @@ Se houve revisão cruzada, inclua uma seção adicional no relatório:
 ## Saída
 
 **Sempre:**
-- `_reversa_sdd/confidence-report.md` — contagem de 🟢/🟡/🔴 por spec e percentual geral (simplificado se `essencial`)
-- `_reversa_sdd/questions.md` — se `essencial`: apenas lacunas 🔴 que bloqueiam reimplementação; se `completo`/`detalhado`: todos os 🔴
+- `_agentforge/confidence-report.md` — contagem de 🟢/🟡/🔴 por spec e percentual geral (simplificado se `essencial`)
+- `_agentforge/questions.md` — se `essencial`: apenas lacunas 🔴 que bloqueiam reimplementação; se `completo`/`detalhado`: todos os 🔴
 
 **Apenas se `doc_level` for `completo` ou `detalhado`:**
-- `_reversa_sdd/gaps.md` — lacunas que permaneceram sem resposta (se `detalhado`: categorize por severidade: crítico/moderado/cosmético)
-- `_reversa_sdd/cross-review-result.md` — apontamentos do Codex (se revisão cruzada realizada)
+- `_agentforge/gaps.md` — lacunas que permaneceram sem resposta (se `detalhado`: categorize por severidade: crítico/moderado/cosmético)
+- `_agentforge/cross-review-result.md` — apontamentos do Codex (se revisão cruzada realizada)
 
-Specs em `_reversa_sdd/sdd/` são atualizadas in-place com as reclassificações.
+Specs em `_agentforge/sdd/` são atualizadas in-place com as reclassificações.
 
 ## Checkpoint
 
-Informe ao Reversa:
+Informe ao AgentForge:
 - Número de specs revisadas
 - Revisão cruzada realizada: sim/não (engine consultada)
 - Quantidade de reclassificações (🔴→🟢, 🟡→🟢, etc.)

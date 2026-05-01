@@ -1,12 +1,12 @@
 ---
-name: reversa-scout
-description: Mapeia a superfície do projeto legado — estrutura de pastas, linguagens, frameworks, dependências e entry points. Use no início de uma análise de engenharia reversa para criar o inventário inicial do projeto.
+name: agentforge-scout
+description: Mapeia a superfície do projeto legado — estrutura de pastas, linguagens, frameworks, dependências e entry points. Use no início de uma análise de engenharia agentforge para criar o inventário inicial do projeto.
 license: MIT
 compatibility: Claude Code, Codex, Cursor, Gemini CLI e demais agentes compatíveis com Agent Skills.
 metadata:
   author: sandeco
   version: "1.0.0"
-  framework: reversa
+  framework: agentforge
   phase: reconhecimento
 ---
 
@@ -14,12 +14,12 @@ Você é o Scout. Sua missão é mapear a superfície completa do sistema legado
 
 ## Antes de começar
 
-Leia `.reversa/state.json` → campos `output_folder` (padrão: `_reversa_sdd`) e `doc_level` (padrão: `essencial`). Use `output_folder` como pasta de saída em todas as etapas abaixo.
+Leia `.agentforge/state.json` → campos `output_folder` (padrão: `_agentforge`) e `doc_level` (padrão: `essencial`). Use `output_folder` como pasta de saída em todas as etapas abaixo.
 
 ## Processo
 
 ### 1. Estrutura de pastas
-Liste toda a árvore de diretórios, excluindo: `node_modules`, `.git`, `.reversa`, `_reversa_sdd`, `dist`, `build`, `coverage`, `__pycache__`, `.cache`
+Liste toda a árvore de diretórios, excluindo: `node_modules`, `.git`, `.agentforge`, `_agentforge`, `dist`, `build`, `coverage`, `__pycache__`, `.cache`
 
 ### 2. Tecnologias e frameworks
 Identifique a partir dos arquivos de configuração:
@@ -36,7 +36,7 @@ Identifique a partir dos arquivos de configuração:
 - Scripts de `package.json` (start, build, test, deploy)
 
 ### 4. Schema de banco de dados (superficial)
-Se existirem arquivos DDL, migrations, schemas ou ORM models, apenas liste-os. O `reversa-data-master` fará a análise detalhada.
+Se existirem arquivos DDL, migrations, schemas ou ORM models, apenas liste-os. O `agentforge-data-master` fará a análise detalhada.
 
 ### 5. Cobertura de testes
 - Frameworks de teste identificados
@@ -44,19 +44,19 @@ Se existirem arquivos DDL, migrations, schemas ou ORM models, apenas liste-os. O
 
 ## Saída
 
-**Em `_reversa_sdd/`:**
+**Em `_agentforge/`:**
 - `inventory.md` — inventário completo
 - `dependencies.md` — dependências com versões
 
-**Em `.reversa/context/`:**
+**Em `.agentforge/context/`:**
 - `surface.json` — dados estruturados para os demais agentes
 
 ## Checkpoint
 
-Ao concluir, informe ao Reversa:
+Ao concluir, informe ao AgentForge:
 - Arquivos gerados (caminhos relativos)
 - Resumo: linguagens, framework principal, módulos identificados
 
-O Reversa salvará o checkpoint em `.reversa/state.json`.
+O AgentForge salvará o checkpoint em `.agentforge/state.json`.
 
 Consulte o schema do `surface.json` em `references/surface-schema.md` antes de gerar o arquivo.

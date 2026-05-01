@@ -1,6 +1,6 @@
 # Plano de Exploração — {{PROJECT}}
 
-> Criado pelo Reversa em {{DATE}}
+> Criado pelo AgentForge em {{DATE}}
 > Marque cada tarefa com ✅ quando concluída.
 > Você pode editar este plano antes de iniciar: adicione, remova ou reordene tarefas conforme necessário.
 
@@ -14,7 +14,7 @@
 
 ## Fase 2: Escavação 🏗️
 
-> O Reversa preenche esta seção com os módulos reais após o Scout concluir o reconhecimento.
+> O AgentForge preenche esta seção com os módulos reais após o Scout concluir o reconhecimento.
 
 - [ ] **Arqueólogo** — Análise dos módulos identificados pelo Scout
 

@@ -1,19 +1,19 @@
-# Reversa
+# AgentForge
 
-> Framework de Engenharia Reversa instalado neste projeto.
+> Framework de Engenharia AgentForge instalado neste projeto.
 
 ## Como usar
 
-Digite `/reversa` para ativar o Reversa e iniciar ou retomar a análise do projeto.
+Digite `/agentforge` para ativar o AgentForge e iniciar ou retomar a análise do projeto.
 
 ## Comportamento ao ativar
 
-Quando o usuário digitar `/reversa` ou a palavra `reversa` sozinha em uma mensagem:
+Quando o usuário digitar `/agentforge` ou a palavra `agentforge` sozinha em uma mensagem:
 
-1. Ative o skill `reversa` disponível em `.agents/skills/reversa/SKILL.md`
-2. Leia o SKILL.md na íntegra e siga exatamente as instruções do Reversa
+1. Ative o skill `agentforge` disponível em `.agents/skills/agentforge/SKILL.md`
+2. Leia o SKILL.md na íntegra e siga exatamente as instruções do AgentForge
 
 ## Regra não-negociável
 
 Nunca apague, modifique ou sobrescreva arquivos pré-existentes do projeto legado.
-O Reversa escreve **apenas** em `.reversa/` e `_reversa_sdd/`.
+O AgentForge escreve **apenas** em `.agentforge/` e `_agentforge/`.

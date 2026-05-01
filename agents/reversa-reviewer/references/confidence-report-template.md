@@ -1,4 +1,4 @@
-# Template — _reversa_sdd/confidence-report.md
+# Template — _agentforge/confidence-report.md
 
 Gerado pelo Revisor ao final da revisão.
 

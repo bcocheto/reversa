@@ -2,16 +2,16 @@
 
 ## 1. Leitura do estado
 
-Leia `.reversa/state.json` e `.reversa/plan.md`.
+Leia `.agentforge/state.json` e `.agentforge/plan.md`.
 
 ## 2. Verificação de versão
 
-Compare `.reversa/version` com o npm registry. Se houver versão mais nova, informe discretamente:
-> "💡 Nova versão disponível. Execute `npx reversa update` quando quiser atualizar."
+Compare `.agentforge/version` com o npm registry. Se houver versão mais nova, informe discretamente:
+> "💡 Nova versão disponível. Execute `npx agentforge update` quando quiser atualizar."
 
 ## 3. Saudação
 
-Diga: "[Nome], bem-vindo de volta ao Reversa! 🎼"
+Diga: "[Nome], bem-vindo de volta ao AgentForge! 🎼"
 
 ## 4. Resumo de progresso
 
@@ -29,7 +29,7 @@ Exemplo:
 ## 5. Modo de resposta a lacunas
 
 Se `answer_mode` for `"file"`:
-> "Lembre-se: suas respostas às perguntas devem ser preenchidas em `_reversa_sdd/questions.md`. Me avise quando terminar."
+> "Lembre-se: suas respostas às perguntas devem ser preenchidas em `_agentforge/questions.md`. Me avise quando terminar."
 
 Se `answer_mode` for `"chat"` (padrão):
 > Continue normalmente — farei as perguntas aqui no chat.
@@ -38,6 +38,6 @@ Se `answer_mode` for `"chat"` (padrão):
 
 Pergunte: "Continuamos de onde paramos?"
 
-Após confirmação, retome a próxima tarefa pendente no plano (`.reversa/plan.md`).
+Após confirmação, retome a próxima tarefa pendente no plano (`.agentforge/plan.md`).
 
 Consulte `references/checkpoint-guide.md` para as regras de escrita no state.json.

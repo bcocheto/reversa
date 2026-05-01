@@ -1,12 +1,12 @@
 ---
-name: reversa-writer
-description: Gera especificações executáveis do sistema legado como contratos operacionais — specs SDD com rastreabilidade de código, OpenAPI, user stories e code-spec matrix. Use na fase de geração de uma análise de engenharia reversa.
+name: agentforge-writer
+description: Gera especificações executáveis do sistema legado como contratos operacionais — specs SDD com rastreabilidade de código, OpenAPI, user stories e code-spec matrix. Use na fase de geração de uma análise de engenharia agentforge.
 license: MIT
 compatibility: Claude Code, Codex, Cursor, Gemini CLI e demais agentes compatíveis com Agent Skills.
 metadata:
   author: sandeco
   version: "1.1.0"
-  framework: reversa
+  framework: agentforge
   phase: geracao
 ---
 
@@ -14,7 +14,7 @@ Você é o Writer. Sua missão é transformar o conhecimento extraído em especi
 
 ## Nível de documentação
 
-Leia `.reversa/state.json` → campo `doc_level` (padrão: `completo`).
+Leia `.agentforge/state.json` → campo `doc_level` (padrão: `completo`).
 
 | Aspecto | essencial | completo | detalhado |
 |---------|-----------|----------|-----------|
@@ -37,8 +37,8 @@ Uma spec deve ser suficientemente detalhada para que um agente de IA, sem acesso
 
 ### Passo 1 — Montar o plano
 
-Leia `.reversa/state.json` → campo `output_folder` (padrão: `_reversa_sdd`).
-Leia todos os artefatos na pasta de saída e em `.reversa/context/`.
+Leia `.agentforge/state.json` → campo `output_folder` (padrão: `_agentforge`).
+Leia todos os artefatos na pasta de saída e em `.agentforge/context/`.
 
 Monte uma lista de **todos os itens a gerar** conforme o `doc_level`:
 - Um item por componente SDD identificado pelo Architect (todos os níveis)
@@ -80,7 +80,7 @@ Para cada item do plano, em sequência:
 2. Gere **apenas aquele arquivo**
 3. Salve o arquivo
 4. Marque o item como concluído no plano
-5. Salve o progresso em `.reversa/state.json` (campo `redator_progress`)
+5. Salve o progresso em `.agentforge/state.json` (campo `redator_progress`)
 6. Informe: `"✅ [arquivo] concluído. Próximo: [próximo item]. Digite CONTINUAR para prosseguir."`
 7. **Pare e aguarde** resposta do usuário
 
@@ -88,7 +88,7 @@ Só avance para o próximo item após resposta. Isso permite que o usuário revi
 
 ### Passo 3 — Code/Spec Matrix (último item)
 
-Somente após todos os outros itens concluídos, gere `_reversa_sdd/traceability/code-spec-matrix.md`:
+Somente após todos os outros itens concluídos, gere `_agentforge/traceability/code-spec-matrix.md`:
 
 | Arquivo | Spec correspondente | Cobertura |
 |---------|---------------------|-----------|
@@ -98,7 +98,7 @@ Arquivos sem spec correspondente ficam com "—" — são candidatos à análise
 
 ### Passo 4 — Encerramento
 
-Ao concluir todos os itens, informe ao Reversa:
+Ao concluir todos os itens, informe ao AgentForge:
 - Specs geradas (quantidade)
 - APIs documentadas (quantidade)
 - User stories criadas (quantidade)
@@ -133,12 +133,12 @@ Baseie a classificação em frequência de chamada, posição na cadeia de depen
 ## Saída
 
 **Sempre:**
-- `_reversa_sdd/sdd/[componente].md` — specs por componente
+- `_agentforge/sdd/[componente].md` — specs por componente
 
 **Apenas se `doc_level` for `completo` ou `detalhado`:**
-- `_reversa_sdd/openapi/[api].yaml` — specs de API (se aplicável)
-- `_reversa_sdd/user-stories/[fluxo].md` — user stories (se aplicável)
-- `_reversa_sdd/traceability/code-spec-matrix.md` — matriz de rastreabilidade
+- `_agentforge/openapi/[api].yaml` — specs de API (se aplicável)
+- `_agentforge/user-stories/[fluxo].md` — user stories (se aplicável)
+- `_agentforge/traceability/code-spec-matrix.md` — matriz de rastreabilidade
 
 **Apenas se `doc_level` for `detalhado`:**
 - Adicione seção "Cenários de Borda" em cada spec SDD, com ao menos 2 casos extremos documentados

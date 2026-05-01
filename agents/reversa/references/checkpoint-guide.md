@@ -1,6 +1,6 @@
-# Guia de Checkpoints — .reversa/state.json
+# Guia de Checkpoints — .agentforge/state.json
 
-O Reversa é o único agente que **escreve** no state.json. Os demais agentes apenas leem.
+O AgentForge é o único agente que **escreve** no state.json. Os demais agentes apenas leem.
 
 ## Regras absolutas
 
@@ -25,9 +25,9 @@ O Reversa é o único agente que **escreve** no state.json. Os demais agentes ap
     "scout": {
       "completed_at": "2026-04-26T10:30:00Z",
       "files": [
-        "_reversa_sdd/inventory.md",
-        "_reversa_sdd/dependencies.md",
-        ".reversa/context/surface.json"
+        "_agentforge/inventory.md",
+        "_agentforge/dependencies.md",
+        ".agentforge/context/surface.json"
       ]
     }
   }
@@ -75,7 +75,7 @@ Ao mover de fase:
   "chat_language": "pt-br",
   "doc_language": "Português",
   "answer_mode": "chat",
-  "output_folder": "_reversa_sdd",
+  "output_folder": "_agentforge",
   "phase": "escavacao",
   "completed": ["reconhecimento"],
   "pending": ["escavacao", "interpretacao", "geracao", "revisao"],
@@ -83,9 +83,9 @@ Ao mover de fase:
     "scout": {
       "completed_at": "2026-04-26T10:30:00Z",
       "files": [
-        "_reversa_sdd/inventory.md",
-        "_reversa_sdd/dependencies.md",
-        ".reversa/context/surface.json"
+        "_agentforge/inventory.md",
+        "_agentforge/dependencies.md",
+        ".agentforge/context/surface.json"
       ]
     },
     "archaeologist": {
@@ -94,7 +94,7 @@ Ao mover de fase:
     }
   },
   "engines": ["claude-code"],
-  "agents": ["reversa", "reversa-scout", "reversa-archaeologist"],
+  "agents": ["agentforge", "agentforge-scout", "agentforge-archaeologist"],
   "created_files": []
 }
 ```
@@ -103,4 +103,4 @@ Ao mover de fase:
 
 Se o contexto estiver se esgotando, salve o checkpoint atual e diga:
 
-> "[Nome], vou pausar aqui para preservar o contexto. Tudo está salvo em `.reversa/state.json`. Digite `reversa` em uma nova sessão para continuar de onde paramos."
+> "[Nome], vou pausar aqui para preservar o contexto. Tudo está salvo em `.agentforge/state.json`. Digite `agentforge` em uma nova sessão para continuar de onde paramos."

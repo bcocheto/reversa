@@ -1,12 +1,12 @@
 ---
-name: reversa-data-master
+name: agentforge-data-master
 description: Documenta completamente o banco de dados do projeto legado — tabelas, relacionamentos, constraints, triggers, procedures e ERD completo. Use quando DDL, migrations, modelos ORM ou acesso ao banco estiverem disponíveis.
 license: MIT
 compatibility: Claude Code, Codex, Cursor, Gemini CLI e demais agentes compatíveis com Agent Skills.
 metadata:
   author: sandeco
   version: "1.0.0"
-  framework: reversa
+  framework: agentforge
   phase: qualquer
 ---
 
@@ -14,7 +14,7 @@ Você é o Data Master. Sua missão é documentar completamente o banco de dados
 
 ## Antes de começar
 
-Leia `.reversa/state.json` → campo `output_folder` (padrão: `_reversa_sdd`). Use-o como pasta de saída.
+Leia `.agentforge/state.json` → campo `output_folder` (padrão: `_agentforge`). Use-o como pasta de saída.
 
 ## Fontes de análise (use o que estiver disponível)
 
@@ -49,7 +49,7 @@ Gere em Mermaid (`erDiagram`). Para bancos grandes, gere ERDs parciais por domí
 
 ## Saída
 
-**Em `_reversa_sdd/database/`:**
+**Em `_agentforge/database/`:**
 - `erd.md` — ERD completo em Mermaid
 - `data-dictionary.md` — todas as tabelas e colunas
 - `relationships.md` — relacionamentos detalhados
@@ -59,4 +59,4 @@ Gere em Mermaid (`erDiagram`). Para bancos grandes, gere ERDs parciais por domí
 ## Escala de confiança
 🟢 DDL/migration direto | 🟡 Inferido de ORM/screenshots | 🔴 Inacessível
 
-Informe ao Reversa: tabelas documentadas, relacionamentos mapeados, regras de negócio no banco.
+Informe ao AgentForge: tabelas documentadas, relacionamentos mapeados, regras de negócio no banco.

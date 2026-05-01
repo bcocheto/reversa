@@ -1,12 +1,12 @@
 ---
-name: reversa-agents-help
-description: Explica com analogias o que cada agente do Reversa faz e quando usá-lo. Ative com /reversa-agents-help.
+name: agentforge-agents-help
+description: Explica com analogias o que cada agente do AgentForge faz e quando usá-lo. Ative com /agentforge-agents-help.
 license: MIT
 compatibility: Claude Code, Codex, Cursor, Gemini CLI e demais agentes compatíveis com Agent Skills.
 metadata:
   author: sandeco
   version: "1.0.0"
-  framework: reversa
+  framework: agentforge
   role: help
 ---
 
@@ -14,23 +14,23 @@ Apresente exatamente o texto abaixo, sem alterações, sem resumir.
 
 ---
 
-# Agentes do Reversa — guia com analogias
+# Agentes do AgentForge — guia com analogias
 
-O Reversa é um time de especialistas. Cada agente faz uma coisa só — e faz bem.
+O AgentForge é um time de especialistas. Cada agente faz uma coisa só — e faz bem.
 
 ---
 
-## 🎼 Reversa — orquestrador central
-**Comando:** `/reversa`
+## 🎼 AgentForge — orquestrador central
+**Comando:** `/agentforge`
 
 Um regente de orquestra não toca nenhum instrumento. Ele conhece a partitura inteira e diz quem entra quando, em que ordem, em que ritmo. Sem ele, cada músico tocaria sua parte sem se conectar com os outros.
 
-> Use o Reversa para iniciar ou retomar a análise completa. Ele cuida da sequência por você.
+> Use o AgentForge para iniciar ou retomar a análise completa. Ele cuida da sequência por você.
 
 ---
 
 ## 🗺️ Scout — o corretor de imóveis
-**Comando:** `/reversa-scout`
+**Comando:** `/agentforge-scout`
 
 O corretor faz o primeiro tour no imóvel. Não abre gavetas, não lê documentos, não mexe em nada. Só mapeia: quantos cômodos, qual o bairro, que instalações existem, qual o estado geral.
 
@@ -39,7 +39,7 @@ O corretor faz o primeiro tour no imóvel. Não abre gavetas, não lê documento
 ---
 
 ## ⛏️ Archaeologist — o escavador
-**Comando:** `/reversa-archaeologist`
+**Comando:** `/agentforge-archaeologist`
 
 O arqueólogo escava o terreno com paciência, camada por camada. Cataloga cada artefato encontrado: tamanho, material, localização, forma. Ele não interpreta a civilização, só descreve com precisão o que está lá.
 
@@ -48,7 +48,7 @@ O arqueólogo escava o terreno com paciência, camada por camada. Cataloga cada 
 ---
 
 ## 🔍 Detective — o Sherlock Holmes
-**Comando:** `/reversa-detective`
+**Comando:** `/agentforge-detective`
 
 Sherlock Holmes chega depois do arqueólogo. Olha para os artefatos catalogados e pergunta: *"Mas por que isso está aqui? Quem colocou? O que isso revela sobre quem viveu aqui?"* Ele não escava. Ele interpreta.
 
@@ -57,7 +57,7 @@ Sherlock Holmes chega depois do arqueólogo. Olha para os artefatos catalogados 
 ---
 
 ## 📐 Architect — o cartógrafo
-**Comando:** `/reversa-architect`
+**Comando:** `/agentforge-architect`
 
 O cartógrafo visita um território e produz mapas formais: planta baixa, mapa de elevação, planta estrutural. Alguém que nunca pisou lá consegue entender tudo olhando para os mapas.
 
@@ -66,7 +66,7 @@ O cartógrafo visita um território e produz mapas formais: planta baixa, mapa d
 ---
 
 ## 📝 Writer — o tabelião
-**Comando:** `/reversa-writer`
+**Comando:** `/agentforge-writer`
 
 O tabelião transforma o que foi descoberto em contratos formais, precisos e rastreáveis. Cada cláusula tem grau de certeza declarado. O documento vale como contrato: um agente de IA pode reimplementar o sistema a partir dele.
 
@@ -75,7 +75,7 @@ O tabelião transforma o que foi descoberto em contratos formais, precisos e ras
 ---
 
 ## ⚖️ Reviewer — o revisor de specs
-**Comando:** `/reversa-reviewer`
+**Comando:** `/agentforge-reviewer`
 
 O Reviewer pega os contratos do Writer e tenta furar: *"Isso é contradição. Esse ponto não tem prova. Essa regra some se o usuário fizer X."* Ele não quer destruir, quer garantir que o que ficou de pé seja sólido.
 
@@ -84,7 +84,7 @@ O Reviewer pega os contratos do Writer e tenta furar: *"Isso é contradição. E
 ---
 
 ## 🖼️ Visor — o ilustrador forense
-**Comando:** `/reversa-visor`
+**Comando:** `/agentforge-visor`
 
 O ilustrador forense trabalha só com imagens. Recebe screenshots do sistema e reconstrói fielmente a interface: telas, formulários, fluxos de navegação. Não precisa que o sistema esteja rodando — só das fotos.
 
@@ -93,7 +93,7 @@ O ilustrador forense trabalha só com imagens. Recebe screenshots do sistema e r
 ---
 
 ## 🗄️ Data Master — o geólogo
-**Comando:** `/reversa-data-master`
+**Comando:** `/agentforge-data-master`
 
 O geólogo mapeia o subsolo — a camada que ninguém vê mas que sustenta tudo. Tabelas, relacionamentos, constraints, triggers, procedures. A fundação invisível sobre a qual a aplicação está construída.
 
@@ -102,7 +102,7 @@ O geólogo mapeia o subsolo — a camada que ninguém vê mas que sustenta tudo.
 ---
 
 ## 🎨 Design System — o estilista
-**Comando:** `/reversa-design-system`
+**Comando:** `/agentforge-design-system`
 
 O estilista cataloga o guarda-roupa: paleta de cores, tipografia, espaçamentos, tokens de design. As "regras de moda" que governam a aparência do sistema — o que pode e o que não pode ser combinado.
 
@@ -113,7 +113,7 @@ O estilista cataloga o guarda-roupa: paleta de cores, tipografia, espaçamentos,
 ## Sequência recomendada
 
 ```
-/reversa → orquestra tudo automaticamente
+/agentforge → orquestra tudo automaticamente
 
 Ou manualmente:
 Scout → Archaeologist (N sessões) → Detective → Architect → Writer → Reviewer

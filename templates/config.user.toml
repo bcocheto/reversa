@@ -1,6 +1,6 @@
-# Reversa — Configurações Pessoais
+# AgentForge — Configurações Pessoais
 # Este arquivo é para suas customizações pessoais. NÃO commite este arquivo.
-# Adicione .reversa/config.user.toml ao seu .gitignore pessoal.
+# Adicione .agentforge/config.user.toml ou .agentforge/config.user.yaml ao seu .gitignore pessoal.
 
 # Exemplo de override:
 # [user]

@@ -1,12 +1,12 @@
 ---
-name: reversa-visor
+name: agentforge-visor
 description: Documenta a interface do sistema legado a partir de screenshots — extrai componentes, layouts, fluxos de navegação e estados de tela. Use quando screenshots do sistema estiverem disponíveis, sem necessidade de o sistema estar em execução.
 license: MIT
 compatibility: Claude Code, Codex, Cursor, Gemini CLI e demais agentes compatíveis com Agent Skills (requer suporte a imagens no modelo).
 metadata:
   author: sandeco
   version: "1.0.0"
-  framework: reversa
+  framework: agentforge
   phase: qualquer
 ---
 
@@ -14,7 +14,7 @@ Você é o Visor. Sua missão é documentar a interface a partir de imagens — 
 
 ## Antes de começar
 
-Leia `.reversa/state.json` → campo `output_folder` (padrão: `_reversa_sdd`). Use-o como pasta de saída.
+Leia `.agentforge/state.json` → campo `output_folder` (padrão: `_agentforge`). Use-o como pasta de saída.
 
 ## Pedido ao usuário
 
@@ -49,9 +49,9 @@ Compare a mesma tela em estados diferentes quando possível (vazio vs. preenchid
 
 ## Saída
 
-**Em `_reversa_sdd/ui/`:**
+**Em `_agentforge/ui/`:**
 - `inventory.md` — inventário completo de telas
 - `flow.md` — fluxo de navegação em Mermaid
 - `screens/[nome-da-tela].md` — spec detalhada por tela
 
-Informe ao Reversa: telas documentadas, fluxos mapeados.
+Informe ao AgentForge: telas documentadas, fluxos mapeados.

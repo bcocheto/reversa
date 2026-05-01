@@ -1,12 +1,12 @@
 ---
-name: reversa-architect
-description: Sintetiza a análise do projeto legado em documentação arquitetural completa — diagramas C4, ERD completo, mapa de integrações e Spec Impact Matrix. Use na fase de interpretação após o reversa-detective.
+name: agentforge-architect
+description: Sintetiza a análise do projeto legado em documentação arquitetural completa — diagramas C4, ERD completo, mapa de integrações e Spec Impact Matrix. Use na fase de interpretação após o agentforge-detective.
 license: MIT
 compatibility: Claude Code, Codex, Cursor, Gemini CLI e demais agentes compatíveis com Agent Skills.
 metadata:
   author: sandeco
   version: "1.1.0"
-  framework: reversa
+  framework: agentforge
   phase: interpretacao
 ---
 
@@ -14,8 +14,8 @@ Você é o Architect. Sua missão é sintetizar tudo que foi descoberto em docum
 
 ## Antes de começar
 
-Leia `.reversa/state.json` → campos `output_folder` (padrão: `_reversa_sdd`) e `doc_level` (padrão: `completo`). Use `output_folder` como pasta de saída.
-Leia todos os artefatos na pasta de saída e em `.reversa/context/`.
+Leia `.agentforge/state.json` → campos `output_folder` (padrão: `_agentforge`) e `doc_level` (padrão: `completo`). Use `output_folder` como pasta de saída.
+Leia todos os artefatos na pasta de saída e em `.agentforge/context/`.
 
 ## Nível de documentação
 
@@ -65,24 +65,24 @@ O campo `doc_level` do state.json controla o que gerar:
 - Ausência de testes em módulos críticos
 
 ### 7. Spec Impact Matrix
-Crie `_reversa_sdd/traceability/spec-impact-matrix.md`: qual componente impacta qual.
+Crie `_agentforge/traceability/spec-impact-matrix.md`: qual componente impacta qual.
 
 ## Saída
 
 **Sempre:**
-- `_reversa_sdd/architecture.md` — visão geral arquitetural (se `essencial`: inclui C4 contexto embutido e ERD resumido quando há menos de 5 entidades)
-- `_reversa_sdd/c4-context.md` — diagrama C4 Contexto em Mermaid
+- `_agentforge/architecture.md` — visão geral arquitetural (se `essencial`: inclui C4 contexto embutido e ERD resumido quando há menos de 5 entidades)
+- `_agentforge/c4-context.md` — diagrama C4 Contexto em Mermaid
 
 **Apenas se `doc_level` for `completo` ou `detalhado`:**
-- `_reversa_sdd/c4-containers.md` — diagrama C4 Containers em Mermaid
-- `_reversa_sdd/c4-components.md` — diagrama C4 Componentes em Mermaid
-- `_reversa_sdd/erd-complete.md` — ERD em Mermaid (se `essencial`: incorpore no architecture.md)
-- `_reversa_sdd/traceability/spec-impact-matrix.md` — matriz de impacto entre componentes
+- `_agentforge/c4-containers.md` — diagrama C4 Containers em Mermaid
+- `_agentforge/c4-components.md` — diagrama C4 Componentes em Mermaid
+- `_agentforge/erd-complete.md` — ERD em Mermaid (se `essencial`: incorpore no architecture.md)
+- `_agentforge/traceability/spec-impact-matrix.md` — matriz de impacto entre componentes
 
 **Apenas se `doc_level` for `detalhado`:**
-- `_reversa_sdd/deployment.md` — diagrama de infraestrutura e deployment (se houver Dockerfile, docker-compose ou configs de cloud identificadas)
+- `_agentforge/deployment.md` — diagrama de infraestrutura e deployment (se houver Dockerfile, docker-compose ou configs de cloud identificadas)
 
 ## Escala de confiança
 🟢 CONFIRMADO | 🟡 INFERIDO | 🔴 LACUNA
 
-Informe ao Reversa: componentes, containers, integrações e dívidas técnicas identificadas.
+Informe ao AgentForge: componentes, containers, integrações e dívidas técnicas identificadas.
