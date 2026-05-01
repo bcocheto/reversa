@@ -193,13 +193,18 @@ test('validate succeeds on a fresh AgentForge installation', async () => {
   }
 });
 
-test('validate fails when context-index.yaml is absent', async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-missing-harness-'));
+test('validate fails when context-index.yaml points to a missing file', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-missing-context-index-'));
 
   try {
-    await installFixture(projectRoot, { setupMode: 'adopt' });
+    await installFixture(projectRoot);
 
-    rmSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml'));
+    const contextIndexPath = join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml');
+    const contextIndex = readFileSync(contextIndexPath, 'utf8').replace(
+      'path: context/project-overview.md',
+      'path: context/missing-project-overview.md',
+    );
+    writeFileSync(contextIndexPath, contextIndex, 'utf8');
 
     const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
       cwd: projectRoot,
@@ -210,21 +215,23 @@ test('validate fails when context-index.yaml is absent', async () => {
 
     const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
     assert.match(report, /context-index\.yaml/);
-    assert.match(report, /Arquivo ausente da estrutura mínima do harness/);
+    assert.match(report, /missing-project-overview\.md/);
+    assert.match(report, /Arquivo ausente em/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
 });
 
-test('validate fails when a flow references a missing agent', async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-fail-'));
+test('validate fails when state.generated_agents lists a missing agent', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-state-mismatch-'));
 
   try {
     await installFixture(projectRoot);
 
-    const flowPath = join(projectRoot, PRODUCT.internalDir, 'flows', 'feature-development.yaml');
-    const broken = readFileSync(flowPath, 'utf8').replace('agent: orchestrator', 'agent: ghost-agent');
-    writeFileSync(flowPath, broken, 'utf8');
+    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
+    const state = JSON.parse(readFileSync(statePath, 'utf8'));
+    state.generated_agents = [...state.generated_agents, 'ghost-agent'];
+    writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
 
     const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
       cwd: projectRoot,
@@ -232,7 +239,39 @@ test('validate fails when a flow references a missing agent', async () => {
     });
 
     assert.equal(result.status, 1);
-    assert.match(readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8'), /ghost-agent/);
+
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
+    assert.match(report, /generated_agents/);
+    assert.match(report, /ghost-agent/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('validate warns when engine-map is missing an installed engine', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-engine-warning-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const engineMapPath = join(projectRoot, PRODUCT.internalDir, 'harness', 'engine-map.yaml');
+    const engineMap = readFileSync(engineMapPath, 'utf8').replace(
+      /  codex:\n    activation: agentforge\n    slash_command: \/agentforge\n    entry_file: AGENTS\.md\n/,
+      '',
+    );
+    writeFileSync(engineMapPath, engineMap, 'utf8');
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
+    assert.match(report, /Status: válido com avisos/);
+    assert.match(report, /Avisos/);
+    assert.match(report, /codex/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }

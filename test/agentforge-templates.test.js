@@ -13,7 +13,7 @@ import { createProjectAgent } from '../lib/commands/add-agent.js';
 import { createProjectFlow } from '../lib/commands/add-flow.js';
 import { compileAgentForge } from '../lib/exporter/index.js';
 import { ENGINES } from '../lib/installer/detector.js';
-import { AGENT_SKILL_IDS, PRODUCT } from '../lib/product.js';
+import { AGENT_SKILL_IDS, DEFAULT_GENERATED_SUBAGENT_IDS, PRODUCT } from '../lib/product.js';
 
 const AGENTFORGE_BIN = fileURLToPath(new URL('../bin/agentforge.js', import.meta.url));
 
@@ -159,7 +159,7 @@ test('install writes the AgentForge state, config, plan, and engine entry templa
       'security',
       'devops',
     ]);
-    assert.deepEqual(state.generated_subagents, []);
+    assert.deepEqual(state.generated_subagents, DEFAULT_GENERATED_SUBAGENT_IDS);
     assert.deepEqual(state.initial_flows, [
       'feature-development',
       'release',

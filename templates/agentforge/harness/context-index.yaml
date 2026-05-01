@@ -1,4 +1,4 @@
-version: 1
+version: 2
 items:
   - id: project-overview
     path: context/project-overview.md
@@ -21,3 +21,26 @@ items:
   - id: glossary
     path: context/glossary.md
     purpose: Termos recorrentes do projeto.
+skills:
+  - id: run-tests
+    path: skills/run-tests/SKILL.md
+    purpose: Executar a suíte e interpretar os resultados.
+  - id: review-changes
+    path: skills/review-changes/SKILL.md
+    purpose: Revisar mudanças com foco em risco e regressão.
+  - id: create-implementation-plan
+    path: skills/create-implementation-plan/SKILL.md
+    purpose: Transformar uma solicitação em um plano de execução curto.
+flows:
+  - id: feature-development
+    path: flows/feature-development.md
+    purpose: Entregar uma nova capacidade com descoberta, design, implementação e revisão.
+  - id: bugfix
+    path: flows/bugfix.md
+    purpose: Corrigir um problema reproduzível com escopo mínimo.
+  - id: refactor
+    path: flows/refactor.md
+    purpose: Melhorar a estrutura sem alterar o comportamento esperado.
+  - id: review
+    path: flows/review.md
+    purpose: Revisar mudanças antes da integração.
