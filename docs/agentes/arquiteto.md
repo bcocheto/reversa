@@ -1,6 +1,6 @@
 # Architect
 
-**Command:** `/reversa-architect`
+**Command:** `/agentforge-architect`
 **Phase:** 3 - Interpretation
 
 ---
@@ -55,9 +55,9 @@ A matrix showing which component impacts which. Useful for knowing the blast rad
 
 | File | Content |
 |------|---------|
-| `_reversa_sdd/architecture.md` | Architectural overview |
-| `_reversa_sdd/c4-context.md` | C4 Diagram: Context |
-| `_reversa_sdd/c4-containers.md` | C4 Diagram: Containers |
-| `_reversa_sdd/c4-components.md` | C4 Diagram: Components |
-| `_reversa_sdd/erd-complete.md` | Full ERD in Mermaid |
-| `_reversa_sdd/traceability/spec-impact-matrix.md` | Impact matrix |
+| `_agentforge_sdd/architecture.md` | Architectural overview |
+| `_agentforge_sdd/c4-context.md` | C4 Diagram: Context |
+| `_agentforge_sdd/c4-containers.md` | C4 Diagram: Containers |
+| `_agentforge_sdd/c4-components.md` | C4 Diagram: Components |
+| `_agentforge_sdd/erd-complete.md` | Full ERD in Mermaid |
+| `_agentforge_sdd/traceability/spec-impact-matrix.md` | Impact matrix |

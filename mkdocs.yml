@@ -115,7 +115,7 @@ plugins:
 
 nav:
   - Home: index.md
-  - Why AgentForge: por-que-reversa.md
+  - Why AgentForge: por-que-agentforge.md
   - Installation: instalacao.md
   - How to use: uso.md
   - CLI: cli.md
@@ -124,18 +124,18 @@ nav:
   - Analysis pipeline: pipeline.md
   - Confidence scale: escala-confianca.md
   - Agents:
-    - Overview: agentes/index.md
-    - Guide with analogies: agentes/agents-help.md
-    - AgentForge (Orchestrator): agentes/reversa.md
-    - Scout: agentes/scout.md
-    - Archaeologist: agentes/arqueologo.md
-    - Detective: agentes/detetive.md
-    - Architect: agentes/arquiteto.md
-    - Writer: agentes/redator.md
-    - Reviewer: agentes/revisor.md
-    - Visor: agentes/visor.md
-    - Data Master: agentes/data-master.md
-    - Design System: agentes/design-system.md
+      - Overview: agentes/index.md
+      - Guide with analogies: agentes/agents-help.md
+      - AgentForge (Orchestrator): agentes/agentforge.md
+      - Scout: agentes/scout.md
+      - Archaeologist: agentes/arqueologo.md
+      - Detective: agentes/detetive.md
+      - Architect: agentes/arquiteto.md
+      - Writer: agentes/redator.md
+      - Reviewer: agentes/revisor.md
+      - Visor: agentes/visor.md
+      - Data Master: agentes/data-master.md
+      - Design System: agentes/design-system.md
   - Generated outputs: saidas/index.md
   - Developing from specs: desenvolvendo-com-specs.md
   - Contributing: contribuindo.md

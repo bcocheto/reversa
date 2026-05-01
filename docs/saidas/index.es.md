@@ -1,6 +1,6 @@
 # Salidas generadas
 
-Todo lo que Reversa produce va a la carpeta `_reversa_sdd/`. El proyecto heredado nunca es tocado.
+Todo lo que agentforge produce va a la carpeta `_agentforge_sdd/`. El proyecto heredado nunca es tocado.
 
 El conjunto de artefactos generados depende del **nivel de documentación** elegido al inicio del análisis:
 
@@ -15,7 +15,7 @@ El conjunto de artefactos generados depende del **nivel de documentación** eleg
 ## Estructura completa
 
 ```
-_reversa_sdd/
+_agentforge_sdd/
 ├── inventory.md              # Inventario del proyecto — todos
 ├── dependencies.md           # Dependencias con versiones — todos
 ├── code-analysis.md          # Análisis técnico por módulo — todos

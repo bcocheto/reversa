@@ -1,6 +1,6 @@
 # CLI
 
-Reversa tiene un CLI simple para gestionar la instalación y el ciclo de vida de los agentes en tu proyecto. Todos los comandos se ejecutan con `npx agentforge` en la raíz del proyecto.
+agentforge tiene un CLI simple para gestionar la instalación y el ciclo de vida de los agentes en tu proyecto. Todos los comandos se ejecutan con `npx agentforge` en la raíz del proyecto.
 
 ---
 
@@ -12,7 +12,7 @@ Reversa tiene un CLI simple para gestionar la instalación y el ciclo de vida de
 npx agentforge install
 ```
 
-Instala Reversa en el proyecto heredado actual. Detecta los motores presentes, pregunta tus preferencias y crea toda la estructura necesaria.
+Instala agentforge en el proyecto heredado actual. Detecta los motores presentes, pregunta tus preferencias y crea toda la estructura necesaria.
 
 Úsalo una vez, en la raíz del proyecto que quieres analizar.
 
@@ -36,7 +36,7 @@ Muestra el estado actual del análisis: qué fase está en curso, qué agentes y
 npx agentforge update
 ```
 
-Actualiza los agentes a la versión más reciente de Reversa.
+Actualiza los agentes a la versión más reciente de agentforge.
 
 El comando es inteligente: verifica el manifiesto SHA-256 de cada archivo y nunca sobreescribe archivos que hayas personalizado.
 
@@ -68,7 +68,7 @@ Agrega soporte para un motor de IA que no estaba presente cuando instalaste.
 npx agentforge uninstall
 ```
 
-Elimina Reversa del proyecto: borra los archivos creados por la instalación.
+Elimina agentforge del proyecto: borra los archivos creados por la instalación.
 
 !!! info "Tus archivos quedan intactos"
-    `uninstall` elimina **solo** lo que Reversa creó. Ningún archivo original del proyecto es tocado. Las especificaciones generadas en `_reversa_sdd/` también se conservan por defecto.
+    `uninstall` elimina **solo** lo que agentforge creó. Ningún archivo original del proyecto es tocado. Las especificaciones generadas en `_agentforge_sdd/` también se conservan por defecto.

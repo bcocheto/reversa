@@ -1,6 +1,6 @@
 # Visor
 
-**Command:** `/reversa-visor`
+**Command:** `/agentforge-visor`
 **Phase:** Any
 
 ---
@@ -47,6 +47,6 @@ Send the images and it handles the rest.
 
 | File | Content |
 |------|---------|
-| `_reversa_sdd/ui/inventory.md` | Complete screen inventory |
-| `_reversa_sdd/ui/flow.md` | Navigation flow in Mermaid |
-| `_reversa_sdd/ui/screens/[screen-name].md` | Detailed spec per screen |
+| `_agentforge_sdd/ui/inventory.md` | Complete screen inventory |
+| `_agentforge_sdd/ui/flow.md` | Navigation flow in Mermaid |
+| `_agentforge_sdd/ui/screens/[screen-name].md` | Detailed spec per screen |

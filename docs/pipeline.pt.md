@@ -1,6 +1,6 @@
 # Pipeline de análise
 
-O Reversa transforma um sistema legado em especificações executáveis em 5 fases. Cada fase tem agentes específicos, e o orquestrador central coordena tudo para que aconteça na ordem certa.
+O agentforge transforma um sistema legado em especificações executáveis em 5 fases. Cada fase tem agentes específicos, e o orquestrador central coordena tudo para que aconteça na ordem certa.
 
 ---
 
@@ -27,11 +27,11 @@ O que ele produz:
 
 - Inventário completo do projeto (`inventory.md`)
 - Lista de dependências com versões (`dependencies.md`)
-- Estrutura de dados em JSON para os próximos agentes (`.reversa/context/surface.json`)
+- Estrutura de dados em JSON para os próximos agentes (`.agentforge/context/surface.json`)
 
-Depois que o Scout termina, o Reversa usa o `surface.json` para personalizar a Fase 2: em vez de uma tarefa genérica "analisar o código", o plano vira uma tarefa por módulo identificado.
+Depois que o Scout termina, o agentforge usa o `surface.json` para personalizar a Fase 2: em vez de uma tarefa genérica "analisar o código", o plano vira uma tarefa por módulo identificado.
 
-Também é nesse momento que o Reversa apresenta o resumo do Scout e pergunta o **nível de documentação** (`doc_level`): essencial, completo ou detalhado. A escolha define quais artefatos cada agente vai gerar nas fases seguintes — veja [Como usar](uso.md#nível-de-documentação) para a tabela completa.
+Também é nesse momento que o agentforge apresenta o resumo do Scout e pergunta o **nível de documentação** (`doc_level`): essencial, completo ou detalhado. A escolha define quais artefatos cada agente vai gerar nas fases seguintes — veja [Como usar](uso.md#nível-de-documentação) para a tabela completa.
 
 ---
 
@@ -48,7 +48,7 @@ O que ele produz:
 - Análise técnica consolidada (`code-analysis.md`)
 - Dicionário de dados (`data-dictionary.md`)
 - Fluxogramas em Mermaid por módulo (`flowcharts/[modulo].md`)
-- Dados estruturados por módulo (`.reversa/context/modules.json`)
+- Dados estruturados por módulo (`.agentforge/context/modules.json`)
 
 ---
 

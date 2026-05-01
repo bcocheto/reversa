@@ -1,6 +1,6 @@
 # Scout
 
-**Command:** `/reversa-scout`
+**Command:** `/agentforge-scout`
 **Phase:** 1 - Reconnaissance
 
 ---
@@ -33,11 +33,11 @@ How many modules are there? What language? What framework? What are the critical
 
 | File | Content |
 |------|---------|
-| `_reversa_sdd/inventory.md` | Complete project inventory |
-| `_reversa_sdd/dependencies.md` | Dependencies with versions |
-| `.reversa/context/surface.json` | Structured data for the other agents |
+| `_agentforge_sdd/inventory.md` | Complete project inventory |
+| `_agentforge_sdd/dependencies.md` | Dependencies with versions |
+| `.agentforge/context/surface.json` | Structured data for the other agents |
 
-The `surface.json` is especially important: Reversa uses it to customize Phase 2 tasks based on identified modules.
+The `surface.json` is especially important: agentforge uses it to customize Phase 2 tasks based on identified modules.
 
 ---
 
@@ -46,5 +46,5 @@ The `surface.json` is especially important: Reversa uses it to customize Phase 2
 You'll rarely need to call Scout directly. The orchestrator does this automatically in Phase 1. But if you want to refresh the project inventory after a major refactoring:
 
 ```
-/reversa-scout
+/agentforge-scout
 ```

@@ -1,6 +1,6 @@
 # Visor
 
-**Comando:** `/reversa-visor`
+**Comando:** `/agentforge-visor`
 **Fase:** Qualquer
 
 ---
@@ -47,6 +47,6 @@ Mande as imagens e ele cuida do resto.
 
 | Arquivo | Conteúdo |
 |---------|----------|
-| `_reversa_sdd/ui/inventory.md` | Inventário completo de telas |
-| `_reversa_sdd/ui/flow.md` | Fluxo de navegação em Mermaid |
-| `_reversa_sdd/ui/screens/[nome-da-tela].md` | Spec detalhada por tela |
+| `_agentforge_sdd/ui/inventory.md` | Inventário completo de telas |
+| `_agentforge_sdd/ui/flow.md` | Fluxo de navegação em Mermaid |
+| `_agentforge_sdd/ui/screens/[nome-da-tela].md` | Spec detalhada por tela |

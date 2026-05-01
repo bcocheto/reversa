@@ -23,7 +23,7 @@ The installer does all of this for you:
 3. Collects project name, language, and preferences
 4. Copies agents to `.agents/skills/` and `.claude/skills/` (for Claude Code)
 5. Creates the engine entry file (`CLAUDE.md`, `AGENTS.md`, etc.)
-6. Creates the `.reversa/` structure with state, configuration, and plan
+6. Creates the `.agentforge/` structure with state, configuration, and plan
 7. Generates the SHA-256 manifest for safe future updates
 
 It's like `npm install`, but for your reverse engineering agent team.
@@ -34,12 +34,12 @@ It's like `npm install`, but for your reverse engineering agent team.
 
 ```
 legacy-project/
-├── .reversa/               ← analysis state, config, and context
+├── .agentforge/               ← analysis state, config, and context
 ├── .agents/skills/         ← universal agents (all engines)
 ├── .claude/skills/         ← mirror for Claude Code
 ├── CLAUDE.md               ← entry point for Claude Code (if detected)
 ├── AGENTS.md               ← entry point for Codex (if detected)
-└── _reversa_sdd/           ← where specs will be generated (empty initially)
+└── _agentforge_sdd/           ← where specs will be generated (empty initially)
 ```
 
 !!! success "Your files stay intact"
@@ -50,7 +50,7 @@ legacy-project/
 ## Backup before starting
 
 !!! warning "Strong recommendation: make a backup"
-    Although Reversa never modifies your files, AI agents can make mistakes. Before starting the analysis:
+    Although agentforge never modifies your files, AI agents can make mistakes. Before starting the analysis:
 
     1. Make sure all files are committed in Git
     2. Have the repository on GitHub, GitLab, or Bitbucket

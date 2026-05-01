@@ -1,6 +1,6 @@
 # Analysis pipeline
 
-Reversa transforms a legacy system into executable specifications in 5 phases. Each phase has specific agents, and the central orchestrator coordinates everything to happen in the right order.
+agentforge transforms a legacy system into executable specifications in 5 phases. Each phase has specific agents, and the central orchestrator coordinates everything to happen in the right order.
 
 ---
 
@@ -27,11 +27,11 @@ What it produces:
 
 - Complete project inventory (`inventory.md`)
 - Dependency list with versions (`dependencies.md`)
-- Structured JSON data for the next agents (`.reversa/context/surface.json`)
+- Structured JSON data for the next agents (`.agentforge/context/surface.json`)
 
-After the Scout finishes, Reversa uses the `surface.json` to personalize Phase 2: instead of a generic "analyze the code" task, the plan becomes one task per identified module.
+After the Scout finishes, agentforge uses the `surface.json` to personalize Phase 2: instead of a generic "analyze the code" task, the plan becomes one task per identified module.
 
-This is also when Reversa presents the Scout summary and asks for the **documentation level** (`doc_level`): essential, complete, or detailed. The choice defines which artifacts each agent will generate in the following phases — see [How to use](uso.md#documentation-level) for the full table.
+This is also when agentforge presents the Scout summary and asks for the **documentation level** (`doc_level`): essential, complete, or detailed. The choice defines which artifacts each agent will generate in the following phases — see [How to use](uso.md#documentation-level) for the full table.
 
 ---
 
@@ -48,7 +48,7 @@ What it produces:
 - Consolidated technical analysis (`code-analysis.md`)
 - Data dictionary (`data-dictionary.md`)
 - Mermaid flowcharts per module (`flowcharts/[module].md`)
-- Structured data per module (`.reversa/context/modules.json`)
+- Structured data per module (`.agentforge/context/modules.json`)
 
 ---
 

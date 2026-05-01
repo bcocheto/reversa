@@ -1,6 +1,6 @@
 # Data Master
 
-**Comando:** `/reversa-data-master`
+**Comando:** `/agentforge-data-master`
 **Fase:** Qualquer
 
 ---
@@ -59,11 +59,11 @@ Gerado em Mermaid (`erDiagram`). Para bancos grandes, gera ERDs parciais por dom
 
 | Arquivo | Conteúdo |
 |---------|----------|
-| `_reversa_sdd/database/erd.md` | ERD completo em Mermaid |
-| `_reversa_sdd/database/data-dictionary.md` | Todas as tabelas e colunas |
-| `_reversa_sdd/database/relationships.md` | Relacionamentos detalhados |
-| `_reversa_sdd/database/business-rules.md` | Regras de negócio no banco |
-| `_reversa_sdd/database/procedures.md` | Stored procedures e funções (se existirem) |
+| `_agentforge_sdd/database/erd.md` | ERD completo em Mermaid |
+| `_agentforge_sdd/database/data-dictionary.md` | Todas as tabelas e colunas |
+| `_agentforge_sdd/database/relationships.md` | Relacionamentos detalhados |
+| `_agentforge_sdd/database/business-rules.md` | Regras de negócio no banco |
+| `_agentforge_sdd/database/procedures.md` | Stored procedures e funções (se existirem) |
 
 ---
 

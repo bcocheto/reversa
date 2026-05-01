@@ -1,6 +1,6 @@
 # Writer
 
-**Comando:** `/reversa-writer`
+**Comando:** `/agentforge-writer`
 **Fase:** 4 - Geração
 
 ---
@@ -77,7 +77,7 @@ Cada afirmação é marcada com 🟢, 🟡 ou 🔴. Sem exceções.
 
 | Arquivo | Conteúdo |
 |---------|----------|
-| `_reversa_sdd/sdd/[componente].md` | Spec por componente |
-| `_reversa_sdd/openapi/[api].yaml` | Spec de API (se aplicável) |
-| `_reversa_sdd/user-stories/[fluxo].md` | User stories (se aplicável) |
-| `_reversa_sdd/traceability/code-spec-matrix.md` | Matriz código-spec |
+| `_agentforge_sdd/sdd/[componente].md` | Spec por componente |
+| `_agentforge_sdd/openapi/[api].yaml` | Spec de API (se aplicável) |
+| `_agentforge_sdd/user-stories/[fluxo].md` | User stories (se aplicável) |
+| `_agentforge_sdd/traceability/code-spec-matrix.md` | Matriz código-spec |

@@ -1,6 +1,6 @@
 # Reviewer
 
-**Command:** `/reversa-reviewer`
+**Command:** `/agentforge-reviewer`
 **Phase:** 5 - Review
 
 ---
@@ -33,7 +33,7 @@ If Codex is not available, the Reviewer proceeds normally without mentioning it.
 
 ### Per-spec review
 
-For each spec in `_reversa_sdd/sdd/`:
+For each spec in `_agentforge_sdd/sdd/`:
 
 - Do the rules make sense together? Are there internal contradictions?
 - Are there obvious unspecified behaviors?
@@ -56,7 +56,7 @@ For each 🔴 gap that only a human who knows the business can resolve, the Revi
 
 **`chat` (default):** questions appear directly in the chat, one by one. You answer in the conversation and it updates the specs in real time.
 
-**`file`:** the Reviewer creates `_reversa_sdd/questions.md` with all questions. You fill it in at your own pace and notify when done.
+**`file`:** the Reviewer creates `_agentforge_sdd/questions.md` with all questions. You fill it in at your own pace and notify when done.
 
 ---
 
@@ -64,9 +64,9 @@ For each 🔴 gap that only a human who knows the business can resolve, the Revi
 
 | File | Content |
 |------|---------|
-| `_reversa_sdd/questions.md` | Human validation questions |
-| `_reversa_sdd/confidence-report.md` | Count of 🟢/🟡/🔴 per spec and overall percentage |
-| `_reversa_sdd/gaps.md` | Gaps that remained unanswered |
-| `_reversa_sdd/cross-review-result.md` | Codex findings (if cross-review was requested) |
+| `_agentforge_sdd/questions.md` | Human validation questions |
+| `_agentforge_sdd/confidence-report.md` | Count of 🟢/🟡/🔴 per spec and overall percentage |
+| `_agentforge_sdd/gaps.md` | Gaps that remained unanswered |
+| `_agentforge_sdd/cross-review-result.md` | Codex findings (if cross-review was requested) |
 
-Specs in `_reversa_sdd/sdd/` are updated in-place with the reclassifications.
+Specs in `_agentforge_sdd/sdd/` are updated in-place with the reclassifications.

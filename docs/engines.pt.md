@@ -1,6 +1,6 @@
 # Engines suportadas
 
-O Reversa funciona com as principais engines de IA do mercado. O instalador detecta automaticamente quais estão presentes no ambiente, mas você pode adicionar mais a qualquer momento com `npx agentforge add-engine`.
+O agentforge funciona com as principais engines de IA do mercado. O instalador detecta automaticamente quais estão presentes no ambiente, mas você pode adicionar mais a qualquer momento com `npx agentforge add-engine`.
 
 ---
 
@@ -8,31 +8,31 @@ O Reversa funciona com as principais engines de IA do mercado. O instalador dete
 
 | Engine | Arquivo criado | Skills path | Como ativar |
 |--------|---------------|-------------|-------------|
-| **Claude Code** ⭐ | `CLAUDE.md` | `.claude/skills/reversa-*/` e `.agents/skills/reversa-*/` | `/reversa` |
-| **Codex** ⭐ | `AGENTS.md` | `.agents/skills/reversa-*/` | `reversa` |
-| **Cursor** ⭐ | `.cursorrules` | `.agents/skills/reversa-*/` | `/reversa` |
-| **Gemini CLI** | `GEMINI.md` | `.agents/skills/reversa-*/` | `/reversa` |
-| **Windsurf** | `.windsurfrules` | `.agents/skills/reversa-*/` | `/reversa` |
-| **Antigravity** | `AGENTS.md` | `.agents/skills/reversa-*/` | `/reversa` |
-| **Kiro** | `.kiro/steering/reversa.md` | `.agents/skills/reversa-*/` | `/reversa` |
-| **Opencode** | `AGENTS.md` | `.agents/skills/reversa-*/` | `reversa` |
-| **Cline** | `.clinerules` | `.agents/skills/reversa-*/` | `/reversa` |
-| **Roo Code** | `.roorules` | `.agents/skills/reversa-*/` | `/reversa` |
-| **GitHub Copilot** | `.github/copilot-instructions.md` | `.agents/skills/reversa-*/` | `/reversa` |
-| **Aider** | `CONVENTIONS.md` | `.agents/skills/reversa-*/` | `reversa` |
-| **Amazon Q Developer** | `.amazonq/rules/reversa.md` | `.agents/skills/reversa-*/` | `/reversa` |
+| **Claude Code** ⭐ | `CLAUDE.md` | `.claude/skills/agentforge-*/` e `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Codex** ⭐ | `AGENTS.md` | `.agents/skills/agentforge-*/` | `agentforge` |
+| **Cursor** ⭐ | `.cursorrules` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Gemini CLI** | `GEMINI.md` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Windsurf** | `.windsurfrules` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Antigravity** | `AGENTS.md` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Kiro** | `.kiro/steering/agentforge.md` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Opencode** | `AGENTS.md` | `.agents/skills/agentforge-*/` | `agentforge` |
+| **Cline** | `.clinerules` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Roo Code** | `.roorules` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **GitHub Copilot** | `.github/copilot-instructions.md` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Aider** | `CONVENTIONS.md` | `.agents/skills/agentforge-*/` | `agentforge` |
+| **Amazon Q Developer** | `.amazonq/rules/agentforge.md` | `.agents/skills/agentforge-*/` | `/agentforge` |
 
 ---
 
 ## Claude Code
 
-A engine mais testada e com melhor suporte. Usa slash commands nativos, o que torna a ativação intuitiva. O Reversa cria os arquivos em `.claude/skills/` e em `.agents/skills/` (para compatibilidade com outras engines que possam ser adicionadas depois).
+A engine mais testada e com melhor suporte. Usa slash commands nativos, o que torna a ativação intuitiva. O agentforge cria os arquivos em `.claude/skills/` e em `.agents/skills/` (para compatibilidade com outras engines que possam ser adicionadas depois).
 
 ---
 
 ## Codex
 
-Totalmente compatível. Como o Codex não usa slash commands, a ativação é pelo nome do agente diretamente: `reversa`, `reversa-scout`, etc. O arquivo `AGENTS.md` na raiz do projeto serve como ponto de entrada.
+Totalmente compatível. Como o Codex não usa slash commands, a ativação é pelo nome do agente diretamente: `agentforge`, `agentforge-scout`, etc. O arquivo `AGENTS.md` na raiz do projeto serve como ponto de entrada.
 
 ---
 
@@ -56,19 +56,19 @@ Plataforma de desenvolvimento agêntico do Google, lançada em novembro de 2025.
 
 ## Kiro
 
-IDE agêntico da Amazon. Usa steering documents em `.kiro/steering/` para instruir o agente: o instalador cria `.kiro/steering/reversa.md`. Os agentes ficam em `.agents/skills/` e são ativados via `/reversa`.
+IDE agêntico da Amazon. Usa steering documents em `.kiro/steering/` para instruir o agente: o instalador cria `.kiro/steering/agentforge.md`. Os agentes ficam em `.agents/skills/` e são ativados via `/agentforge`.
 
 ---
 
 ## Opencode
 
-Agente de codificação open source para terminal (SST). Lê `AGENTS.md` nativamente, mesma convenção do Codex. Comando CLI: `opencode`. Como Codex, a ativação é pelo nome do agente: `reversa`.
+Agente de codificação open source para terminal (SST). Lê `AGENTS.md` nativamente, mesma convenção do Codex. Comando CLI: `opencode`. Como Codex, a ativação é pelo nome do agente: `agentforge`.
 
 ---
 
 ## Cline e Roo Code
 
-Extensions de VS Code com suporte a regras personalizadas via `.clinerules` e `.roorules` respectivamente. O padrão é idêntico ao Cursor e Windsurf: arquivo de regras na raiz do projeto que instrui o agente ao ativar `/reversa`.
+Extensions de VS Code com suporte a regras personalizadas via `.clinerules` e `.roorules` respectivamente. O padrão é idêntico ao Cursor e Windsurf: arquivo de regras na raiz do projeto que instrui o agente ao ativar `/agentforge`.
 
 ---
 
@@ -80,13 +80,13 @@ Usa `.github/copilot-instructions.md` como arquivo de instruções customizadas,
 
 ## Aider
 
-Agente de codificação para terminal. O entry file `CONVENTIONS.md` na raiz é passado via `--read CONVENTIONS.md` ou configurado em `.aider.conf.yml`. Como Codex e Opencode, a ativação é pelo nome: `reversa`.
+Agente de codificação para terminal. O entry file `CONVENTIONS.md` na raiz é passado via `--read CONVENTIONS.md` ou configurado em `.aider.conf.yml`. Como Codex e Opencode, a ativação é pelo nome: `agentforge`.
 
 ---
 
 ## Amazon Q Developer
 
-CLI de IA da AWS. Usa regras em `.amazonq/rules/` para instruir o agente por projeto. O instalador cria `.amazonq/rules/reversa.md` sem interferir em outras regras que você já tenha nessa pasta.
+CLI de IA da AWS. Usa regras em `.amazonq/rules/` para instruir o agente por projeto. O instalador cria `.amazonq/rules/agentforge.md` sem interferir em outras regras que você já tenha nessa pasta.
 
 ---
 

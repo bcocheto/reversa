@@ -1,8 +1,8 @@
 # Agentes
 
-O Reversa coordena um time de especialistas. Cada agente faz uma coisa só e faz bem. Nenhum deles tenta fazer tudo.
+O agentforge coordena um time de especialistas. Cada agente faz uma coisa só e faz bem. Nenhum deles tenta fazer tudo.
 
-O orquestrador central (o próprio Reversa) coordena quem entra quando, em que ordem e em que ritmo. Mas você também pode acionar qualquer agente diretamente quando precisar.
+O orquestrador central (o próprio agentforge) coordena quem entra quando, em que ordem e em que ritmo. Mas você também pode acionar qualquer agente diretamente quando precisar.
 
 ---
 
@@ -12,7 +12,7 @@ Esses fazem parte do pipeline principal. O orquestrador os executa na sequência
 
 | Agente | Fase | Analogia | Função |
 |--------|------|----------|--------|
-| [Reversa](reversa.md) | Orquestração | O regente de orquestra | Coordena todos os agentes, salva checkpoints e guia o usuário |
+| [agentforge](agentforge.md) | Orquestração | O regente de orquestra | Coordena todos os agentes, salva checkpoints e guia o usuário |
 | [Scout](scout.md) | Reconhecimento | O corretor de imóveis | Mapeia a superfície: pastas, linguagens, frameworks, dependências, entry points |
 | [Archaeologist](arqueologo.md) | Escavação | O escavador | Análise profunda módulo a módulo: algoritmos, fluxos, estruturas de dados |
 | [Detective](detetive.md) | Interpretação | Sherlock Holmes | Extrai regras de negócio implícitas, ADRs, máquinas de estado, permissões |
@@ -37,7 +37,7 @@ Instalados por padrão, mas podem ser acionados de forma independente em qualque
 ## Sequência recomendada
 
 ```
-/reversa → orquestra tudo automaticamente
+/agentforge → orquestra tudo automaticamente
 
 Ou manualmente, se preferir controlar cada passo:
 

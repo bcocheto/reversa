@@ -1,6 +1,6 @@
 # Archaeologist
 
-**Comando:** `/reversa-archaeologist`
+**Comando:** `/agentforge-archaeologist`
 **Fase:** 2 - Excavación
 
 ---
@@ -27,7 +27,7 @@ El Archaeologist analiza un módulo a la vez, a propósito. Para proyectos con m
 
 | Archivo | Contenido |
 |---------|-----------|
-| `_reversa_sdd/code-analysis.md` | Análisis técnico consolidado |
-| `_reversa_sdd/data-dictionary.md` | Diccionario completo de datos |
-| `_reversa_sdd/flowcharts/[modulo].md` | Diagrama de flujo en Mermaid por módulo |
-| `.reversa/context/modules.json` | Datos estructurados por módulo para los próximos agentes |
+| `_agentforge_sdd/code-analysis.md` | Análisis técnico consolidado |
+| `_agentforge_sdd/data-dictionary.md` | Diccionario completo de datos |
+| `_agentforge_sdd/flowcharts/[modulo].md` | Diagrama de flujo en Mermaid por módulo |
+| `.agentforge/context/modules.json` | Datos estructurados por módulo para los próximos agentes |

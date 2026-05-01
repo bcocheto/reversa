@@ -1,6 +1,6 @@
 # Design System
 
-**Comando:** `/reversa-design-system`
+**Comando:** `/agentforge-design-system`
 **Fase:** Qualquer
 
 ---
@@ -61,8 +61,8 @@ Se houver biblioteca de componentes própria: lista de componentes, variantes e 
 
 | Arquivo | Conteúdo |
 |---------|----------|
-| `_reversa_sdd/design-system/color-palette.md` | Paleta completa com valores |
-| `_reversa_sdd/design-system/typography.md` | Sistema tipográfico |
-| `_reversa_sdd/design-system/spacing.md` | Espaçamento, grid e breakpoints |
-| `_reversa_sdd/design-system/tokens.md` | Todos os tokens em tabela |
-| `_reversa_sdd/design-system/design-system.md` | Documento consolidado |
+| `_agentforge_sdd/design-system/color-palette.md` | Paleta completa com valores |
+| `_agentforge_sdd/design-system/typography.md` | Sistema tipográfico |
+| `_agentforge_sdd/design-system/spacing.md` | Espaçamento, grid e breakpoints |
+| `_agentforge_sdd/design-system/tokens.md` | Todos os tokens em tabela |
+| `_agentforge_sdd/design-system/design-system.md` | Documento consolidado |

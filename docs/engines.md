@@ -1,6 +1,6 @@
 # Supported engines
 
-Reversa works with the leading AI engines on the market. The installer automatically detects which ones are present in the environment, but you can add more at any time with `npx agentforge add-engine`.
+agentforge works with the leading AI engines on the market. The installer automatically detects which ones are present in the environment, but you can add more at any time with `npx agentforge add-engine`.
 
 ---
 
@@ -8,26 +8,26 @@ Reversa works with the leading AI engines on the market. The installer automatic
 
 | Engine | File created | Skills path | How to activate |
 |--------|-------------|-------------|-----------------|
-| **Claude Code** ⭐ | `CLAUDE.md` | `.claude/skills/reversa-*/` and `.agents/skills/reversa-*/` | `/reversa` |
-| **Codex** ⭐ | `AGENTS.md` | `.agents/skills/reversa-*/` | `reversa` |
-| **Cursor** ⭐ | `.cursorrules` | `.agents/skills/reversa-*/` | `/reversa` |
-| **Gemini CLI** | `GEMINI.md` | `.agents/skills/reversa-*/` | `/reversa` |
-| **Windsurf** | `.windsurfrules` | `.agents/skills/reversa-*/` | `/reversa` |
-| **Antigravity** | `AGENTS.md` | `.agents/skills/reversa-*/` | `/reversa` |
-| **Kiro** | `.kiro/steering/reversa.md` | `.agents/skills/reversa-*/` | `/reversa` |
-| **Opencode** | `AGENTS.md` | `.agents/skills/reversa-*/` | `reversa` |
+| **Claude Code** ⭐ | `CLAUDE.md` | `.claude/skills/agentforge-*/` and `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Codex** ⭐ | `AGENTS.md` | `.agents/skills/agentforge-*/` | `agentforge` |
+| **Cursor** ⭐ | `.cursorrules` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Gemini CLI** | `GEMINI.md` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Windsurf** | `.windsurfrules` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Antigravity** | `AGENTS.md` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Kiro** | `.kiro/steering/agentforge.md` | `.agents/skills/agentforge-*/` | `/agentforge` |
+| **Opencode** | `AGENTS.md` | `.agents/skills/agentforge-*/` | `agentforge` |
 
 ---
 
 ## Claude Code
 
-The most tested engine with the best support. Uses native slash commands, making activation intuitive. Reversa creates files in both `.claude/skills/` and `.agents/skills/` (for compatibility with other engines that may be added later).
+The most tested engine with the best support. Uses native slash commands, making activation intuitive. agentforge creates files in both `.claude/skills/` and `.agents/skills/` (for compatibility with other engines that may be added later).
 
 ---
 
 ## Codex
 
-Fully compatible. Since Codex doesn't use slash commands, activation is by the agent name directly: `reversa`, `reversa-scout`, etc. The `AGENTS.md` file at the project root serves as the entry point.
+Fully compatible. Since Codex doesn't use slash commands, activation is by the agent name directly: `agentforge`, `agentforge-scout`, etc. The `AGENTS.md` file at the project root serves as the entry point.
 
 ---
 
@@ -51,13 +51,13 @@ Google's agentic development platform, released in November 2025. Reads `AGENTS.
 
 ## Kiro
 
-Amazon's agentic IDE. Uses steering documents in `.kiro/steering/` to instruct the agent: the installer creates `.kiro/steering/reversa.md`. Agents live in `.agents/skills/` and are activated via `/reversa`.
+Amazon's agentic IDE. Uses steering documents in `.kiro/steering/` to instruct the agent: the installer creates `.kiro/steering/agentforge.md`. Agents live in `.agents/skills/` and are activated via `/agentforge`.
 
 ---
 
 ## Opencode
 
-Open source coding agent for the terminal (SST). Reads `AGENTS.md` natively, same convention as Codex. CLI command: `opencode`. Like Codex, activation is by agent name: `reversa`.
+Open source coding agent for the terminal (SST). Reads `AGENTS.md` natively, same convention as Codex. CLI command: `opencode`. Like Codex, activation is by agent name: `agentforge`.
 
 ---
 

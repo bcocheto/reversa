@@ -1,4 +1,4 @@
-# Por qué existe Reversa
+# Por qué existe agentforge
 
 ## El problema clásico
 
@@ -20,7 +20,7 @@ El resultado es ese momento clásico: el agente rompe una regla de negocio que n
 
 ## La solución
 
-Reversa es el puente entre el sistema heredado y los agentes de IA.
+agentforge es el puente entre el sistema heredado y los agentes de IA.
 
 Analiza el código existente y extrae el conocimiento acumulado: reglas de negocio, flujos, contratos entre módulos, decisiones arquitectónicas retroactivas. Luego transforma todo en especificaciones ejecutables, trazables y listas para cualquier agente codificador.
 
@@ -37,8 +37,8 @@ El resultado no es documentación para que los humanos lean en una tarde tranqui
 
 ---
 
-## Lo que Reversa no es
+## Lo que agentforge no es
 
-Reversa no es una herramienta de análisis estático tradicional. No genera cobertura de código, no hace linting, no señala bugs. Es un framework de **extracción de conocimiento**: toma lo que está implícito en el código y lo hace explícito en especificaciones formales.
+agentforge no es una herramienta de análisis estático tradicional. No genera cobertura de código, no hace linting, no señala bugs. Es un framework de **extracción de conocimiento**: toma lo que está implícito en el código y lo hace explícito en especificaciones formales.
 
 Tampoco es una solución mágica. Las partes del sistema que son genuinamente inaccesibles por análisis estático aparecerán como brechas, marcadas con 🔴, esperando validación humana. La honestidad es parte del diseño.

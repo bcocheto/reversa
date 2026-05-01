@@ -1,6 +1,6 @@
 # Escala de confiança
 
-Uma das partes mais importantes do Reversa é a honestidade. O sistema não finge saber o que não sabe.
+Uma das partes mais importantes do agentforge é a honestidade. O sistema não finge saber o que não sabe.
 
 Toda afirmação gerada nas especificações é marcada com um dos três níveis abaixo. Sem exceções.
 
@@ -55,4 +55,4 @@ O código chama a gateway, mas não há tratamento de erro para timeout. O compo
 
 O Reviewer coleta todas as lacunas 🔴 e as apresenta como perguntas para você responder. Depois que você responde, ele atualiza as specs e reclassifica: 🔴 vira 🟢 se você confirmou com evidência, ou 🟡 se você deu uma resposta mas sem certeza absoluta.
 
-Lacunas que não puderam ser respondidas ficam em `_reversa_sdd/gaps.md` para tratamento posterior.
+Lacunas que não puderam ser respondidas ficam em `_agentforge_sdd/gaps.md` para tratamento posterior.

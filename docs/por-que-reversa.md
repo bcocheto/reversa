@@ -1,4 +1,4 @@
-# Why Reversa exists
+# Why agentforge exists
 
 ## The classic problem
 
@@ -20,7 +20,7 @@ The result is that classic moment: the agent breaks a business rule that nobody 
 
 ## The solution
 
-Reversa is the bridge between the legacy system and AI agents.
+agentforge is the bridge between the legacy system and AI agents.
 
 It analyzes the existing code and extracts the accumulated knowledge: business rules, flows, contracts between modules, retroactive architectural decisions. Then it transforms everything into executable, traceable specifications ready for any coding agent.
 
@@ -37,8 +37,8 @@ The result is not documentation for humans to read on a quiet afternoon. These a
 
 ---
 
-## What Reversa is not
+## What agentforge is not
 
-Reversa is not a traditional static analysis tool. It doesn't generate code coverage, doesn't do linting, doesn't flag bugs. It's a **knowledge extraction** framework: it takes what is implicit in the code and makes it explicit in formal specifications.
+agentforge is not a traditional static analysis tool. It doesn't generate code coverage, doesn't do linting, doesn't flag bugs. It's a **knowledge extraction** framework: it takes what is implicit in the code and makes it explicit in formal specifications.
 
 It's also not a magic solution. Parts of the system that are genuinely inaccessible through static analysis (behavior dependent on real data, rules that only exist in someone's head) will appear as gaps, marked with 🔴, waiting for human validation. Honesty is part of the design.

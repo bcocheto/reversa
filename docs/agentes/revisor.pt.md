@@ -1,6 +1,6 @@
 # Reviewer
 
-**Comando:** `/reversa-reviewer`
+**Comando:** `/agentforge-reviewer`
 **Fase:** 5 - Revisão
 
 ---
@@ -33,7 +33,7 @@ Se o Codex não estiver disponível, o Reviewer segue normalmente sem mencionar 
 
 ### Revisão por spec
 
-Para cada spec em `_reversa_sdd/sdd/`:
+Para cada spec em `_agentforge_sdd/sdd/`:
 
 - As regras fazem sentido em conjunto? Há contradições internas?
 - Há comportamentos óbvios não especificados?
@@ -56,7 +56,7 @@ Para cada lacuna 🔴 que só um humano que conhece o negócio pode resolver, o 
 
 **`chat` (padrão):** as perguntas aparecem direto no chat, uma a uma. Você responde na conversa e ele atualiza as specs em tempo real.
 
-**`file`:** o Reviewer cria `_reversa_sdd/questions.md` com todas as perguntas. Você preenche com calma e avisa quando terminar.
+**`file`:** o Reviewer cria `_agentforge_sdd/questions.md` com todas as perguntas. Você preenche com calma e avisa quando terminar.
 
 ---
 
@@ -64,9 +64,9 @@ Para cada lacuna 🔴 que só um humano que conhece o negócio pode resolver, o 
 
 | Arquivo | Conteúdo |
 |---------|----------|
-| `_reversa_sdd/questions.md` | Perguntas para validação humana |
-| `_reversa_sdd/confidence-report.md` | Contagem de 🟢/🟡/🔴 por spec e percentual geral |
-| `_reversa_sdd/gaps.md` | Lacunas que ficaram sem resposta |
-| `_reversa_sdd/cross-review-result.md` | Apontamentos do Codex (se revisão cruzada solicitada) |
+| `_agentforge_sdd/questions.md` | Perguntas para validação humana |
+| `_agentforge_sdd/confidence-report.md` | Contagem de 🟢/🟡/🔴 por spec e percentual geral |
+| `_agentforge_sdd/gaps.md` | Lacunas que ficaram sem resposta |
+| `_agentforge_sdd/cross-review-result.md` | Apontamentos do Codex (se revisão cruzada solicitada) |
 
-Specs em `_reversa_sdd/sdd/` são atualizadas in-place com as reclassificações.
+Specs em `_agentforge_sdd/sdd/` são atualizadas in-place com as reclassificações.

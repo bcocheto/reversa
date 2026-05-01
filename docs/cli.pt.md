@@ -1,6 +1,6 @@
 # CLI
 
-O Reversa tem um CLI simples para gerenciar a instalação e o ciclo de vida dos agentes no seu projeto. Todos os comandos rodam com `npx agentforge` na raiz do projeto.
+O agentforge tem um CLI simples para gerenciar a instalação e o ciclo de vida dos agentes no seu projeto. Todos os comandos rodam com `npx agentforge` na raiz do projeto.
 
 ---
 
@@ -12,7 +12,7 @@ O Reversa tem um CLI simples para gerenciar a instalação e o ciclo de vida dos
 npx agentforge install
 ```
 
-Instala o Reversa no projeto legado atual. Detecta as engines presentes, pergunta suas preferências e cria toda a estrutura necessária.
+Instala o agentforge no projeto legado atual. Detecta as engines presentes, pergunta suas preferências e cria toda a estrutura necessária.
 
 Use uma vez, na raiz do projeto que você quer analisar.
 
@@ -36,7 +36,7 @@ Mostra o estado atual da análise: qual fase está em andamento, quais agentes j
 npx agentforge update
 ```
 
-Atualiza os agentes para a versão mais recente do Reversa.
+Atualiza os agentes para a versão mais recente do agentforge.
 
 O comando é inteligente: ele verifica o manifesto SHA-256 de cada arquivo e nunca sobrescreve arquivos que você personalizou. Se você fez ajustes em algum agente, eles ficam intactos.
 
@@ -68,7 +68,7 @@ Adiciona suporte a uma engine de IA que não estava presente quando você instal
 npx agentforge uninstall
 ```
 
-Remove o Reversa do projeto: apaga os arquivos criados pela instalação (`.reversa/`, `.agents/skills/reversa-*/`, os arquivos de entrada das engines).
+Remove o agentforge do projeto: apaga os arquivos criados pela instalação (`.agentforge/`, `.agents/skills/agentforge-*/`, os arquivos de entrada das engines).
 
 !!! info "Seus arquivos continuam intactos"
-    O `uninstall` remove **apenas** o que o Reversa criou. Nenhum arquivo original do projeto é tocado. As especificações geradas em `_reversa_sdd/` também são preservadas por padrão.
+    O `uninstall` remove **apenas** o que o agentforge criou. Nenhum arquivo original do projeto é tocado. As especificações geradas em `_agentforge_sdd/` também são preservadas por padrão.

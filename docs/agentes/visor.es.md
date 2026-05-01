@@ -1,6 +1,6 @@
 # Visor
 
-**Comando:** `/reversa-visor`
+**Comando:** `/agentforge-visor`
 **Fase:** Cualquiera
 
 ---
@@ -24,6 +24,6 @@ El ilustrador forense trabaja solo con imágenes. Le envías screenshots y él r
 
 | Archivo | Contenido |
 |---------|-----------|
-| `_reversa_sdd/ui/inventory.md` | Inventario completo de pantallas |
-| `_reversa_sdd/ui/flow.md` | Flujo de navegación en Mermaid |
-| `_reversa_sdd/ui/screens/[nombre-pantalla].md` | Spec detallada por pantalla |
+| `_agentforge_sdd/ui/inventory.md` | Inventario completo de pantallas |
+| `_agentforge_sdd/ui/flow.md` | Flujo de navegación en Mermaid |
+| `_agentforge_sdd/ui/screens/[nombre-pantalla].md` | Spec detallada por pantalla |

@@ -1,6 +1,6 @@
 # Desenvolvendo com as specs
 
-Depois que o Reversa gerou todas as specs em `_reversa_sdd/`, você pode copiar esses arquivos para qualquer máquina e começar a construir o sistema do zero. Veja a ordem recomendada.
+Depois que o agentforge gerou todas as specs em `_agentforge_sdd/`, você pode copiar esses arquivos para qualquer máquina e começar a construir o sistema do zero. Veja a ordem recomendada.
 
 ---
 
@@ -10,9 +10,9 @@ Comece lendo esses três arquivos:
 
 | Arquivo | Por que ler primeiro |
 |---|---|
-| `_reversa_sdd/confidence-report.md` | Mostra o que tem alta confiança (verde) vs. lacunas (vermelho). Evita implementar algo baseado em inferência errada. |
-| `_reversa_sdd/gaps.md` | Lista o que o Reversa não conseguiu determinar. Preencha manualmente antes de começar. |
-| `_reversa_sdd/architecture.md` + diagramas C4 | Mostra a visão macro: camadas, módulos, fronteiras do sistema. |
+| `_agentforge_sdd/confidence-report.md` | Mostra o que tem alta confiança (verde) vs. lacunas (vermelho). Evita implementar algo baseado em inferência errada. |
+| `_agentforge_sdd/gaps.md` | Lista o que o agentforge não conseguiu determinar. Preencha manualmente antes de começar. |
+| `_agentforge_sdd/architecture.md` + diagramas C4 | Mostra a visão macro: camadas, módulos, fronteiras do sistema. |
 
 ---
 
@@ -30,7 +30,7 @@ Comece lendo esses três arquivos:
 
 ## Qual sdd/ vem primeiro
 
-Abra `_reversa_sdd/traceability/code-spec-matrix.md`. Ele lista cada spec e suas dependências.
+Abra `_agentforge_sdd/traceability/code-spec-matrix.md`. Ele lista cada spec e suas dependências.
 
 Implemente primeiro as specs que não dependem de nenhuma outra (folhas da árvore de dependências), e suba em direção às specs que integram múltiplos componentes.
 
@@ -38,11 +38,11 @@ Implemente primeiro as specs que não dependem de nenhuma outra (folhas da árvo
 
 ## Mantendo a rastreabilidade durante o desenvolvimento
 
-Use a `_reversa_sdd/traceability/code-spec-matrix.md` como referência durante o desenvolvimento para saber qual trecho de código implementado corresponde a qual spec. Isso mantém a rastreabilidade precisa conforme o código cresce.
+Use a `_agentforge_sdd/traceability/code-spec-matrix.md` como referência durante o desenvolvimento para saber qual trecho de código implementado corresponde a qual spec. Isso mantém a rastreabilidade precisa conforme o código cresce.
 
 ---
 
 ## Veja também
 
-- [Saídas geradas](saidas/index.md): lista completa dos arquivos produzidos pelo Reversa
+- [Saídas geradas](saidas/index.md): lista completa dos arquivos produzidos pelo agentforge
 - [Escala de confiança](escala-confianca.md): como interpretar os marcadores 🟢🟡🔴 nas specs

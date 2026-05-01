@@ -1,6 +1,6 @@
 # CLI
 
-Reversa has a simple CLI to manage the installation and lifecycle of agents in your project. All commands run with `npx agentforge` in the project root.
+agentforge has a simple CLI to manage the installation and lifecycle of agents in your project. All commands run with `npx agentforge` in the project root.
 
 ---
 
@@ -12,7 +12,7 @@ Reversa has a simple CLI to manage the installation and lifecycle of agents in y
 npx agentforge install
 ```
 
-Installs Reversa in the current legacy project. Detects present engines, asks for your preferences, and creates the entire required structure.
+Installs agentforge in the current legacy project. Detects present engines, asks for your preferences, and creates the entire required structure.
 
 Use once, in the root of the project you want to analyze.
 
@@ -36,7 +36,7 @@ Useful for a quick overview before resuming a session.
 npx agentforge update
 ```
 
-Updates agents to the latest version of Reversa.
+Updates agents to the latest version of agentforge.
 
 The command is smart: it checks the SHA-256 manifest of each file and never overwrites files you've customized. If you made adjustments to any agent, they stay intact.
 
@@ -68,7 +68,7 @@ Adds support for an AI engine that wasn't present when you installed. For exampl
 npx agentforge uninstall
 ```
 
-Removes Reversa from the project: deletes the files created by the installation (`.reversa/`, `.agents/skills/reversa-*/`, engine entry files).
+Removes agentforge from the project: deletes the files created by the installation (`.agentforge/`, `.agents/skills/agentforge-*/`, engine entry files).
 
 !!! info "Your files stay intact"
-    `uninstall` removes **only** what Reversa created. No original project file is touched. Specifications generated in `_reversa_sdd/` are also preserved by default.
+    `uninstall` removes **only** what agentforge created. No original project file is touched. Specifications generated in `_agentforge_sdd/` are also preserved by default.

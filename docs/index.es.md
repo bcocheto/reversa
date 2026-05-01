@@ -1,16 +1,16 @@
-# Reversa
+# agentforge
 
 **Transforma sistemas heredados en especificaciones ejecutables para agentes de IA.**
 
-¿Conoces ese sistema que nadie quiere tocar? El que lleva 10 años corriendo, genera dinero todos los días, pero nadie sabe bien qué hace por dentro. Reversa fue creado para él.
+¿Conoces ese sistema que nadie quiere tocar? El que lleva 10 años corriendo, genera dinero todos los días, pero nadie sabe bien qué hace por dentro. agentforge fue creado para él.
 
 ---
 
-## ¿Qué es Reversa?
+## ¿Qué es agentforge?
 
-Reversa es un framework de ingeniería inversa de especificaciones. Lo instalas dentro del proyecto heredado, activas un agente de IA que ya usas, y él coordina un equipo de especialistas para analizar el código y generar especificaciones completas, trazables y listas para cualquier agente codificador.
+agentforge es un framework de ingeniería inversa de especificaciones. Lo instalas dentro del proyecto heredado, activas un agente de IA que ya usas, y él coordina un equipo de especialistas para analizar el código y generar especificaciones completas, trazables y listas para cualquier agente codificador.
 
-**En otras palabras:** Reversa convierte código sin documentación en contratos operacionales que un agente de IA puede entender y usar para evolucionar el sistema con seguridad.
+**En otras palabras:** agentforge convierte código sin documentación en contratos operacionales que un agente de IA puede entender y usar para evolucionar el sistema con seguridad.
 
 ---
 
@@ -31,10 +31,10 @@ npx agentforge install
 Luego abre el proyecto en tu agente de IA favorito y escribe:
 
 ```
-/reversa
+/agentforge
 ```
 
-Eso es todo. Reversa toma el volante y te guía hasta el final.
+Eso es todo. agentforge toma el volante y te guía hasta el final.
 
 ---
 
@@ -42,11 +42,11 @@ Eso es todo. Reversa toma el volante y te guía hasta el final.
 
 <div class="grid cards" markdown>
 
-- **Por qué existe Reversa**
+- **Por qué existe agentforge**
 
     El problema que resuelve y por qué importa.
 
-    [:octicons-arrow-right-24: Leer más](por-que-reversa.md)
+    [:octicons-arrow-right-24: Leer más](por-que-agentforge.md)
 
 - **Instalación**
 
@@ -73,7 +73,7 @@ Eso es todo. Reversa toma el volante y te guía hasta el final.
 ## Garantía de seguridad
 
 !!! danger "💾 Haz una copia de seguridad antes de empezar"
-    Aunque Reversa nunca modifica tus archivos, los agentes de IA pueden cometer errores. **Recomendamos fuertemente:**
+    Aunque agentforge nunca modifica tus archivos, los agentes de IA pueden cometer errores. **Recomendamos fuertemente:**
 
     1. **Versiona el proyecto en Git** — asegúrate de que todos los archivos estén commiteados antes de iniciar el análisis
     2. **Ten el repositorio en GitHub** (o GitLab, Bitbucket) — para tener una copia remota segura
@@ -81,8 +81,8 @@ Eso es todo. Reversa toma el volante y te guía hasta el final.
 
     Si algo inesperado ocurre durante el análisis, puedes restaurar el estado original con `git restore .` o desde la copia de seguridad.
 
-!!! warning "Reversa nunca toca tus archivos"
-    Los agentes escriben **solo** en `.reversa/` y `_reversa_sdd/`. Ningún archivo de tu proyecto es modificado, eliminado o sobreescrito. Nunca.
+!!! warning "agentforge nunca toca tus archivos"
+    Los agentes escriben **solo** en `.agentforge/` y `_agentforge_sdd/`. Ningún archivo de tu proyecto es modificado, eliminado o sobreescrito. Nunca.
 
 !!! info "Sin claves de API"
-    Reversa no solicita, no almacena ni transmite claves de API de ningún servicio. La inteligencia viene del agente que ya usas en tu entorno.
+    agentforge no solicita, no almacena ni transmite claves de API de ningún servicio. La inteligencia viene del agente que ya usas en tu entorno.

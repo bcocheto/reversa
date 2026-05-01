@@ -12,11 +12,11 @@ It explains each agent with a real-world analogy. But since you're already here,
 
 ## The full team with analogies
 
-### 🎼 Reversa: the orchestra conductor
+### 🎼 agentforge: the orchestra conductor
 
 A conductor doesn't play any instrument. They know the full score and tell who enters when, in what order, at what pace. Without them, each musician would play their part without connecting to the others.
 
-> Use `/reversa` to start or resume the full analysis. It handles the sequence for you.
+> Use `/agentforge` to start or resume the full analysis. It handles the sequence for you.
 
 ---
 
@@ -95,7 +95,7 @@ The stylist catalogs the wardrobe: color palette, typography, spacing, design to
 ## Recommended sequence
 
 ```
-/reversa → orchestrates everything automatically
+/agentforge → orchestrates everything automatically
 
 Or manually:
 Scout → Archaeologist (N sessions) → Detective → Architect → Writer → Reviewer

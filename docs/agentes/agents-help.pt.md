@@ -12,11 +12,11 @@ Ele explica cada agente com uma analogia do mundo real. Mas já que você está 
 
 ## O time completo com analogias
 
-### 🎼 Reversa: o regente de orquestra
+### 🎼 agentforge: o regente de orquestra
 
 Um regente não toca nenhum instrumento. Ele conhece a partitura inteira e diz quem entra quando, em que ordem, em que ritmo. Sem ele, cada músico tocaria sua parte sem se conectar com os outros.
 
-> Use `/reversa` para iniciar ou retomar a análise completa. Ele cuida da sequência por você.
+> Use `/agentforge` para iniciar ou retomar a análise completa. Ele cuida da sequência por você.
 
 ---
 
@@ -95,7 +95,7 @@ O estilista cataloga o guarda-roupa: paleta de cores, tipografia, espaçamentos,
 ## Sequência recomendada
 
 ```
-/reversa → orquestra tudo automaticamente
+/agentforge → orquestra tudo automaticamente
 
 Ou manualmente:
 Scout → Archaeologist (N sessões) → Detective → Architect → Writer → Reviewer

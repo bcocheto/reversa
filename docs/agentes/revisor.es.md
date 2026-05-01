@@ -1,6 +1,6 @@
 # Reviewer
 
-**Comando:** `/reversa-reviewer`
+**Comando:** `/agentforge-reviewer`
 **Fase:** 5 - Revisión
 
 ---
@@ -29,7 +29,7 @@ Si el plugin de Codex está activo en la sesión, el Reviewer ofrece solicitar u
 
 | Archivo | Contenido |
 |---------|-----------|
-| `_reversa_sdd/questions.md` | Preguntas para validación humana |
-| `_reversa_sdd/confidence-report.md` | Conteo de 🟢/🟡/🔴 por spec y porcentaje general |
-| `_reversa_sdd/gaps.md` | Brechas que quedaron sin respuesta |
-| `_reversa_sdd/cross-review-result.md` | Hallazgos de Codex (si se solicitó revisión cruzada) |
+| `_agentforge_sdd/questions.md` | Preguntas para validación humana |
+| `_agentforge_sdd/confidence-report.md` | Conteo de 🟢/🟡/🔴 por spec y porcentaje general |
+| `_agentforge_sdd/gaps.md` | Brechas que quedaron sin respuesta |
+| `_agentforge_sdd/cross-review-result.md` | Hallazgos de Codex (si se solicitó revisión cruzada) |

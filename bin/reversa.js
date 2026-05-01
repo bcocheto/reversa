@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-import { runCli } from '../lib/cli.js';
+import { runCli } from "../lib/cli.js";
 
-process.exitCode = await runCli({ binaryName: 'reversa' });
+process.exitCode = await runCli({ binaryName: "agentforge" });

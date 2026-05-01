@@ -10,11 +10,11 @@
 
 ## El equipo completo con analogías
 
-### 🎼 Reversa: el director de orquesta
+### 🎼 agentforge: el director de orquesta
 
 Un director no toca ningún instrumento. Conoce la partitura completa y dice quién entra cuándo, en qué orden, a qué ritmo. Sin él, cada músico tocaría su parte sin conectarse con los demás.
 
-> Usa `/reversa` para iniciar o retomar el análisis completo.
+> Usa `/agentforge` para iniciar o retomar el análisis completo.
 
 ---
 
@@ -93,7 +93,7 @@ El estilista cataloga el guardarropa: paleta de colores, tipografía, espaciados
 ## Secuencia recomendada
 
 ```
-/reversa → orquesta todo automáticamente
+/agentforge → orquesta todo automáticamente
 
 O manualmente:
 Scout → Archaeologist (N sesiones) → Detective → Architect → Writer → Reviewer

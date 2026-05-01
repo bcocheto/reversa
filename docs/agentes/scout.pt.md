@@ -1,6 +1,6 @@
 # Scout
 
-**Comando:** `/reversa-scout`
+**Comando:** `/agentforge-scout`
 **Fase:** 1 - Reconhecimento
 
 ---
@@ -33,11 +33,11 @@ Quantos módulos existem? Qual linguagem? Qual framework? Quais as dependências
 
 | Arquivo | Conteúdo |
 |---------|----------|
-| `_reversa_sdd/inventory.md` | Inventário completo do projeto |
-| `_reversa_sdd/dependencies.md` | Dependências com versões |
-| `.reversa/context/surface.json` | Dados estruturados para os demais agentes |
+| `_agentforge_sdd/inventory.md` | Inventário completo do projeto |
+| `_agentforge_sdd/dependencies.md` | Dependências com versões |
+| `.agentforge/context/surface.json` | Dados estruturados para os demais agentes |
 
-O `surface.json` é especialmente importante: o Reversa o usa para personalizar as tarefas da Fase 2 com base nos módulos identificados.
+O `surface.json` é especialmente importante: o agentforge o usa para personalizar as tarefas da Fase 2 com base nos módulos identificados.
 
 ---
 
@@ -46,5 +46,5 @@ O `surface.json` é especialmente importante: o Reversa o usa para personalizar 
 Você raramente vai precisar chamar o Scout diretamente. O orquestrador faz isso automaticamente na Fase 1. Mas se você quiser atualizar o inventário do projeto depois de uma refatoração grande, pode chamar diretamente:
 
 ```
-/reversa-scout
+/agentforge-scout
 ```

@@ -1,6 +1,6 @@
 # Design System
 
-**Comando:** `/reversa-design-system`
+**Comando:** `/agentforge-design-system`
 **Fase:** Cualquiera
 
 ---
@@ -23,8 +23,8 @@ El estilista cataloga el guardarropa del sistema: paleta de colores, tipografía
 
 | Archivo | Contenido |
 |---------|-----------|
-| `_reversa_sdd/design-system/color-palette.md` | Paleta completa con valores |
-| `_reversa_sdd/design-system/typography.md` | Sistema tipográfico |
-| `_reversa_sdd/design-system/spacing.md` | Espaciado, grid y breakpoints |
-| `_reversa_sdd/design-system/tokens.md` | Todos los tokens en tabla |
-| `_reversa_sdd/design-system/design-system.md` | Documento consolidado |
+| `_agentforge_sdd/design-system/color-palette.md` | Paleta completa con valores |
+| `_agentforge_sdd/design-system/typography.md` | Sistema tipográfico |
+| `_agentforge_sdd/design-system/spacing.md` | Espaciado, grid y breakpoints |
+| `_agentforge_sdd/design-system/tokens.md` | Todos los tokens en tabla |
+| `_agentforge_sdd/design-system/design-system.md` | Documento consolidado |

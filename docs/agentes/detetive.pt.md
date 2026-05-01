@@ -1,6 +1,6 @@
 # Detective
 
-**Comando:** `/reversa-detective`
+**Comando:** `/agentforge-detective`
 **Fase:** 3 - Interpretação
 
 ---
@@ -60,10 +60,10 @@ Para cada entidade com campo de status/estado, o Detetive mapeia:
 
 | Arquivo | Conteúdo |
 |---------|----------|
-| `_reversa_sdd/domain.md` | Glossário e regras de domínio |
-| `_reversa_sdd/state-machines.md` | Máquinas de estado em Mermaid |
-| `_reversa_sdd/permissions.md` | Matriz de permissões |
-| `_reversa_sdd/adrs/[numero]-[titulo].md` | Um ADR por decisão identificada |
+| `_agentforge_sdd/domain.md` | Glossário e regras de domínio |
+| `_agentforge_sdd/state-machines.md` | Máquinas de estado em Mermaid |
+| `_agentforge_sdd/permissions.md` | Matriz de permissões |
+| `_agentforge_sdd/adrs/[numero]-[titulo].md` | Um ADR por decisão identificada |
 
 ---
 

@@ -1,6 +1,6 @@
-# Reversa (Orchestrator)
+# agentforge (Orchestrator)
 
-**Command:** `/reversa`
+**Command:** `/agentforge`
 **Phase:** Orchestration
 
 ---
@@ -21,7 +21,7 @@ Without it, each agent would play its part without connecting to the others. Wit
 
 ## Responsibilities
 
-- Checks whether an analysis is in progress (reads `.reversa/state.json`)
+- Checks whether an analysis is in progress (reads `.agentforge/state.json`)
 - First session: creates a personalized exploration plan and presents it to the user
 - Subsequent sessions: resumes exactly where it left off
 - Runs plan agents **sequentially**, one at a time
@@ -34,7 +34,7 @@ Without it, each agent would play its part without connecting to the others. Wit
 
 ## Special behavior after Scout
 
-After Scout finishes, Reversa reads the generated `surface.json` and personalizes Phase 2 of the plan. Instead of a generic "analyze the code" task, the plan becomes one task per identified module:
+After Scout finishes, agentforge reads the generated `surface.json` and personalizes Phase 2 of the plan. Instead of a generic "analyze the code" task, the plan becomes one task per identified module:
 
 ```
 - [ ] Archaeologist: analysis of module `auth`
@@ -56,12 +56,12 @@ After Scout finishes, Reversa reads the generated `surface.json` and personalize
 
 === "Claude Code / Cursor / Gemini CLI"
     ```
-    /reversa
+    /agentforge
     ```
 
 === "Codex and engines without slash commands"
     ```
-    reversa
+    agentforge
     ```
 
 To resume an interrupted analysis, just activate again. The saved state is read automatically.

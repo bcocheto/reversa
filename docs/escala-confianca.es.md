@@ -1,6 +1,6 @@
 # Escala de confianza
 
-Una de las partes más importantes de Reversa es la honestidad. El sistema no finge saber lo que no sabe.
+Una de las partes más importantes de agentforge es la honestidad. El sistema no finge saber lo que no sabe.
 
 Cada afirmación generada en las especificaciones se marca con uno de los tres niveles. Sin excepciones.
 

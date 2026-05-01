@@ -1,6 +1,6 @@
 # Pipeline de análisis
 
-Reversa transforma un sistema heredado en especificaciones ejecutables en 5 fases.
+agentforge transforma un sistema heredado en especificaciones ejecutables en 5 fases.
 
 ---
 
@@ -25,7 +25,7 @@ El Scout hace el primer tour del proyecto. Como un agente inmobiliario visitando
 
 ---
 
-Cuando el Scout termina, Reversa presenta su resumen y pregunta el **nivel de documentación** (`doc_level`): esencial, completo o detallado. La elección define qué artefactos generará cada agente en las fases siguientes — consulta [Cómo usar](uso.md#nivel-de-documentación) para la tabla completa.
+Cuando el Scout termina, agentforge presenta su resumen y pregunta el **nivel de documentación** (`doc_level`): esencial, completo o detallado. La elección define qué artefactos generará cada agente en las fases siguientes — consulta [Cómo usar](uso.md#nivel-de-documentación) para la tabla completa.
 
 ---
 

@@ -1,6 +1,6 @@
-# Reversa (Orquestrador)
+# agentforge (Orquestrador)
 
-**Comando:** `/reversa`
+**Comando:** `/agentforge`
 **Fase:** Orquestração
 
 ---
@@ -21,7 +21,7 @@ Sem ele, cada agente tocaria sua parte sem se conectar com os outros. Com ele, t
 
 ## Responsabilidades
 
-- Verifica se existe uma análise em andamento (lê `.reversa/state.json`)
+- Verifica se existe uma análise em andamento (lê `.agentforge/state.json`)
 - Na primeira sessão: cria o plano de exploração personalizado e apresenta ao usuário
 - Em sessões subsequentes: retoma exatamente de onde parou
 - Executa os agentes do plano **sequencialmente**, um por vez
@@ -34,7 +34,7 @@ Sem ele, cada agente tocaria sua parte sem se conectar com os outros. Com ele, t
 
 ## Comportamento especial após o Scout
 
-Depois que o Scout termina, o Reversa lê o `surface.json` gerado e personaliza a Fase 2 do plano. Em vez de uma tarefa genérica "analisar o código", o plano vira uma tarefa por módulo identificado:
+Depois que o Scout termina, o agentforge lê o `surface.json` gerado e personaliza a Fase 2 do plano. Em vez de uma tarefa genérica "analisar o código", o plano vira uma tarefa por módulo identificado:
 
 ```
 - [ ] Arqueólogo: análise do módulo `auth`
@@ -56,12 +56,12 @@ Depois que o Scout termina, o Reversa lê o `surface.json` gerado e personaliza 
 
 === "Claude Code / Cursor / Gemini CLI"
     ```
-    /reversa
+    /agentforge
     ```
 
 === "Codex e engines sem slash commands"
     ```
-    reversa
+    agentforge
     ```
 
 Para retomar uma análise interrompida, basta ativar novamente. O estado salvo é lido automaticamente.

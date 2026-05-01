@@ -1,6 +1,6 @@
 # Agentes
 
-Reversa coordina un equipo de 14 especialistas. Cada agente hace una cosa y la hace bien.
+agentforge coordina un equipo de 14 especialistas. Cada agente hace una cosa y la hace bien.
 
 ---
 
@@ -8,7 +8,7 @@ Reversa coordina un equipo de 14 especialistas. Cada agente hace una cosa y la h
 
 | Agente | Fase | Analogía | Función |
 |--------|------|----------|---------|
-| [Reversa](reversa.md) | Orquestación | El director de orquesta | Coordina todos los agentes, guarda checkpoints, guía al usuario |
+| [agentforge](agentforge.md) | Orquestación | El director de orquesta | Coordina todos los agentes, guarda checkpoints, guía al usuario |
 | [Scout](scout.md) | Reconocimiento | El agente inmobiliario | Mapea la superficie: carpetas, lenguajes, frameworks, dependencias |
 | [Archaeologist](arqueologo.md) | Excavación | El excavador | Análisis profundo módulo a módulo: algoritmos, flujos, estructuras de datos |
 | [Detective](detetive.md) | Interpretación | Sherlock Holmes | Extrae reglas de negocio implícitas, ADRs, máquinas de estado, permisos |
@@ -31,7 +31,7 @@ Reversa coordina un equipo de 14 especialistas. Cada agente hace una cosa y la h
 ## Secuencia recomendada
 
 ```
-/reversa → orquesta todo automáticamente
+/agentforge → orquesta todo automáticamente
 
 O manualmente:
 Scout → Archaeologist (N sesiones) → Detective → Architect → Writer → Reviewer

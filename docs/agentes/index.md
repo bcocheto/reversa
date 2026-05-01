@@ -1,8 +1,8 @@
 # Agents
 
-Reversa coordinates a team of specialists. Each agent does one thing and does it well. None of them try to do everything.
+agentforge coordinates a team of specialists. Each agent does one thing and does it well. None of them try to do everything.
 
-The central orchestrator (Reversa itself) coordinates who enters when, in what order, and at what pace. But you can also trigger any agent directly when you need to.
+The central orchestrator (agentforge itself) coordinates who enters when, in what order, and at what pace. But you can also trigger any agent directly when you need to.
 
 ---
 
@@ -12,7 +12,7 @@ These are part of the main pipeline. The orchestrator runs them in the right seq
 
 | Agent | Phase | Analogy | Role |
 |-------|-------|---------|------|
-| [Reversa](reversa.md) | Orchestration | The orchestra conductor | Coordinates all agents, saves checkpoints, guides the user |
+| [agentforge](agentforge.md) | Orchestration | The orchestra conductor | Coordinates all agents, saves checkpoints, guides the user |
 | [Scout](scout.md) | Reconnaissance | The real estate agent | Maps the surface: folders, languages, frameworks, dependencies, entry points |
 | [Archaeologist](arqueologo.md) | Excavation | The excavator | Deep module-by-module analysis: algorithms, flows, data structures |
 | [Detective](detetive.md) | Interpretation | Sherlock Holmes | Extracts implicit business rules, ADRs, state machines, permissions |
@@ -37,7 +37,7 @@ Installed by default, but can be triggered independently at any time.
 ## Recommended sequence
 
 ```
-/reversa → orchestrates everything automatically
+/agentforge → orchestrates everything automatically
 
 Or manually, if you prefer to control each step:
 

@@ -1,6 +1,6 @@
 # Confidence scale
 
-One of the most important parts of Reversa is honesty. The system doesn't pretend to know what it doesn't know.
+One of the most important parts of agentforge is honesty. The system doesn't pretend to know what it doesn't know.
 
 Every statement generated in the specifications is marked with one of the three levels below. No exceptions.
 
@@ -55,4 +55,4 @@ The code calls the gateway, but there's no timeout error handling. The actual be
 
 The Reviewer collects all 🔴 gaps and presents them as questions for you to answer. After you answer, it updates the specs and reclassifies: 🔴 becomes 🟢 if you confirmed with evidence, or 🟡 if you gave an answer but without absolute certainty.
 
-Gaps that couldn't be answered remain in `_reversa_sdd/gaps.md` for later handling.
+Gaps that couldn't be answered remain in `_agentforge_sdd/gaps.md` for later handling.

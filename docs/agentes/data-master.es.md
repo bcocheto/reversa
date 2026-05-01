@@ -1,6 +1,6 @@
 # Data Master
 
-**Comando:** `/reversa-data-master`
+**Comando:** `/agentforge-data-master`
 **Fase:** Cualquiera
 
 ---
@@ -33,8 +33,8 @@ El Scout hace un escaneo superficial de la base de datos (solo lista los archivo
 
 | Archivo | Contenido |
 |---------|-----------|
-| `_reversa_sdd/database/erd.md` | ERD completo en Mermaid |
-| `_reversa_sdd/database/data-dictionary.md` | Todas las tablas y columnas |
-| `_reversa_sdd/database/relationships.md` | Relaciones detalladas |
-| `_reversa_sdd/database/business-rules.md` | Reglas de negocio en la base de datos |
-| `_reversa_sdd/database/procedures.md` | Stored procedures y funciones (si los hay) |
+| `_agentforge_sdd/database/erd.md` | ERD completo en Mermaid |
+| `_agentforge_sdd/database/data-dictionary.md` | Todas las tablas y columnas |
+| `_agentforge_sdd/database/relationships.md` | Relaciones detalladas |
+| `_agentforge_sdd/database/business-rules.md` | Reglas de negocio en la base de datos |
+| `_agentforge_sdd/database/procedures.md` | Stored procedures y funciones (si los hay) |

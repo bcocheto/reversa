@@ -23,10 +23,10 @@ O instalador faz tudo isso pra você:
 3. Coleta nome do projeto, idioma e preferências
 4. Copia os agentes para `.agents/skills/` e `.claude/skills/` (para Claude Code)
 5. Cria o arquivo de entrada da engine escolhida (`CLAUDE.md`, `AGENTS.md`, etc.)
-6. Cria a estrutura `.reversa/` com estado, configuração e plano
+6. Cria a estrutura `.agentforge/` com estado, configuração e plano
 7. Gera o manifesto SHA-256 para atualizações seguras no futuro
 
-É tipo um `npm install`, mas para o seu time de agentes de engenharia reversa.
+É tipo um `npm install`, mas para o seu time de agentes de engenharia agentforge.
 
 ---
 
@@ -34,12 +34,12 @@ O instalador faz tudo isso pra você:
 
 ```
 projeto-legado/
-├── .reversa/               ← estado, config e contexto da análise
+├── .agentforge/               ← estado, config e contexto da análise
 ├── .agents/skills/         ← agentes universais (todas as engines)
 ├── .claude/skills/         ← mirror para Claude Code
 ├── CLAUDE.md               ← ponto de entrada para Claude Code (se detectado)
 ├── AGENTS.md               ← ponto de entrada para Codex (se detectado)
-└── _reversa_sdd/           ← onde as especificações serão geradas (vazio inicialmente)
+└── _agentforge_sdd/           ← onde as especificações serão geradas (vazio inicialmente)
 ```
 
 !!! success "Seus arquivos ficam intactos"
@@ -50,7 +50,7 @@ projeto-legado/
 ## Backup antes de começar
 
 !!! warning "Recomendação forte: faça um backup"
-    Embora o Reversa nunca modifique seus arquivos, agentes de IA podem cometer erros. Antes de iniciar a análise:
+    Embora o agentforge nunca modifique seus arquivos, agentes de IA podem cometer erros. Antes de iniciar a análise:
 
     1. Certifique-se de que todos os arquivos estão commitados no Git
     2. Tenha o repositório no GitHub, GitLab ou Bitbucket

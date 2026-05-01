@@ -1,6 +1,6 @@
 # Writer
 
-**Comando:** `/reversa-writer`
+**Comando:** `/agentforge-writer`
 **Fase:** 4 - Generación
 
 ---
@@ -35,7 +35,7 @@ Cada spec sigue una plantilla fija con secciones obligatorias, incluyendo criter
 
 | Archivo | Contenido |
 |---------|-----------|
-| `_reversa_sdd/sdd/[componente].md` | Spec por componente |
-| `_reversa_sdd/openapi/[api].yaml` | Spec de API (si aplica) |
-| `_reversa_sdd/user-stories/[flujo].md` | User stories (si aplica) |
-| `_reversa_sdd/traceability/code-spec-matrix.md` | Matriz código-spec |
+| `_agentforge_sdd/sdd/[componente].md` | Spec por componente |
+| `_agentforge_sdd/openapi/[api].yaml` | Spec de API (si aplica) |
+| `_agentforge_sdd/user-stories/[flujo].md` | User stories (si aplica) |
+| `_agentforge_sdd/traceability/code-spec-matrix.md` | Matriz código-spec |

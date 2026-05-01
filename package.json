@@ -3,7 +3,7 @@
   "version": "1.2.14",
   "description": "Create, install, and maintain custom agent teams inside projects",
   "bin": {
-    "reversa": "bin/reversa.js",
+    "agentforge": "bin/agentforge.js",
     "agentforge": "bin/agentforge.js"
   },
   "scripts": {

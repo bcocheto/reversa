@@ -1,6 +1,6 @@
 # Scout
 
-**Comando:** `/reversa-scout`
+**Comando:** `/agentforge-scout`
 **Fase:** 1 - Reconocimiento
 
 ---
@@ -23,8 +23,8 @@ El Scout es el primero en entrar al proyecto. Hace el tour inicial: no abre cajo
 
 | Archivo | Contenido |
 |---------|-----------|
-| `_reversa_sdd/inventory.md` | Inventario completo del proyecto |
-| `_reversa_sdd/dependencies.md` | Dependencias con versiones |
-| `.reversa/context/surface.json` | Datos estructurados para los demás agentes |
+| `_agentforge_sdd/inventory.md` | Inventario completo del proyecto |
+| `_agentforge_sdd/dependencies.md` | Dependencias con versiones |
+| `.agentforge/context/surface.json` | Datos estructurados para los demás agentes |
 
-El `surface.json` es especialmente importante: Reversa lo usa para personalizar las tareas de la Fase 2 basándose en los módulos identificados.
+El `surface.json` es especialmente importante: agentforge lo usa para personalizar las tareas de la Fase 2 basándose en los módulos identificados.

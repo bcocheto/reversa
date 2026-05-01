@@ -1,6 +1,6 @@
 # Saídas geradas
 
-Tudo que o Reversa produz vai para a pasta `_reversa_sdd/` (ou o nome que você configurar em `config.toml`). O projeto legado nunca é tocado.
+Tudo que o agentforge produz vai para a pasta `_agentforge_sdd/` (ou o nome que você configurar em `config.toml`). O projeto legado nunca é tocado.
 
 O conjunto de artefatos gerados depende do **nível de documentação** escolhido no início da análise:
 
@@ -15,7 +15,7 @@ O conjunto de artefatos gerados depende do **nível de documentação** escolhid
 ## Estrutura completa
 
 ```
-_reversa_sdd/
+_agentforge_sdd/
 ├── inventory.md              # Inventário do projeto — todos
 ├── dependencies.md           # Dependências com versões — todos
 ├── code-analysis.md          # Análise técnica por módulo — todos
@@ -86,14 +86,14 @@ Dois arquivos conectam tudo:
 
 ## Não commitando o que não precisa
 
-Sugestão de `.gitignore` para não versionar as saídas do Reversa junto com o código (a não ser que você queira):
+Sugestão de `.gitignore` para não versionar as saídas do agentforge junto com o código (a não ser que você queira):
 
 ```gitignore
-# Saídas do Reversa (opcional: remova se quiser versionar as specs)
-_reversa_sdd/
+# Saídas do agentforge (opcional: remova se quiser versionar as specs)
+_agentforge_sdd/
 
-# Configuração pessoal do Reversa (nunca commitar)
-.reversa/config.user.toml
+# Configuração pessoal do agentforge (nunca commitar)
+.agentforge/config.user.toml
 ```
 
 ---

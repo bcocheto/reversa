@@ -1,6 +1,6 @@
 # Detective
 
-**Command:** `/reversa-detective`
+**Command:** `/agentforge-detective`
 **Phase:** 3 - Interpretation
 
 ---
@@ -60,10 +60,10 @@ For each entity with a status/state field, the Detective maps:
 
 | File | Content |
 |------|---------|
-| `_reversa_sdd/domain.md` | Glossary and domain rules |
-| `_reversa_sdd/state-machines.md` | State machines in Mermaid |
-| `_reversa_sdd/permissions.md` | Permission matrix |
-| `_reversa_sdd/adrs/[number]-[title].md` | One ADR per identified decision |
+| `_agentforge_sdd/domain.md` | Glossary and domain rules |
+| `_agentforge_sdd/state-machines.md` | State machines in Mermaid |
+| `_agentforge_sdd/permissions.md` | Permission matrix |
+| `_agentforge_sdd/adrs/[number]-[title].md` | One ADR per identified decision |
 
 ---
 
