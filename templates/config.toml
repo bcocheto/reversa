@@ -1,34 +1,35 @@
-# AgentForge — Configuração do Projeto
-# Este arquivo é gerenciado pelo instalador. Para customizações, edite config.user.toml
+# AgentForge — Project Configuration
+# Managed by the installer. Customize personal overrides in config.user.toml.
 
 [project]
-name = ""
-version = "1.0.0"
+name = "{{PROJECT_NAME}}"
+version = "{{VERSION}}"
 
 [user]
-name = ""
-chat_language = "pt-br"
-doc_language = "pt-br"
+name = "{{USER_NAME}}"
+chat_language = "{{CHAT_LANGUAGE}}"
+doc_language = "{{DOC_LANGUAGE}}"
 
 [output]
-folder = "_agentforge"
-
-[agents]
-installed = [
-  "agentforge-scout",
-  "agentforge-archaeologist",
-  "agentforge-detective",
-  "agentforge-architect",
-  "agentforge-writer",
-  "agentforge-reviewer",
-  "agentforge-visor",
-  "agentforge-data-master",
-  "agentforge-design-system"
-]
+folder = "{{OUTPUT_FOLDER}}"
 
 [engines]
-installed = []
+installed = {{ENGINE_ARRAY}}
+
+[internal_agents]
+installed = {{INTERNAL_AGENT_ARRAY}}
+
+[generated_agents]
+items = {{GENERATED_AGENT_ARRAY}}
+
+[generated_subagents]
+items = {{GENERATED_SUBAGENT_ARRAY}}
+
+[flows]
+items = {{FLOW_ARRAY}}
 
 [analysis]
-answer_mode = "chat"
-doc_level = "completo"
+response_mode = "{{RESPONSE_MODE}}"
+detail_level = "{{DETAIL_LEVEL}}"
+memory_policy = "{{MEMORY_POLICY}}"
+review_policy = "{{REVIEW_POLICY}}"

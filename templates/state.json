@@ -3,15 +3,23 @@
   "project": "",
   "user_name": "",
   "chat_language": "pt-br",
-  "doc_language": "Português",
-  "answer_mode": "chat",
-  "doc_level": "completo",
-  "output_folder": "_agentforge",
+  "doc_language": "pt-br",
   "phase": null,
   "completed": [],
-  "pending": ["reconhecimento", "escavacao", "interpretacao", "geracao", "revisao"],
-  "checkpoints": {},
+  "pending": [
+    "discovery",
+    "agent-design",
+    "flow-design",
+    "policies",
+    "export",
+    "review"
+  ],
   "engines": [],
-  "agents": [],
-  "created_files": []
+  "internal_agents": [],
+  "generated_agents": [],
+  "generated_subagents": [],
+  "flows": [],
+  "output_folder": "_agentforge",
+  "created_files": [],
+  "checkpoints": {}
 }
