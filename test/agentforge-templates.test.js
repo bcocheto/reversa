@@ -11,7 +11,7 @@ import { buildManifest, saveManifest, loadManifest } from '../lib/installer/mani
 import { buildUninstallPlan, applyUninstallPlan, runUninstall } from '../lib/commands/uninstall.js';
 import { createProjectAgent } from '../lib/commands/add-agent.js';
 import { createProjectFlow } from '../lib/commands/add-flow.js';
-import { exportAgentForge } from '../lib/exporter/index.js';
+import { compileAgentForge } from '../lib/exporter/index.js';
 import { ENGINES } from '../lib/installer/detector.js';
 import { AGENT_SKILL_IDS, PRODUCT } from '../lib/product.js';
 
@@ -81,7 +81,9 @@ async function createInstalledProject(projectRoot, { modifiedAgentsMd = false, k
   writer.saveCreatedFiles();
   saveManifest(projectRoot, buildManifest(projectRoot, writer.manifestPaths));
 
-  exportAgentForge(projectRoot);
+  await compileAgentForge(projectRoot, {
+    mergeStrategyResolver: async () => 'merge',
+  });
 
   if (modifiedAgentsMd) {
     const agentsPath = join(projectRoot, 'AGENTS.md');
@@ -514,8 +516,8 @@ test('agentforge validate fails when a flow references a missing agent', async (
   }
 });
 
-test('agentforge export generates derived files and preserves modified AGENTS.md', async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-export-'));
+test('agentforge compile generates bootloader entrypoints and preserves modified AGENTS.md', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-compile-'));
 
   try {
     const writer = new Writer(projectRoot);
@@ -536,7 +538,7 @@ test('agentforge export generates derived files and preserves modified AGENTS.md
     rmSync(join(projectRoot, '.github'), { recursive: true, force: true });
     rmSync(join(projectRoot, '.claude'), { recursive: true, force: true });
 
-    const first = spawnSync(process.execPath, [AGENTFORGE_BIN, 'export'], {
+    const first = spawnSync(process.execPath, [AGENTFORGE_BIN, 'compile'], {
       cwd: projectRoot,
       encoding: 'utf8',
     });
@@ -547,6 +549,7 @@ test('agentforge export generates derived files and preserves modified AGENTS.md
     assert.equal(existsSync(join(projectRoot, '.cursor', 'rules', 'agentforge.md')), true);
     assert.equal(existsSync(join(projectRoot, '.github', 'copilot-instructions.md')), true);
     assert.equal(existsSync(join(projectRoot, '.claude', 'agents', 'orchestrator.md')), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'compile.md')), true);
 
     const manifest = loadManifest(projectRoot);
     assert.ok(manifest['AGENTS.md']);
@@ -554,25 +557,33 @@ test('agentforge export generates derived files and preserves modified AGENTS.md
     assert.ok(manifest['.cursor/rules/agentforge.md']);
     assert.ok(manifest['.github/copilot-instructions.md']);
     assert.ok(manifest['.claude/agents/orchestrator.md']);
+    assert.ok(manifest['.agentforge/reports/compile.md']);
 
     const agentsEntry = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
-    assert.match(agentsEntry, /AgentForge/);
-    assert.match(agentsEntry, /orchestrator/);
-    assert.match(agentsEntry, /feature-development/);
-    assert.match(agentsEntry, /permissions/);
+    assert.match(agentsEntry, /<!-- agentforge:start -->/);
+    assert.match(agentsEntry, /<!-- agentforge:end -->/);
+    assert.match(agentsEntry, /router\.md/);
+    assert.match(agentsEntry, /context-index\.yaml/);
+    assert.match(agentsEntry, /policies\//);
+    assert.match(agentsEntry, /skills\//);
+    assert.match(agentsEntry, /flows\//);
+    assert.match(agentsEntry, /references\//);
+    assert.doesNotMatch(agentsEntry, /conteúdo.*dump/i);
 
     const manualLine = 'Linha manual do usuário.';
     writeFileSync(join(projectRoot, 'AGENTS.md'), `${agentsEntry}\n${manualLine}\n`, 'utf8');
 
-    const second = spawnSync(process.execPath, [AGENTFORGE_BIN, 'export'], {
+    const second = spawnSync(process.execPath, [AGENTFORGE_BIN, 'compile'], {
       cwd: projectRoot,
       encoding: 'utf8',
     });
 
     assert.equal(second.status, 0);
-    assert.match(readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8'), /Linha manual do usuário\./);
+    const secondAgents = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
+    assert.match(secondAgents, /Linha manual do usuário\./);
+    assert.equal((secondAgents.match(/<!-- agentforge:start -->/g) ?? []).length, 1);
 
-    const third = spawnSync(process.execPath, [AGENTFORGE_BIN, 'export', '--force'], {
+    const third = spawnSync(process.execPath, [AGENTFORGE_BIN, 'compile', '--force'], {
       cwd: projectRoot,
       encoding: 'utf8',
     });
@@ -792,13 +803,14 @@ test('agentforge add-flow rejects references to missing agents', async () => {
   }
 });
 
-test('agentforge help advertises the export command', () => {
+test('agentforge help advertises the compile command', () => {
   const result = spawnSync(process.execPath, [AGENTFORGE_BIN, '--help'], {
     encoding: 'utf8',
   });
 
   assert.equal(result.status, 0);
-  assert.match(result.stdout, /export\s+Gera arquivos derivados para engines configuradas/);
+  assert.match(result.stdout, /compile\s+Gera bootloaders pequenos e arquivos derivados para engines configuradas/);
+  assert.match(result.stdout, /export\s+Alias de compile/);
   assert.match(result.stdout, /improve\s+Analisa a estrutura e sugere melhorias/);
   assert.match(result.stdout, /add-flow\s+Cria um fluxo operacional customizado/);
 });

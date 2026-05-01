@@ -15,7 +15,7 @@ It is inspired by the previous workflow, but the goal is different: instead of t
 AgentForge creates a canonical `.agentforge/` layer inside the repo.
 That layer defines the team, the rules, the flow of work, and the engine-specific exports generated from the same source of truth.
 
-AgentForge keeps a SHA-256 manifest so it can detect when a generated file was edited by hand and preserve those customizations during `update`, `export`, and `uninstall`.
+AgentForge keeps a SHA-256 manifest so it can detect when a generated file was edited by hand and preserve those customizations during `update`, `compile`, and `uninstall`.
 
 ## Install
 
@@ -103,7 +103,7 @@ The canonical team lives under `.agentforge/`:
     └── files-manifest.json
 ```
 
-Engine-specific entry files and exports are derived from that structure:
+Engine-specific entry files and bootloaders are derived from that structure:
 
 - `AGENTS.md`
 - `CLAUDE.md`
@@ -153,7 +153,8 @@ agentforge add-agent      # Create a custom project agent
 agentforge add-flow       # Create a custom operational flow
 agentforge add-engine     # Add support for an engine
 agentforge validate       # Validate the .agentforge/ structure
-agentforge export         # Generate derived files for configured engines
+agentforge compile        # Generate bootloaders and derived files for configured engines
+agentforge export         # Alias of compile
 agentforge update         # Refresh generated files while preserving custom edits
 agentforge uninstall      # Remove generated artifacts safely
 ```
@@ -169,7 +170,7 @@ This renders Mermaid diagrams when the diagram toolchain is available.
 ## Security
 
 - AgentForge does not edit your application source code on its own.
-- Generated files are written under `.agentforge/`, engine entry files, and engine exports.
+- Generated files are written under `.agentforge/`, engine entry files, and engine bootloaders.
 - Existing files are merged or skipped based on manifest state, and modified files are preserved by default.
 - `uninstall` removes only files tracked by AgentForge and asks before removing the output folder.
 - `validate` writes a report at `.agentforge/reports/validation.md`.
@@ -190,10 +191,10 @@ Then verify the structure:
 agentforge validate
 ```
 
-And export the derived files for your engine:
+And compile the bootloaders and derived files for your engine:
 
 ```bash
-agentforge export
+agentforge compile
 ```
 
 If you want AgentForge to suggest structural improvements without changing human-owned
@@ -211,10 +212,10 @@ That gives you a project-local team definition that Codex, Claude Code, Cursor, 
 ## Roadmap
 
 - More built-in agent templates for common project types
-- Richer export targets for additional engines
+- Richer compile targets for additional engines
 - Better policy composition and approval workflows
 - Import and migration tools for existing `.agentforge/` teams
-- Stronger interactive test coverage for install and export flows
+- Stronger interactive test coverage for install and compile flows
 
 ## Contributing
 

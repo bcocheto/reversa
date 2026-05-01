@@ -8,7 +8,7 @@ import { tmpdir } from 'os';
 
 import { Writer } from '../lib/installer/writer.js';
 import { buildManifest, saveManifest, loadManifest, mergeUpdateManifest } from '../lib/installer/manifest.js';
-import { exportAgentForge } from '../lib/exporter/index.js';
+import { compileAgentForge } from '../lib/exporter/index.js';
 import { runUninstall } from '../lib/commands/uninstall.js';
 import { checkExistingInstallation } from '../lib/installer/validator.js';
 import { detectEngines, ENGINES } from '../lib/installer/detector.js';
@@ -53,7 +53,9 @@ async function installFixture(projectRoot, { engines = ['codex'], exportTargets 
   saveManifest(projectRoot, buildManifest(projectRoot, writer.manifestPaths));
 
   if (exportTargets) {
-    exportAgentForge(projectRoot);
+    await compileAgentForge(projectRoot, {
+      mergeStrategyResolver: async () => 'merge',
+    });
   }
 
   return answers;
@@ -79,6 +81,30 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
     assert.deepEqual(state.initial_agents, answers.initial_agents);
     assert.deepEqual(state.initial_flows, answers.initial_flows);
     assert.deepEqual(state.engines, answers.engines);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('compile merges into an existing AGENTS.md without a managed block', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-compile-merge-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const agentsPath = join(projectRoot, 'AGENTS.md');
+    writeFileSync(agentsPath, '# Manual AGENTS\nLinha manual.\n', 'utf8');
+
+    const result = await compileAgentForge(projectRoot, {
+      mergeStrategyResolver: async () => 'merge',
+    });
+
+    assert.equal(result.errors.length, 0);
+    const content = readFileSync(agentsPath, 'utf8');
+    assert.match(content, /Linha manual\./);
+    assert.match(content, /<!-- agentforge:start -->/);
+    assert.equal((content.match(/<!-- agentforge:start -->/g) ?? []).length, 1);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'compile.md')), true);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -272,7 +298,9 @@ test('manifest includes generated AgentForge files', async () => {
 
   try {
     await installFixture(projectRoot);
-    exportAgentForge(projectRoot);
+    await compileAgentForge(projectRoot, {
+      mergeStrategyResolver: async () => 'merge',
+    });
 
     const manifest = loadManifest(projectRoot);
     assert.ok(manifest['.agentforge/state.json']);
