@@ -1,7 +1,7 @@
 {
-  "name": "reversa",
+  "name": "agentforge",
   "version": "1.2.14",
-  "description": "Transform legacy systems into executable specifications for AI coding agents",
+  "description": "Create, install, and maintain custom agent teams inside projects",
   "bin": {
     "reversa": "bin/reversa.js",
     "agentforge": "bin/agentforge.js"
@@ -29,15 +29,15 @@
     "README.md",
     "LICENSE"
   ],
-  "author": "sandeco",
+  "author": "bcocheto",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sandeco/reversa.git"
+    "url": "git+https://github.com/bcocheto/agentforge.git"
   },
-  "homepage": "https://github.com/sandeco/reversa",
+  "homepage": "https://github.com/bcocheto/agentforge",
   "bugs": {
-    "url": "https://github.com/sandeco/reversa/issues"
+    "url": "https://github.com/bcocheto/agentforge/issues"
   },
   "engines": {
     "node": ">=18.0.0"

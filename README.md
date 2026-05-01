@@ -1,256 +1,210 @@
-# Reversa 
-<small>by sandeco</small>
+# AgentForge
+<small>by bcocheto</small>
 
-**Turn legacy systems into executable specifications for AI agents.**
+AgentForge is a CLI for creating, installing, and maintaining custom agent teams inside a project.
+It is inspired by the Reversa workflow, but the goal is different: instead of turning legacy systems into specs, AgentForge creates an operational layer for agents, subagents, flows, policies, memory, and exports.
 
-[![English Docs](https://img.shields.io/badge/DOCS-English-009c3b?style=for-the-badge&logo=material-for-mkdocs&logoColor=white&labelColor=2d2d2d)](https://sandeco.github.io/reversa/)<br>
-[![Português Docs](https://img.shields.io/badge/DOCS-Portugu%C3%AAs-ffcc00?style=for-the-badge&logo=material-for-mkdocs&logoColor=black&labelColor=2d2d2d)](https://sandeco.github.io/reversa/pt/)<br>
-[![Español Docs](https://img.shields.io/badge/DOCS-Espa%C3%B1ol-c60b1e?style=for-the-badge&logo=material-for-mkdocs&logoColor=white&labelColor=2d2d2d)](https://sandeco.github.io/reversa/es/)
+## The problem
 
-<a href="https://www.youtube.com/watch?v=ARQBBKnfP_c"><img src="https://img.youtube.com/vi/ARQBBKnfP_c/maxresdefault.jpg" width="480" alt="Watch on YouTube"></a>
+- Isolated agents quickly become loose prompts with no shared structure.
+- Real projects need clear roles, reusable flows, guardrails, and persistent memory.
+- Teams need a source of truth that engines can read directly.
 
-Reversa is a specification reverse-engineering framework. Install it inside a legacy project and it coordinates a team of specialized AI agents to analyze the existing code and generate complete, traceable specifications ready for use by any coding agent.
+## The solution
 
----
+AgentForge creates a canonical `.agentforge/` layer inside the repo.
+That layer defines the team, the rules, the flow of work, and the engine-specific exports generated from the same source of truth.
 
-## Why Reversa exists
+AgentForge keeps a SHA-256 manifest so it can detect when a generated file was edited by hand and preserve those customizations during `update`, `export`, and `uninstall`.
 
-Most production systems carry years of accumulated knowledge: implicit business rules, undocumented architectural decisions, critical logic buried in code nobody wants to touch. That knowledge exists, but it's trapped.
+## Install
 
-AI agents are transformative for creating and evolving software, but they depend on specifications to operate safely. For new systems, you write the spec and the agent executes. For legacy systems — or those built with pure vibe coding — there is no spec: the agent has no way of knowing what it cannot break.
-
-**Reversa is the bridge between the legacy system and AI agents.**
-
-It analyzes the existing code, extracts accumulated knowledge (business rules, flows, module contracts, retroactive architectural decisions) and transforms everything into executable, traceable specifications ready for any coding agent.
-
-The result is not documentation for humans to read. These are **operational contracts** that allow an agent to evolve the system with fidelity to what already exists.
-
----
-
-## Installation
-
-In the root of the legacy project:
+In the root of the project:
 
 ```bash
-npx reversa install
+npx agentforge install
 ```
 
-The installer will:
-1. Detect the AI engines present in the environment (Claude Code, Codex, Cursor, etc.)
-2. Ask which agents to install — all selected by default
-3. Collect project name, language, and preferences
-4. Copy agents to `.agents/skills/` (and `.claude/skills/` for Claude Code)
-5. Create the engine entry file (`CLAUDE.md`, `AGENTS.md`, etc.)
-6. Create the `.reversa/` structure with state, configuration, and plan
-7. Generate SHA-256 manifest for safe updates
+Install guides you through:
 
-> Reversa **never deletes or modifies** existing files in your project.
-> Agents write only to `.reversa/` and the output folder (`_reversa_sdd/` by default).
+1. Supported engines
+2. Project name
+3. How the agents should address the user
+4. Project type
+5. Main stack
+6. The primary goal for the team
+7. Initial agents
+8. Initial flows
+9. Git artifact strategy
+10. Chat and document languages
+
+It then creates:
+
+- `.agentforge/state.json`
+- `.agentforge/config.toml`
+- `.agentforge/plan.md`
+- `.agentforge/scope.md`
+- `.agentforge/agents/`
+- `.agentforge/subagents/`
+- `.agentforge/flows/`
+- `.agentforge/policies/`
+- `.agentforge/memory/`
+- `.agentforge/reports/`
+- `.agentforge/_config/files-manifest.json`
+- `AGENTS.md` for Codex when enabled or selected by default
+- `CLAUDE.md` for Claude Code when enabled
+- `.cursor/rules/agentforge.md` for Cursor when enabled
+- `.github/copilot-instructions.md` for GitHub Copilot when enabled
+
+AgentForge writes generated artifacts and entry files with merge-aware behavior. If an existing file was modified by the user, it is preserved unless you explicitly force an overwrite or a policy allows that change.
 
 **Requirements:** Node.js 18+
 
----
+## Activate
 
-> [!IMPORTANT]
-> ### 🔒 Guaranteed immutability of the legacy project
->
-> The installer only creates new files (`CLAUDE.md`, `AGENTS.md`, `.agents/skills/`, etc.) and **never modifies or deletes any existing file** in your project. During analysis, agents operate under a strict and inviolable directive: **all writes are restricted to `.reversa/` and `_reversa_sdd/`** — no other file in your project is touched.
+After installation, open the project in your engine and activate AgentForge:
 
-> [!CAUTION]
-> ### 💾 Back up your project before starting
->
-> Although Reversa never modifies your files, AI agents can make mistakes. **We strongly recommend:**
->
-> 1. **Version the project in Git** — make sure all files are committed before starting the analysis
-> 2. **Have the repository on GitHub** (or GitLab, Bitbucket) — so you have a safe remote copy
-> 3. **Make a local copy of the folder** — a simple `cp -r my-project my-project-backup` protects against any unexpected event
->
-> If something unexpected happens during analysis, you can restore the original state with `git restore .` or from the backup copy.
-
-> [!WARNING]
-> 🔑 **Reversa does not request, store, or transmit API keys from any LLM service.** All intelligence is delegated to the AI agent already present in your environment (Claude Code, Codex, Cursor, etc.) — no external authentication dependencies.
-
----
-
-## How to use
-
-After installation, open the project in the AI agent and activate Reversa:
-
-```
-/reversa
+```text
+agentforge
 ```
 
-For engines without slash command support (like Codex):
+Engines that support slash commands can use:
 
-```
-reversa
-```
-
-Reversa will introduce itself, create a personalized exploration plan, and coordinate the entire analysis. Progress is saved in `.reversa/state.json` at each checkpoint — if the session is interrupted, just type `reversa` to resume where you left off.
-
----
-
-## How it works
-
-Reversa uses a 5-phase pipeline orchestrated by the **Reversa** agent:
-
-```
-Reconnaissance  Excavation  Interpretation  Generation  Review
-    Scout       Archaeologist  Detective      Writer    Reviewer
-                                Architect
+```text
+/agentforge
 ```
 
-Independent agents (run at any phase): **Visor**, **Data Master**, **Design System**, **Tracer**
+## What gets generated
 
----
+The canonical team lives under `.agentforge/`:
 
-## Agents
-
-### Required
-
-| Agent | Role |
-|-------|------|
-| **Reversa** | Central orchestrator. Coordinates all agents, saves checkpoints, guides the user |
-| **Scout** | Maps the surface: folder structure, languages, frameworks, dependencies, entry points |
-| **Archaeologist** | Deep module-by-module analysis: algorithms, control flows, data structures |
-| **Detective** | Extracts implicit business knowledge: rules, retroactive ADRs, state machines, permissions |
-| **Architect** | Synthesizes everything into C4 diagrams, full ERD, integration map, and technical debt |
-| **Writer** | Generates specifications as operational contracts with code traceability |
-
-### Optional (installed by default)
-
-| Agent | Role |
-|-------|------|
-| **Reviewer** | Reviews specs, finds inconsistencies, and validates gaps with the user |
-| **Tracer** | Dynamic analysis: resolves gaps via logs, tracing, and real data (read-only) |
-| **Visor** | Documents the interface from screenshots — without needing the system to be running |
-| **Data Master** | Complete database analysis: DDL, migrations, ORM, ERD, triggers, procedures |
-| **Design System** | Extracts design tokens: colors, typography, spacing, themes, and components |
-| **Chronicler** | Documents code changes during development sessions |
-
----
-
-## What is generated
-
-```
-_reversa_sdd/
-├── inventory.md              # Project inventory
-├── dependencies.md           # Dependencies with versions
-├── code-analysis.md          # Technical analysis per module
-├── data-dictionary.md        # Data dictionary
-├── domain.md                 # Glossary and business rules
-├── state-machines.md         # State machines in Mermaid
-├── permissions.md            # Permission matrix
-├── architecture.md           # Architectural overview
-├── c4-context.md             # C4 Diagram: Context
-├── c4-containers.md          # C4 Diagram: Containers
-├── c4-components.md          # C4 Diagram: Components
-├── erd-complete.md           # Full ERD in Mermaid
-├── confidence-report.md      # Confidence report 🟢🟡🔴
-├── gaps.md                   # Identified gaps
-├── questions.md              # Questions for human validation
-├── dynamic.md                # Dynamic analysis findings (Tracer)
-├── sdd/                      # Specs per component
-│   └── [component].md
-├── openapi/                  # API specs (if applicable)
-├── user-stories/             # User stories (if applicable)
-├── adrs/                     # Retroactive architectural decisions
-├── flowcharts/               # Flowcharts in Mermaid
-├── sequences/                # Sequence diagrams
-├── ui/                       # Interface specs (Visor)
-├── database/                 # Database specs (Data Master)
-├── design-system/            # Design tokens (Design System)
-└── traceability/
-    ├── spec-impact-matrix.md # Which spec impacts which
-    └── code-spec-matrix.md   # Code file to corresponding spec
+```text
+.agentforge/
+├── state.json
+├── config.toml
+├── plan.md
+├── scope.md
+├── agents/
+├── subagents/
+├── flows/
+├── policies/
+├── memory/
+├── reports/
+└── _config/
+    └── files-manifest.json
 ```
 
-### Confidence scale
+Engine-specific entry files and exports are derived from that structure:
 
-Every statement in the specs is marked with:
+- `AGENTS.md`
+- `CLAUDE.md`
+- `.cursor/rules/agentforge.md`
+- `.github/copilot-instructions.md`
+- `.claude/agents/*.md` when Claude Code agent exports are configured
+- `.github/agents/*.md` when GitHub Copilot agent exports are configured
 
-| Mark | Meaning |
-|------|---------|
-| 🟢 CONFIRMED | Extracted directly from code — can be cited with file and line |
-| 🟡 INFERRED | Deduced from patterns — may be wrong |
-| 🔴 GAP | Not determinable from code — requires human validation |
+## Concepts
 
----
+### Agents
 
-## Supported engines
+Primary roles in the project team, such as orchestrator, product owner, architect, engineer, reviewer, QA, security, and DevOps.
 
-| Engine | File created | Skills path | Activation |
-|--------|-------------|-------------|------------|
-| Claude Code ⭐ | `CLAUDE.md` | `.claude/skills/reversa-*/` and `.agents/skills/reversa-*/` | `/reversa` |
-| Codex ⭐ | `AGENTS.md` | `.agents/skills/reversa-*/` | `reversa` |
-| Cursor ⭐ | `.cursorrules` | `.agents/skills/reversa-*/` | `/reversa` |
-| Gemini CLI | `GEMINI.md` | `.agents/skills/reversa-*/` | `/reversa` |
-| Windsurf | `.windsurfrules` | `.agents/skills/reversa-*/` | `/reversa` |
-| Antigravity | `AGENTS.md` | `.agents/skills/reversa-*/` | `/reversa` |
-| Kiro | `.kiro/steering/reversa.md` | `.agents/skills/reversa-*/` | `/reversa` |
-| Opencode | `AGENTS.md` | `.agents/skills/reversa-*/` | `reversa` |
-| Cline | `.clinerules` | `.agents/skills/reversa-*/` | `/reversa` |
-| Roo Code | `.roorules` | `.agents/skills/reversa-*/` | `/reversa` |
-| GitHub Copilot | `.github/copilot-instructions.md` | `.agents/skills/reversa-*/` | `/reversa` |
-| Aider | `CONVENTIONS.md` | `.agents/skills/reversa-*/` | `reversa` |
-| Amazon Q Developer | `.amazonq/rules/reversa.md` | `.agents/skills/reversa-*/` | `/reversa` |
+### Subagents
 
----
+Narrow specialists used only when a flow or policy needs extra focus, such as database, API contract, or security review support.
 
-## CLI commands
+### Flows
+
+Operational playbooks that describe how the team works, such as feature development, bugfix, refactor, and release.
+
+### Policies
+
+Guardrails that define permissions, protected files, and when human approval is required.
+
+### Memory
+
+Persistent project knowledge, including decisions, conventions, and glossary entries.
+
+### Exports
+
+Derived files generated for supported engines so they can consume the same AgentForge team from their native entry points.
+
+### Manifest
+
+The file hash record used to detect intact, modified, missing, and newly generated files. It is what lets AgentForge preserve manual edits instead of silently overwriting them.
+
+## Commands
 
 ```bash
-npx reversa install      # Install Reversa in the project
-npx reversa status       # Show current analysis state
-npx reversa update       # Update agents to the latest version
-npx agentforge add-agent  # Create a custom project agent
-npx reversa add-engine   # Add support for a new engine
-npx agentforge add-flow   # Create a custom operational flow
-npx agentforge export     # Generate engine-derived files from .agentforge/
-npx reversa uninstall    # Remove Reversa from the project
+npx agentforge install    # Install AgentForge and create the initial team
+agentforge status         # Show the current AgentForge state
+agentforge add-agent      # Create a custom project agent
+agentforge add-flow       # Create a custom operational flow
+agentforge add-engine     # Add support for an engine
+agentforge validate       # Validate the .agentforge/ structure
+agentforge export         # Generate derived files for configured engines
+agentforge update         # Refresh generated files while preserving custom edits
+agentforge uninstall      # Remove generated artifacts safely
 ```
 
-The `update` command detects files you modified via SHA-256 and never overwrites customizations.
-The `uninstall` command removes only files created by Reversa — nothing from the legacy project is touched.
-The `agentforge validate` command checks `.agentforge/` consistency and writes `.agentforge/reports/validation.md`.
-The `agentforge export` command renders files such as `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/agentforge.md`, and `.github/copilot-instructions.md` from the canonical `.agentforge/` tree. Use `--force` to refresh only files that are still intact.
+Optional utility:
 
----
-
-## Internal structure
-
-```
-.reversa/
-├── state.json          # Analysis state between sessions
-├── config.toml         # Project configuration
-├── config.user.toml    # Personal preferences (don't commit)
-├── plan.md             # Exploration plan (user-editable)
-├── version             # Installed version
-├── context/
-│   ├── surface.json    # Generated by Scout
-│   └── modules.json    # Generated by Archaeologist
-└── _config/
-    ├── manifest.yaml       # Installation metadata
-    └── files-manifest.json # SHA-256 hashes for safe updates
-
-.agents/skills/         # Universal skills (all compatible agents)
-.claude/skills/         # Mirror for Claude Code
+```bash
+agentforge export-diagrams
 ```
 
----
+This renders Mermaid diagrams when the diagram toolchain is available.
+
+## Security
+
+- AgentForge does not edit your application source code on its own.
+- Generated files are written under `.agentforge/`, engine entry files, and engine exports.
+- Existing files are merged or skipped based on manifest state, and modified files are preserved by default.
+- `uninstall` removes only files tracked by AgentForge and asks before removing the output folder.
+- `validate` writes a report at `.agentforge/reports/validation.md`.
+
+## Example workflow
+
+Create a team for a SaaS project:
+
+```bash
+npx agentforge install
+```
+
+Choose a SaaS/Web App project, select the initial team, and keep the default flows.
+
+Then verify the structure:
+
+```bash
+agentforge validate
+```
+
+And export the derived files for your engine:
+
+```bash
+agentforge export
+```
+
+That gives you a project-local team definition that Codex, Claude Code, Cursor, and GitHub Copilot can read from the same canonical source of truth.
+
+## Roadmap
+
+- More built-in agent templates for common project types
+- Richer export targets for additional engines
+- Better policy composition and approval workflows
+- Import and migration tools for existing `.agentforge/` teams
+- Stronger interactive test coverage for install and export flows
 
 ## Contributing
 
-Contributions are welcome. Open an issue to discuss before submitting a PR.
+Contributions are welcome. Open an issue before submitting a large change.
 
 ```bash
-git clone https://github.com/sandeco/reversa.git
-cd reversa
+git clone <repository-url>
+cd <repository-folder>
 npm install
 ```
 
----
-
 ## License
 
-MIT — see [LICENSE](LICENSE) for details.
+MIT - see [LICENSE](LICENSE) for details.

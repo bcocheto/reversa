@@ -52,7 +52,7 @@ Para preferências que são suas e não devem ser commitadas:
 
 ```toml
 [user]
-name = "Sandeco"
+name = "bcocheto"
 answer_mode = "chat"  # "chat" ou "file"
 ```
 

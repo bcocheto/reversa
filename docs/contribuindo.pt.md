@@ -13,7 +13,7 @@ Abra uma issue primeiro para discutir o que você quer mudar. Isso evita trabalh
 ## Setup local
 
 ```bash
-git clone https://github.com/sandeco/reversa.git
+git clone https://github.com/bcocheto/agentforge.git
 cd reversa
 npm install
 ```
@@ -46,4 +46,4 @@ reversa/
 
 ## Licença
 
-MIT. Veja [LICENSE](https://github.com/sandeco/reversa/blob/main/LICENSE) para os detalhes.
+MIT. Veja [LICENSE](https://github.com/bcocheto/agentforge/blob/main/LICENSE) para os detalhes.

@@ -4,7 +4,7 @@ description: Define permissões, arquivos protegidos e aprovações humanas do A
 license: MIT
 compatibility: Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot e demais agentes compatíveis com Agent Skills.
 metadata:
-  author: sandeco
+  author: bcocheto
   version: "1.0.0"
   framework: agentforge
   role: policy-guard

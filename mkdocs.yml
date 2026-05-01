@@ -1,11 +1,11 @@
-site_name: Reversa
-site_url: https://sandeco.github.io/reversa
+site_name: AgentForge
+site_url: https://bcocheto.github.io/agentforge
 site_description: Transforme sistemas legados em especificações executáveis por agentes de IA.
-site_author: sandeco
-repo_url: https://github.com/sandeco/reversa
-repo_name: sandeco/reversa
+site_author: bcocheto
+repo_url: https://github.com/bcocheto/agentforge
+repo_name: bcocheto/agentforge
 edit_uri: edit/main/docs/
-copyright: '"Reversa" by sandeco'
+copyright: '"AgentForge" by bcocheto'
 
 theme:
   name: material
@@ -77,7 +77,7 @@ plugins:
           build: true
           nav_translations:
             Home: Início
-            Why Reversa: Por que o Reversa
+            Why AgentForge: Por que o AgentForge
             Installation: Instalação
             How to use: Como usar
             CLI: CLI
@@ -88,7 +88,7 @@ plugins:
             Agents: Agentes
             Overview: Visão geral
             Guide with analogies: Guia com analogias
-            Reversa (Orchestrator): Reversa (Orquestrador)
+            AgentForge (Orchestrator): AgentForge (Orquestrador)
             Generated outputs: Saídas geradas
             Developing from specs: Desenvolvendo com as specs
             Contributing: Contribuindo
@@ -97,7 +97,7 @@ plugins:
           build: true
           nav_translations:
             Home: Inicio
-            Why Reversa: Por qué Reversa
+            Why AgentForge: Por qué AgentForge
             Installation: Instalación
             How to use: Cómo usar
             CLI: CLI
@@ -108,14 +108,14 @@ plugins:
             Agents: Agentes
             Overview: Visión general
             Guide with analogies: Guía con analogías
-            Reversa (Orchestrator): Reversa (Orquestador)
+            AgentForge (Orchestrator): AgentForge (Orquestador)
             Generated outputs: Salidas generadas
             Developing from specs: Desarrollando con las specs
             Contributing: Contribuir
 
 nav:
   - Home: index.md
-  - Why Reversa: por-que-reversa.md
+  - Why AgentForge: por-que-reversa.md
   - Installation: instalacao.md
   - How to use: uso.md
   - CLI: cli.md
@@ -126,7 +126,7 @@ nav:
   - Agents:
     - Overview: agentes/index.md
     - Guide with analogies: agentes/agents-help.md
-    - Reversa (Orchestrator): agentes/reversa.md
+    - AgentForge (Orchestrator): agentes/reversa.md
     - Scout: agentes/scout.md
     - Archaeologist: agentes/arqueologo.md
     - Detective: agentes/detetive.md

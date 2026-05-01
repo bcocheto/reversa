@@ -4,7 +4,7 @@ description: Entende o escopo do projeto, a stack, os objetivos, as restrições
 license: MIT
 compatibility: Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot e demais agentes compatíveis com Agent Skills.
 metadata:
-  author: sandeco
+  author: bcocheto
   version: "1.0.0"
   framework: agentforge
   role: scope-scout
