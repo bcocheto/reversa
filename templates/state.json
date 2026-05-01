@@ -2,6 +2,7 @@
   "version": "{{VERSION}}",
   "project": "",
   "user_name": "",
+  "setup_mode": "bootstrap",
   "project_type": "",
   "stack": "",
   "objective": "",

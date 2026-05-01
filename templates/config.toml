@@ -12,6 +12,9 @@ name = "{{USER_NAME}}"
 chat_language = "{{CHAT_LANGUAGE}}"
 doc_language = "{{DOC_LANGUAGE}}"
 
+[setup]
+mode = "{{SETUP_MODE}}"
+
 [output]
 folder = "{{OUTPUT_FOLDER}}"
 

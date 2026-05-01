@@ -37,6 +37,7 @@ const BASE_INSTALL_ANSWERS = {
   chat_language: 'pt-br',
   doc_language: 'pt-br',
   git_strategy: 'commit',
+  setup_mode: 'bootstrap',
   output_folder: '_agentforge',
   engines: ['codex'],
   internal_agents: AGENT_SKILL_IDS,
@@ -125,6 +126,7 @@ test('install writes the AgentForge state, config, plan, and engine entry templa
     assert.equal(state.version, '1.0.0');
     assert.equal(state.project, 'Demo Project');
     assert.equal(state.user_name, 'Ana');
+    assert.equal(state.setup_mode, 'bootstrap');
     assert.equal(state.project_type, 'SaaS/Web App');
     assert.equal(state.stack, 'Node.js, TypeScript, PostgreSQL');
     assert.equal(state.objective, 'develop-features');
@@ -180,6 +182,8 @@ test('install writes the AgentForge state, config, plan, and engine entry templa
 
     const config = readFileSync(join(projectRoot, PRODUCT.internalDir, 'config.toml'), 'utf8');
     assert.match(config, /\[initial_agents\]/);
+    assert.match(config, /\[setup\]/);
+    assert.match(config, /mode = "bootstrap"/);
     assert.match(config, /type = "SaaS\/Web App"/);
     assert.match(config, /stack = "Node\.js, TypeScript, PostgreSQL"/);
     assert.match(config, /objective = "develop-features"/);
@@ -261,6 +265,8 @@ test('agentforge status shows the AgentForge team state on a fresh install', asy
     assert.match(result.stdout, /Project:/);
     assert.match(result.stdout, /User:/);
     assert.match(result.stdout, /Version:/);
+    assert.match(result.stdout, /Setup mode:/);
+    assert.match(result.stdout, /bootstrap/);
     assert.match(result.stdout, /Current phase:/);
     assert.match(result.stdout, /Engines:/);
     assert.match(result.stdout, /Generated agents:/);

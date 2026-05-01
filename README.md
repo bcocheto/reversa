@@ -27,6 +27,7 @@ npx agentforge install
 
 Install guides you through:
 
+- Setup mode: bootstrap, adopt, or hybrid
 1. Supported engines
 2. Project name
 3. How the agents should address the user

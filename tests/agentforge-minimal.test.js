@@ -10,6 +10,7 @@ import { Writer } from '../lib/installer/writer.js';
 import { buildManifest, saveManifest, loadManifest, mergeUpdateManifest } from '../lib/installer/manifest.js';
 import { exportAgentForge } from '../lib/exporter/index.js';
 import { runUninstall } from '../lib/commands/uninstall.js';
+import { checkExistingInstallation } from '../lib/installer/validator.js';
 import { detectEngines, ENGINES } from '../lib/installer/detector.js';
 import { AGENT_SKILL_IDS, PRODUCT } from '../lib/product.js';
 
@@ -27,6 +28,7 @@ function baseAnswers(overrides = {}) {
     chat_language: 'pt-br',
     doc_language: 'pt-br',
     git_strategy: 'commit',
+    setup_mode: 'bootstrap',
     output_folder: '_agentforge',
     engines: ['codex'],
     internal_agents: AGENT_SKILL_IDS,
@@ -73,6 +75,7 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
 
     const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
     assert.equal(state.project, answers.project_name);
+    assert.equal(state.setup_mode, 'bootstrap');
     assert.deepEqual(state.initial_agents, answers.initial_agents);
     assert.deepEqual(state.initial_flows, answers.initial_flows);
     assert.deepEqual(state.engines, answers.engines);
@@ -204,6 +207,40 @@ test('detectEngines still recognizes Codex when AGENTS.md is present', () => {
 
     assert.ok(codex);
     assert.equal(codex.detected, true);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('legacy installations without setup_mode default to bootstrap', () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-legacy-mode-'));
+
+  try {
+    mkdirSync(join(projectRoot, PRODUCT.internalDir), { recursive: true });
+    writeFileSync(
+      join(projectRoot, PRODUCT.internalDir, 'state.json'),
+      JSON.stringify({
+        version: '1.0.0',
+        project: 'Legacy Project',
+        user_name: 'Ana',
+        project_type: 'API',
+        stack: 'Node.js',
+        objective: 'develop-features',
+        engines: ['codex'],
+        internal_agents: ['orchestrator'],
+        generated_agents: ['orchestrator'],
+        generated_subagents: [],
+        flows: ['feature-development'],
+        output_folder: '_agentforge',
+        created_files: [],
+        checkpoints: {},
+      }, null, 2),
+      'utf8',
+    );
+
+    const existing = checkExistingInstallation(projectRoot);
+    assert.equal(existing.installed, true);
+    assert.equal(existing.state.setup_mode, 'bootstrap');
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
