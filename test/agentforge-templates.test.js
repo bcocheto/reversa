@@ -270,16 +270,20 @@ test('install writes the AgentForge state, config, plan, and engine entry templa
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports')), true);
 
     const agentsEntry = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
-    assert.match(agentsEntry, /AgentForge/);
-    assert.match(agentsEntry, /\.agentforge\/state\.json/);
-    assert.match(agentsEntry, /\/agentforge/);
+    assert.match(agentsEntry, /<!-- agentforge:start -->/);
+    assert.match(agentsEntry, /Leia `\.agentforge\/harness\/router\.md`/);
+    assert.match(agentsEntry, /Use `\.agentforge\/harness\/context-index\.yaml`/);
     assert.doesNotMatch(agentsEntry, /Reversa/);
+    assert.equal((agentsEntry.match(/<!-- agentforge:start -->/g) ?? []).length, 1);
+    assert.equal((agentsEntry.match(/<!-- agentforge:end -->/g) ?? []).length, 1);
 
     const claudeEntry = readFileSync(join(projectRoot, 'CLAUDE.md'), 'utf8');
-    assert.match(claudeEntry, /AgentForge/);
-    assert.match(claudeEntry, /\.agentforge\/state\.json/);
-    assert.match(claudeEntry, /\/agentforge/);
+    assert.match(claudeEntry, /<!-- agentforge:start -->/);
+    assert.match(claudeEntry, /Leia `\.agentforge\/harness\/router\.md`/);
+    assert.match(claudeEntry, /Use `\.agentforge\/harness\/context-index\.yaml`/);
     assert.doesNotMatch(claudeEntry, /Reversa/);
+    assert.equal((claudeEntry.match(/<!-- agentforge:start -->/g) ?? []).length, 1);
+    assert.equal((claudeEntry.match(/<!-- agentforge:end -->/g) ?? []).length, 1);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }

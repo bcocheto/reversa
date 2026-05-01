@@ -79,12 +79,51 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'flows', 'feature-development.yaml')), true);
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'flows', 'release.yaml')), true);
 
+    const agentsEntry = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
+    assert.match(agentsEntry, /<!-- agentforge:start -->/);
+    assert.match(agentsEntry, /<!-- agentforge:end -->/);
+    assert.match(agentsEntry, /Leia `\.agentforge\/harness\/router\.md`/);
+
     const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
     assert.equal(state.project, answers.project_name);
     assert.equal(state.setup_mode, 'bootstrap');
     assert.deepEqual(state.initial_agents, answers.initial_agents);
     assert.deepEqual(state.initial_flows, answers.initial_flows);
     assert.deepEqual(state.engines, answers.engines);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('compile after install updates only the managed bootloader block', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-compile-managed-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const agentsPath = join(projectRoot, 'AGENTS.md');
+    const original = readFileSync(agentsPath, 'utf8');
+    const mutated = original.replace(
+      'Use `.agentforge/harness/context-index.yaml` para localizar o contexto mínimo necessário.',
+      'Use `.agentforge/harness/context-index.yaml` para localizar o contexto mínimo necessário.\nLinha manual interna.',
+    );
+    writeFileSync(agentsPath, `${mutated}\nLinha manual externa.\n`, 'utf8');
+
+    const result = await compileAgentForge(projectRoot, {
+      mergeStrategyResolver: async () => {
+        throw new Error('mergeStrategyResolver should not be called for managed bootloaders.');
+      },
+    });
+
+    assert.equal(result.errors.length, 0);
+    assert.ok(result.written.includes('AGENTS.md'));
+
+    const content = readFileSync(agentsPath, 'utf8');
+    assert.match(content, /Linha manual externa\./);
+    assert.doesNotMatch(content, /Linha manual interna\./);
+    assert.equal((content.match(/<!-- agentforge:start -->/g) ?? []).length, 1);
+    assert.equal((content.match(/<!-- agentforge:end -->/g) ?? []).length, 1);
+    assert.match(content, /Use `\.agentforge\/harness\/context-index\.yaml` para localizar o contexto mínimo necessário\./);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
