@@ -124,6 +124,63 @@ test('validate fails when a flow references a missing agent', async () => {
   }
 });
 
+test('bootstrap populates human-readable context, updates state, and preserves modified files', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-bootstrap-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const overviewPath = join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md');
+    writeFileSync(overviewPath, `${readFileSync(overviewPath, 'utf8')}\nLinha manual preservada.\n`, 'utf8');
+
+    const result = spawnSync(process.execPath, [
+      AGENTFORGE_BIN,
+      'bootstrap',
+      '--project-type',
+      'SaaS/Web App',
+      '--stack',
+      'Node.js, TypeScript, PostgreSQL',
+      '--primary-goals',
+      'develop-features,review-prs',
+      '--preferred-workflow',
+      'feature-development',
+      '--quality-level',
+      'strict',
+      '--engines',
+      'codex,claude-code',
+    ], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.ok(state.last_bootstrap_at);
+    assert.deepEqual(state.primary_goals, ['develop-features', 'review-prs']);
+    assert.equal(state.preferred_workflow, 'feature-development');
+    assert.equal(state.quality_level, 'strict');
+
+    const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'bootstrap.md');
+    assert.equal(existsSync(reportPath), true);
+    const report = readFileSync(reportPath, 'utf8');
+    assert.match(report, /Bootstrap Report/);
+    assert.match(report, /Files written/);
+
+    const overview = readFileSync(overviewPath, 'utf8');
+    assert.match(overview, /Linha manual preservada\./);
+
+    const commands = readFileSync(join(projectRoot, PRODUCT.internalDir, 'references', 'commands.md'), 'utf8');
+    assert.match(commands, /agentforge bootstrap/);
+
+    const contextIndex = readFileSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml'), 'utf8');
+    assert.match(contextIndex, /bootstrap:/);
+    assert.match(contextIndex, /quality_level: strict/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('manifest includes generated AgentForge files', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-manifest-'));
 

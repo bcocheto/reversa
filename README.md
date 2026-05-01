@@ -62,6 +62,9 @@ It then creates:
 - `.cursor/rules/agentforge.md` for Cursor when enabled
 - `.github/copilot-instructions.md` for GitHub Copilot when enabled
 
+After install, `agentforge bootstrap` can complete the human-readable project context,
+flow docs, and initial skill guidance for the current repo.
+
 AgentForge writes generated artifacts and entry files with merge-aware behavior. If an existing file was modified by the user, it is preserved unless you explicitly force an overwrite or a policy allows that change.
 
 **Requirements:** Node.js 18+
@@ -143,6 +146,7 @@ The file hash record used to detect intact, modified, missing, and newly generat
 
 ```bash
 npx agentforge install    # Install AgentForge and create the initial team
+agentforge bootstrap      # Complete or refresh the project base
 agentforge status         # Show the current AgentForge state
 agentforge add-agent      # Create a custom project agent
 agentforge add-flow       # Create a custom operational flow
