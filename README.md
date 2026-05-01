@@ -205,7 +205,8 @@ npx reversa status       # Show current analysis state
 npx reversa update       # Update agents to the latest version
 npx agentforge add-agent  # Create a custom project agent
 npx reversa add-engine   # Add support for a new engine
-npx agentforge export    # Generate engine-derived files from .agentforge/
+npx agentforge add-flow   # Create a custom operational flow
+npx agentforge export     # Generate engine-derived files from .agentforge/
 npx reversa uninstall    # Remove Reversa from the project
 ```
 
