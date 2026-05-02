@@ -79,6 +79,57 @@ async function installFixture(projectRoot, {
   return answers;
 }
 
+async function createInstalledProjectWithClaude(projectRoot) {
+  const writer = new Writer(projectRoot);
+  writer.createProductDir(baseAnswers({ engines: ['codex', 'claude-code'] }), '1.0.0');
+
+  const codex = ENGINES.find((entry) => entry.id === 'codex');
+  const claudeCode = ENGINES.find((entry) => entry.id === 'claude-code');
+  assert.ok(codex, 'Codex engine definition must exist');
+  assert.ok(claudeCode, 'Claude Code engine definition must exist');
+
+  await writer.installEntryFile(codex, { force: true });
+  await writer.installEntryFile(claudeCode, { force: true });
+  writer.saveCreatedFiles();
+  saveManifest(projectRoot, buildManifest(projectRoot, writer.manifestPaths));
+}
+
+function buildManagedEntrypointContent({
+  manualLines = 0,
+  includeLegacyReversaBlock = false,
+  includeLegacyReversaPath = false,
+} = {}) {
+  const lines = [
+    '# AgentForge bootloader',
+    ...Array.from({ length: manualLines }, (_, index) => `Linha manual ${index + 1}.`),
+    '',
+    '<!-- agentforge:start -->',
+    'Quando o usuário digitar `agentforge`, ative o orquestrador AgentForge.',
+    'Leia `.agentforge/harness/router.md`.',
+    'Use `.agentforge/harness/context-index.yaml` para localizar o contexto mínimo necessário.',
+    'Respeite `.agentforge/policies/`.',
+    'Use skills de `.agentforge/skills/` quando apropriado.',
+    'Siga flows de `.agentforge/flows/`.',
+    'Consulte `.agentforge/references/` quando necessário.',
+    '<!-- agentforge:end -->',
+  ];
+
+  if (includeLegacyReversaBlock) {
+    lines.push(
+      '',
+      '<!-- reversa:start -->',
+      'Bloco legado Reversa.',
+      '<!-- reversa:end -->',
+    );
+  }
+
+  if (includeLegacyReversaPath) {
+    lines.push('', 'Consulte `.reversa/legacy.md` e `_reversa_sdd/notes.md`.');
+  }
+
+  return `${lines.join('\n')}\n`;
+}
+
 function assertMinimumHarness(projectRoot) {
   for (const relPath of MINIMUM_HARNESS_REL_PATHS) {
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, relPath)), true);
@@ -356,21 +407,18 @@ test('validate warns when AGENTS.md is unmanaged and missing a managed block', a
   }
 });
 
-test('validate fails when a managed AGENTS.md exceeds the bootloader line limit', async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-agents-limit-'));
+test('validate fails when AGENTS.md has a managed block but too much manual content outside it', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-agents-manual-excess-'));
 
   try {
     await installFixture(projectRoot);
 
     const agentsPath = join(projectRoot, 'AGENTS.md');
-    const oversizedBlock = [
-      '# AgentForge',
-      '',
-      '<!-- agentforge:start -->',
-      ...Array.from({ length: 151 }, (_, index) => `Linha gerenciada ${index + 1}.`),
-      '<!-- agentforge:end -->',
-    ].join('\n');
-    writeFileSync(agentsPath, `${oversizedBlock}\n`, 'utf8');
+    writeFileSync(
+      agentsPath,
+      buildManagedEntrypointContent({ manualLines: 300 }),
+      'utf8',
+    );
 
     const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
       cwd: projectRoot,
@@ -379,7 +427,93 @@ test('validate fails when a managed AGENTS.md exceeds the bootloader line limit'
 
     assert.equal(result.status, 1);
     const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
-    assert.match(report, /Entrypoint gerenciado excede o limite de 150 linhas/);
+    assert.match(report, /Conteúdo manual excessivo fora do bloco AgentForge/);
+    assert.match(report, /mova esse material para \.agentforge\/context ou references/i);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('validate passes when AGENTS.md is a short managed bootloader', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-agents-short-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const agentsPath = join(projectRoot, 'AGENTS.md');
+    writeFileSync(
+      agentsPath,
+      buildManagedEntrypointContent({ manualLines: 68 }),
+      'utf8',
+    );
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
+    assert.match(report, /Status: válido/);
+    assert.doesNotMatch(report, /Conteúdo manual excessivo/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('validate fails when AGENTS.md still contains a Reversa legacy block', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-agents-reversa-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const agentsPath = join(projectRoot, 'AGENTS.md');
+    writeFileSync(
+      agentsPath,
+      buildManagedEntrypointContent({
+        manualLines: 20,
+        includeLegacyReversaBlock: true,
+        includeLegacyReversaPath: true,
+      }),
+      'utf8',
+    );
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 1);
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
+    assert.match(report, /Conteúdo legado Reversa detectado/);
+    assert.match(report, /\.reversa\/|_reversa_sdd\//);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('validate applies the same bootloader quality rules to CLAUDE.md', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-claude-quality-'));
+
+  try {
+    await createInstalledProjectWithClaude(projectRoot);
+
+    const claudePath = join(projectRoot, 'CLAUDE.md');
+    writeFileSync(
+      claudePath,
+      buildManagedEntrypointContent({ manualLines: 260 }),
+      'utf8',
+    );
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 1);
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
+    assert.match(report, /CLAUDE\.md/);
+    assert.match(report, /Conteúdo manual excessivo fora do bloco AgentForge/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }

@@ -80,6 +80,25 @@ function createSkillWithoutProcedure(projectRoot) {
   );
 }
 
+function buildManagedEntrypointContent(manualLines = 0) {
+  const lines = [
+    '# AgentForge bootloader',
+    ...Array.from({ length: manualLines }, (_, index) => `Linha manual ${index + 1}.`),
+    '',
+    '<!-- agentforge:start -->',
+    'Quando o usuário digitar `agentforge`, ative o orquestrador AgentForge.',
+    'Leia `.agentforge/harness/router.md`.',
+    'Use `.agentforge/harness/context-index.yaml` para localizar o contexto mínimo necessário.',
+    'Respeite `.agentforge/policies/`.',
+    'Use skills de `.agentforge/skills/` quando apropriado.',
+    'Siga flows de `.agentforge/flows/`.',
+    'Consulte `.agentforge/references/` quando necessário.',
+    '<!-- agentforge:end -->',
+  ];
+
+  return `${lines.join('\n')}\n`;
+}
+
 test('improve generates improvement-plan.md and flags missing READMEs and incomplete skills', () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-improve-dry-'));
 
@@ -158,6 +177,33 @@ test('improve --apply creates missing READMEs, preserves modified skills, and up
     const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
     assert.ok(typeof state.last_improve_at === 'string');
     assert.equal(typeof state.improvement_score, 'number');
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('improve suggests takeover or refactor for oversized managed entrypoints', () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-improve-entrypoints-'));
+
+  try {
+    createInstalledProject(projectRoot);
+
+    writeFileSync(
+      join(projectRoot, 'AGENTS.md'),
+      buildManagedEntrypointContent(260),
+      'utf8',
+    );
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'improve'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'improvement-plan.md'), 'utf8');
+    assert.match(report, /Use takeover ou refatore os entrypoints gerenciados/);
+    assert.match(report, /Conteúdo manual excessivo fora do bloco AgentForge/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
