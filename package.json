@@ -1,6 +1,6 @@
 {
   "name": "@bcocheto/agentforge",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "description": "Analyze projects, suggest agents, skills, flows, and policies, and compile clean agent-ready bootloaders",
   "bin": {
     "agentforge": "bin/agentforge.js",
