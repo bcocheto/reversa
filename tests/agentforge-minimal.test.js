@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { mkdtempSync, rmSync, readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
 import { spawnSync } from 'child_process';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
@@ -168,25 +168,63 @@ for (const setupMode of ['bootstrap', 'adopt', 'hybrid']) {
   });
 }
 
-test('compile merges into an existing AGENTS.md without a managed block', async () => {
+test('compile warns and preserves an existing AGENTS.md without a managed block', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-compile-merge-'));
 
   try {
     await installFixture(projectRoot);
 
     const agentsPath = join(projectRoot, 'AGENTS.md');
-    writeFileSync(agentsPath, '# Manual AGENTS\nLinha manual.\n', 'utf8');
+    const manualContent = Array.from({ length: 300 }, (_, index) => `Linha manual ${index + 1}.`).join('\n');
+    writeFileSync(agentsPath, `${manualContent}\n`, 'utf8');
+
+    const result = await compileAgentForge(projectRoot);
+
+    assert.equal(result.errors.length, 0);
+    assert.ok(result.warnings.some((warning) => warning.includes('--takeover-entrypoints')));
+    const content = readFileSync(agentsPath, 'utf8');
+    assert.equal(content, `${manualContent}\n`);
+    assert.doesNotMatch(content, /<!-- agentforge:start -->/);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'compile.md')), true);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('compile --takeover-entrypoints snapshots and rewrites an existing AGENTS.md', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-compile-takeover-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const agentsPath = join(projectRoot, 'AGENTS.md');
+    const legacyContent = Array.from({ length: 300 }, (_, index) => `Linha legada ${index + 1}.`).join('\n');
+    writeFileSync(agentsPath, `${legacyContent}\n`, 'utf8');
 
     const result = await compileAgentForge(projectRoot, {
-      mergeStrategyResolver: async () => 'merge',
+      takeoverEntrypoints: true,
     });
 
     assert.equal(result.errors.length, 0);
+    assert.ok(result.preservedSnapshots.some((entry) => entry.includes('.agentforge/imports/snapshots/AGENTS.md/')));
+
     const content = readFileSync(agentsPath, 'utf8');
-    assert.match(content, /Linha manual\./);
     assert.match(content, /<!-- agentforge:start -->/);
+    assert.match(content, /<!-- agentforge:end -->/);
+    assert.match(content, /\.agentforge\/harness\/router\.md/);
     assert.equal((content.match(/<!-- agentforge:start -->/g) ?? []).length, 1);
-    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'compile.md')), true);
+    assert.ok(content.trimEnd().split(/\r?\n/).length <= 150);
+
+    const snapshotsDir = join(projectRoot, PRODUCT.internalDir, 'imports', 'snapshots', 'AGENTS.md');
+    assert.equal(existsSync(snapshotsDir), true);
+    assert.ok(readdirSync(snapshotsDir).some((name) => name.endsWith('.json')));
+
+    const rerun = await compileAgentForge(projectRoot, {
+      takeoverEntrypoints: true,
+    });
+    assert.equal(rerun.errors.length, 0);
+    const secondContent = readFileSync(agentsPath, 'utf8');
+    assert.equal((secondContent.match(/<!-- agentforge:start -->/g) ?? []).length, 1);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -313,6 +351,35 @@ test('validate warns when AGENTS.md is unmanaged and missing a managed block', a
     assert.match(report, /Status: válido com avisos/);
     assert.match(report, /AGENTS\.md/);
     assert.match(report, /Arquivo unmanaged sem bloco AgentForge/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('validate fails when a managed AGENTS.md exceeds the bootloader line limit', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-agents-limit-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const agentsPath = join(projectRoot, 'AGENTS.md');
+    const oversizedBlock = [
+      '# AgentForge',
+      '',
+      '<!-- agentforge:start -->',
+      ...Array.from({ length: 151 }, (_, index) => `Linha gerenciada ${index + 1}.`),
+      '<!-- agentforge:end -->',
+    ].join('\n');
+    writeFileSync(agentsPath, `${oversizedBlock}\n`, 'utf8');
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 1);
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
+    assert.match(report, /Entrypoint gerenciado excede o limite de 150 linhas/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -660,6 +727,74 @@ test('adopt generates a plan even when no agentic files are present', async () =
     const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
     assert.equal(state.adoption_status, 'plan-generated');
     assert.equal(state.imported_sources.length, 0);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('adopt --apply snapshots a legacy AGENTS.md and finalizes entrypoints as bootloaders', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-apply-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const agentsPath = join(projectRoot, 'AGENTS.md');
+    const legacySections = Array.from({ length: 60 }, (_, index) => [
+      `## Project Overview ${index + 1}`,
+      `UNIQUE_ADOPT_MARKER_${index + 1}`,
+      `## Architecture ${index + 1}`,
+      `Architecture detail ${index + 1}`,
+      `## Testing ${index + 1}`,
+    ].join('\n')).join('\n');
+    writeFileSync(agentsPath, `${legacySections}\n`, 'utf8');
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'adopt', '--apply'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+
+    const finalAgents = readFileSync(agentsPath, 'utf8');
+    assert.match(finalAgents, /<!-- agentforge:start -->/);
+    assert.match(finalAgents, /<!-- agentforge:end -->/);
+    assert.ok(finalAgents.trimEnd().split(/\r?\n/).length <= 150);
+
+    const snapshotRoot = join(projectRoot, PRODUCT.internalDir, 'imports', 'snapshots', 'AGENTS.md');
+    assert.equal(existsSync(snapshotRoot), true);
+    assert.ok(readdirSync(snapshotRoot).some((name) => name.endsWith('.json')));
+
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(state.adoption_status, 'applied');
+    assert.equal(typeof state.last_adopt_at, 'string');
+    assert.ok(state.refactor_context);
+    assert.ok(state.refactor_context.classified_count > 0 || state.refactor_context.unclassified_count > 0);
+
+    const contextCandidates = [
+      join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md'),
+      join(projectRoot, PRODUCT.internalDir, 'context', 'unclassified.md'),
+      join(projectRoot, PRODUCT.internalDir, 'policies', 'human-approval.md'),
+      join(projectRoot, PRODUCT.internalDir, 'references', 'commands.md'),
+    ];
+    assert.ok(
+      contextCandidates.some((filePath) => existsSync(filePath) && /UNIQUE_ADOPT_MARKER_\d+/.test(readFileSync(filePath, 'utf8'))),
+      'expected extracted or unclassified content to be written into the AgentForge context layer',
+    );
+
+    const validateResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(validateResult.status, 0);
+
+    const secondCompile = spawnSync(process.execPath, [AGENTFORGE_BIN, 'compile'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(secondCompile.status, 0);
+    const rerunAgents = readFileSync(agentsPath, 'utf8');
+    assert.equal((rerunAgents.match(/<!-- agentforge:start -->/g) ?? []).length, 1);
+    assert.equal((rerunAgents.match(/<!-- agentforge:end -->/g) ?? []).length, 1);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
