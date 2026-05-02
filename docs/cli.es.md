@@ -1,128 +1,45 @@
 # CLI
 
-agentforge tiene un CLI simple para gestionar la instalación y el ciclo de vida de los agentes en tu proyecto. Todos los comandos se ejecutan con `npx agentforge` en la raíz del proyecto.
+AgentForge tiene un CLI pequeño para gestionar la capa agent-ready del proyecto. Ejecútalo desde la raíz con `npx agentforge`.
 
 ---
 
-## Comandos disponibles
+## Comandos
 
-### `install`
-
-```bash
-npx agentforge install
-```
-
-Instala agentforge en el proyecto heredado actual. Detecta los motores presentes, pregunta tus preferencias y crea toda la estructura necesaria.
-
-Úsalo una vez, en la raíz del proyecto que quieres analizar.
-
----
-
-### `audit-context`
-
-```bash
-npx agentforge audit-context
-```
-
-Analiza snapshots importados y entrypoints existentes para diagnosticar la organización del contexto.
-Escribe `.agentforge/reports/context-audit.md` y actualiza los metadatos de la auditoría en `.agentforge/state.json`.
-
-Úsalo después de importar snapshots o cuando quieras una vista determinista y read-only de la calidad del contexto.
+| Comando | Qué hace |
+|---------|----------|
+| `install` | Crea la base `.agentforge/` y los entrypoints gestionados de los motores. |
+| `bootstrap` | Completa la base de un proyecto nuevo usando señales reales del repositorio. |
+| `adopt` | Lee una superficie agentic existente y genera un plan de adopción. |
+| `ingest` | Copia snapshots seguros de instrucciones a `.agentforge/imports/` sin tocar los originales. |
+| `audit-context` | Diagnostica la organización del contexto y escribe `.agentforge/reports/context-audit.md`. |
+| `refactor-context` | Crea un plan de refactor o, con `--apply`, escribe archivos canónicos en `.agentforge/`. |
+| `suggest-skills` | Genera sugerencias de skills a partir de imports, contexto, package files y estructura del repositorio. |
+| `create-skill <skill-id>` | Promueve una sugerencia de skill existente a una skill real. |
+| `add-agent` | Añade un agente personalizado al proyecto. |
+| `add-flow` | Añade un workflow personalizado. |
+| `add-engine` | Añade soporte para otro motor. |
+| `compile` / `export` | Genera bootloaders gestionados y archivos derivados para los motores configurados. |
+| `validate` | Valida la estructura canónica `.agentforge/` y los entrypoints gestionados. |
+| `update` | Actualiza los archivos generados preservando ediciones personalizadas. |
+| `improve` | Revisa `.agentforge/` y sugiere mejoras más seguras y legibles para humanos. |
+| `status` | Muestra el estado actual de AgentForge. |
+| `uninstall` | Elimina de forma segura los archivos gestionados por AgentForge. |
 
 ---
 
-### `refactor-context`
+## Comandos read-only
 
-```bash
-npx agentforge refactor-context
-```
+Estos comandos leen señales del proyecto sin modificar los archivos originales:
 
-Analiza snapshots importados y entrypoints existentes para separar el contenido en archivos canónicos `.agentforge/`.
-Sin `--apply`, escribe solo `.agentforge/reports/refactor-plan.md`.
-Con `--apply`, crea o actualiza archivos canónicos seguros y preserva los que fueron editados manualmente.
-
-Úsalo después de la auditoría cuando quieras hacer la primera segmentación del contexto.
+- `ingest`
+- `adopt`
+- `audit-context`
 
 ---
 
-### `suggest-skills`
+## `compile` versus `export`
 
-```bash
-npx agentforge suggest-skills
-```
+`export` es alias de `compile`.
 
-Analiza imports, contexto, package files y la estructura del repositorio para sugerir skills del proyecto.
-Escribe `.agentforge/reports/skill-suggestions.md` y sugerencias YAML en `.agentforge/skill-suggestions/`.
-
-Úsalo cuando quieras una shortlist determinista de skills para crear después, no skills finales.
-
----
-
-### `create-skill`
-
-```bash
-npx agentforge create-skill <skill-id>
-npx agentforge create-skill <skill-id> --force
-```
-
-Crea una skill real a partir de una sugerencia existente en `.agentforge/skill-suggestions/`.
-Escribe `.agentforge/skills/<skill-id>/SKILL.md`, actualiza `.agentforge/state.json` y refresca `context-index.yaml` cuando sea posible.
-
-Úsalo después de `suggest-skills` cuando quieras promover una sugerencia a una skill reutilizable.
-
----
-
-### `status`
-
-```bash
-npx agentforge status
-```
-
-Muestra el estado actual del análisis: qué fase está en curso, qué agentes ya corrieron, qué falta completar.
-
-Útil para tener una visión rápida antes de retomar una sesión.
-
----
-
-### `update`
-
-```bash
-npx agentforge update
-```
-
-Actualiza los agentes a la versión más reciente de agentforge.
-
-El comando es inteligente: verifica el manifiesto SHA-256 de cada archivo y nunca sobreescribe archivos que hayas personalizado.
-
----
-
-### `add-agent`
-
-```bash
-npx agentforge add-agent
-```
-
-Agrega un agente específico al proyecto. Útil si no instalaste todos los agentes en la instalación inicial y ahora quieres incluir, por ejemplo, el Data Master o el Design System.
-
----
-
-### `add-engine`
-
-```bash
-npx agentforge add-engine
-```
-
-Agrega soporte para un motor de IA que no estaba presente cuando instalaste.
-
----
-
-### `uninstall`
-
-```bash
-npx agentforge uninstall
-```
-
-Elimina agentforge del proyecto: borra los archivos creados por la instalación.
-
-!!! info "Tus archivos quedan intactos"
-    `uninstall` elimina **solo** lo que agentforge creó. Ningún archivo original del proyecto es tocado. Las especificaciones generadas en `_agentforge_sdd/` también se conservan por defecto.
+Cursor queda estandarizado en `.cursor/rules/agentforge.md`. El archivo legado `.cursorrules` queda solo para compatibilidad en la detección durante la instalación.

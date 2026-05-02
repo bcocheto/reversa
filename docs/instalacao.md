@@ -4,68 +4,61 @@
 
 - **Node.js 18+** installed on your machine
 
-If you don't have Node.js, install it at [nodejs.org](https://nodejs.org) and come back here.
+If you don't have Node.js yet, install it at [nodejs.org](https://nodejs.org) and come back.
 
 ---
 
-## One command, that's all
+## One command to bootstrap the layer
 
-In the root of the legacy project you want to analyze:
+In the root of the project you want to prepare:
 
 ```bash
 npx agentforge install
 ```
 
-The installer does all of this for you:
+The installer creates the canonical `.agentforge/` layer, detects the engines already present, and writes the managed entrypoints for the engines you enabled.
 
-1. Detects the AI engines present in the environment (Claude Code, Codex, Cursor, Gemini CLI, Windsurf)
-2. Asks which agents to install (all selected by default)
-3. Collects project name, language, and preferences
-4. Copies agents to `.agents/skills/` and `.claude/skills/` (for Claude Code)
-5. Creates the engine entry file (`CLAUDE.md`, `AGENTS.md`, etc.)
-6. Creates the `.agentforge/` structure with state, configuration, and plan
-7. Generates the SHA-256 manifest for safe future updates
+It creates:
 
-It's like `npm install`, but for your reverse engineering agent team.
+1. the base `.agentforge/` structure
+2. the SHA-256 manifest used for safe updates
+3. the engine entry files for the engines selected during install
+4. the initial team, flows, policies, and memory scaffolding
 
 ---
 
-## What gets created in the project
+## Installation modes
 
-```
-legacy-project/
-├── .agentforge/               ← analysis state, config, and context
-├── .agents/skills/         ← universal agents (all engines)
-├── .claude/skills/         ← mirror for Claude Code
-├── CLAUDE.md               ← entry point for Claude Code (if detected)
-├── AGENTS.md               ← entry point for Codex (if detected)
-└── _agentforge_sdd/           ← where specs will be generated (empty initially)
-```
-
-!!! success "Your files stay intact"
-    The installer **only creates new files**. It never modifies or deletes any existing file in your project.
+- **bootstrap**: start from a new project and build the initial agent-ready base
+- **adopt**: inspect an existing project and import its agentic surface safely
+- **hybrid**: do both, when the project already has some structure but still needs a canonical base
 
 ---
 
-## Backup before starting
+## What gets created
 
-!!! warning "Strong recommendation: make a backup"
-    Although agentforge never modifies your files, AI agents can make mistakes. Before starting the analysis:
+```text
+project/
+├── .agentforge/
+├── AGENTS.md
+├── CLAUDE.md
+├── .cursor/rules/agentforge.md
+└── .github/copilot-instructions.md
+```
 
-    1. Make sure all files are committed in Git
-    2. Have the repository on GitHub, GitLab, or Bitbucket
-    3. Make a local copy of the folder as extra safety: `cp -r my-project my-project-backup`
+Depending on the detected engines, `install` may also create compatibility surfaces like `.cursorrules`.
 
-    If something unexpected happens, `git restore .` fixes it.
+!!! success "Original app files stay intact"
+    The installer creates new files and managed entrypoints. It does not rewrite your application source code.
 
 ---
 
 ## Adding another engine later
 
-If you want to add support for another engine later (for example, you installed only for Claude Code and now want Codex too):
+If you want to add support for another engine later:
 
 ```bash
 npx agentforge add-engine
 ```
 
-The installer detects what already exists and adds only what's missing.
+The installer detects what already exists and adds only what is missing.

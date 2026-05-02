@@ -1,88 +1,97 @@
-# agentforge
+# AgentForge
 
-**Transforma sistemas heredados en especificaciones ejecutables para agentes de IA.**
+**Crea, organiza, evoluciona y compila la capa agent-ready de un proyecto.**
 
-¿Conoces ese sistema que nadie quiere tocar? El que lleva 10 años corriendo, genera dinero todos los días, pero nadie sabe bien qué hace por dentro. agentforge fue creado para él.
-
----
-
-## ¿Qué es agentforge?
-
-agentforge es un framework de ingeniería inversa de especificaciones. Lo instalas dentro del proyecto heredado, activas un agente de IA que ya usas, y él coordina un equipo de especialistas para analizar el código y generar especificaciones completas, trazables y listas para cualquier agente codificador.
-
-**En otras palabras:** agentforge convierte código sin documentación en contratos operacionales que un agente de IA puede entender y usar para evolucionar el sistema con seguridad.
+AgentForge le da al proyecto una fuente de verdad en `.agentforge/`, un router de contexto, skills reutilizables, flows operacionales, policies, memoria y exports para Codex, Claude Code, Cursor y GitHub Copilot.
 
 ---
 
-## Míralo en acción
+## El problema
 
-[![Ver en YouTube](https://img.youtube.com/vi/ARQBBKnfP_c/maxresdefault.jpg)](https://www.youtube.com/watch?v=ARQBBKnfP_c)
+- `AGENTS.md` crece demasiado.
+- `CLAUDE.md` se vuelve una fuente paralela.
+- Las reglas se duplican entre motores.
+- Contexto, policies, workflows y comandos quedan mezclados.
+- A los humanos les cuesta editar con seguridad.
+- Los agents reciben demasiado contexto, o el contexto equivocado.
 
 ---
 
-## Inicio rápido
+## La solución
 
-En la raíz del proyecto heredado:
+- `.agentforge/` es la fuente de verdad.
+- `harness/` enruta el contexto.
+- `context-index.yaml` define qué cargar.
+- `skills/` guardan procedimientos reutilizables.
+- `flows/` guardan workflows del proyecto.
+- `policies/` definen límites.
+- `compile` genera bootloaders gestionados para cada motor.
+
+---
+
+## Empieza aquí
+
+### Proyecto nuevo
 
 ```bash
 npx agentforge install
+npx agentforge bootstrap
+npx agentforge compile
+npx agentforge validate
 ```
 
-Luego abre el proyecto en tu agente de IA favorito y escribe:
+### Proyecto existente
 
-```
-/agentforge
+```bash
+npx agentforge install
+npx agentforge adopt
+npx agentforge audit-context
+npx agentforge refactor-context --apply
+npx agentforge suggest-skills
+npx agentforge compile
+npx agentforge validate
 ```
 
-Eso es todo. agentforge toma el volante y te guía hasta el final.
+### Trabajo continuo
+
+```bash
+npx agentforge add-agent
+npx agentforge add-flow
+npx agentforge suggest-skills
+npx agentforge create-skill run-tests
+npx agentforge improve
+```
 
 ---
 
-## Lo que encontrarás aquí
+## Seguridad
 
-<div class="grid cards" markdown>
+!!! note "Comandos read-only"
+    `ingest`, `adopt` y `audit-context` leen las señales del proyecto sin modificar los archivos originales.
 
-- **Por qué existe agentforge**
+!!! note "Escrituras gestionadas"
+    `compile` y `export` escriben bloques gestionados de bootloader y preservan el contenido manual fuera del bloque. `update` y `uninstall` respetan el manifiesto y los archivos modificados.
 
-    El problema que resuelve y por qué importa.
-
-    [:octicons-arrow-right-24: Leer más](por-que-agentforge.md)
-
-- **Instalación**
-
-    Dos minutos y estás listo para empezar.
-
-    [:octicons-arrow-right-24: Instalar](instalacao.md)
-
-- **Pipeline de análisis**
-
-    Las 5 fases que convierten código en especificación.
-
-    [:octicons-arrow-right-24: Ver pipeline](pipeline.md)
-
-- **Agentes**
-
-    Conoce el equipo: 14 especialistas, cada uno con su función.
-
-    [:octicons-arrow-right-24: Ver agentes](agentes/index.md)
-
-</div>
+!!! note "Los snapshots quedan locales"
+    Los snapshots viven en `.agentforge/imports/`. Los reportes viven en `.agentforge/reports/`.
 
 ---
 
-## Garantía de seguridad
+## Conceptos
 
-!!! danger "💾 Haz una copia de seguridad antes de empezar"
-    Aunque agentforge nunca modifica tus archivos, los agentes de IA pueden cometer errores. **Recomendamos fuertemente:**
+- **Harness**: el router que carga el contexto correcto en el momento correcto.
+- **Context**: conocimiento canónico del proyecto en `.agentforge/context/`.
+- **References**: comandos, archivos importantes, docs externas y herramientas.
+- **Policies**: archivos protegidos, límites de seguridad y reglas de aprobación.
+- **Flows**: workflows repetibles para feature, bugfix, refactor y review.
+- **Skills**: procedimientos reutilizables promovidos desde sugerencias.
+- **Agents**: los roles del proyecto que ejecutan el trabajo.
+- **Memory**: decisiones, convenciones, glosario, lecciones y preguntas abiertas.
+- **Reports**: salidas de audit, compile, bootstrap, improve y validation.
+- **Engine exports**: entrypoints generados para Codex, Claude Code, Cursor y GitHub Copilot.
 
-    1. **Versiona el proyecto en Git** — asegúrate de que todos los archivos estén commiteados antes de iniciar el análisis
-    2. **Ten el repositorio en GitHub** (o GitLab, Bitbucket) — para tener una copia remota segura
-    3. **Haz una copia local de la carpeta** — un simple `cp -r mi-proyecto mi-proyecto-backup` protege contra cualquier imprevisto
+---
 
-    Si algo inesperado ocurre durante el análisis, puedes restaurar el estado original con `git restore .` o desde la copia de seguridad.
+## Legado
 
-!!! warning "agentforge nunca toca tus archivos"
-    Los agentes escriben **solo** en `.agentforge/` y `_agentforge_sdd/`. Ningún archivo de tu proyecto es modificado, eliminado o sobreescrito. Nunca.
-
-!!! info "Sin claves de API"
-    agentforge no solicita, no almacena ni transmite claves de API de ningún servicio. La inteligencia viene del agente que ya usas en tu entorno.
+La historia original está en [Contexto histórico](por-que-reversa.md). Conservamos esa página por contexto, pero el producto actual es la capa agent-ready descrita aquí.

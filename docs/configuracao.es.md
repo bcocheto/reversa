@@ -1,37 +1,38 @@
 # Configuración
 
-agentforge guarda toda su configuración y estado del análisis dentro de la carpeta `.agentforge/` en la raíz del proyecto.
+AgentForge guarda su configuración y estado del análisis dentro de `.agentforge/` en la raíz del proyecto.
 
 ---
 
-## Estructura de la carpeta `.agentforge/`
+## Estructura de `.agentforge/`
 
-```
+```text
 .agentforge/
-├── state.json          ← estado del análisis entre sesiones
-├── config.toml         ← configuración del proyecto
-├── config.user.toml    ← tus preferencias personales (no commitear)
-├── plan.md             ← plan de exploración (puedes editarlo)
-├── version             ← versión instalada de agentforge
+├── state.json
+├── config.toml
+├── config.user.toml
+├── plan.md
+├── imports/
 ├── context/
-│   ├── surface.json    ← datos generados por Scout
-│   └── modules.json    ← datos generados por Archaeologist
+├── references/
+├── policies/
+├── flows/
+├── skills/
+├── memory/
+├── reports/
 └── _config/
-    ├── manifest.yaml           ← metadatos de la instalación
-    └── files-manifest.json     ← hashes SHA-256 para updates seguros
+    ├── manifest.yaml
+    └── files-manifest.json
 ```
 
 ---
 
-## `config.toml`: configuración del proyecto
+## `config.toml`
 
 ```toml
 [project]
 name = "mi-proyecto"
 language = "es"
-
-[agents]
-installed = ["agentforge", "scout", "archaeologist", "detective", "architect", "writer", "reviewer"]
 
 [output]
 folder = "_agentforge_sdd"
@@ -42,7 +43,7 @@ active = ["claude-code"]
 
 ---
 
-## `config.user.toml`: preferencias personales
+## `config.user.toml`
 
 ```toml
 [user]
@@ -51,27 +52,40 @@ answer_mode = "chat"  # "chat" o "file"
 ```
 
 !!! warning "No commitear"
-    Agrega `config.user.toml` al `.gitignore`. Cada miembro del equipo puede tener sus propias preferencias sin afectar a los demás.
+    Agrega `config.user.toml` al `.gitignore`. Cada miembro del equipo puede mantener preferencias personales sin afectar al proyecto.
 
 ---
 
-## Modo de respuesta (`answer_mode`)
+## Read-only versus escrituras seguras
 
-| Modo | Comportamiento |
-|------|----------------|
-| `chat` (por defecto) | Las preguntas aparecen en el chat, una a una. Respondes en la conversación. |
-| `file` | El Reviewer genera un archivo `_agentforge_sdd/questions.md` con todas las preguntas. Lo rellenas y avisas cuando termines. |
+**Leen los archivos originales sin modificarlos**
+
+- `ingest`
+- `adopt`
+- `audit-context`
+
+**Escriben con seguridad en `.agentforge/` o en entrypoints gestionados**
+
+- `bootstrap`
+- `refactor-context --apply`
+- `suggest-skills`
+- `create-skill`
+- `compile`
+- `export`
+- `update`
+- `improve --apply`
+- `uninstall`
+
+Los comandos anteriores escriben solo en la capa canónica o en los entrypoints que AgentForge gestiona explícitamente. El código de la aplicación queda fuera del alcance.
 
 ---
 
-## Nivel de documentación (`doc_level`)
+## `state.json`
 
-Define el volumen de artefactos que cada agente genera durante el análisis. **No se configura en la instalación:** agentforge lo pregunta al inicio del primer análisis, después de que el Scout mapea el proyecto, para que decidas con información real.
+El archivo de estado guarda la fase actual, los artefactos generados, el historial de auditorías y la información necesaria para retomar sesiones.
 
-| Valor | Cuándo usar | Artefactos generados |
-|-------|-------------|----------------------|
-| `essencial` | Proyectos simples, scripts, prototipos **(por defecto)** | Análisis de código, dominio, arquitectura (C4 contexto), specs SDD |
-| `completo` | Proyectos medianos, equipos pequeños | Todo lo esencial + diagramas C4 completos, ERD, ADRs, OpenAPI, user stories, matrices de trazabilidad |
-| `detalhado` | Sistemas enterprise, alta criticidad | Todo lo completo + flowcharts por función, ADRs expandidos, diagrama de deployment, revisión cruzada obligatoria |
+---
 
-La elección se guarda en `.agentforge/state.json` en el campo `doc_level`. Puedes editarlo manualmente en cualquier momento para ajustar el nivel durante un análisis en curso.
+## `doc_level`
+
+`bootstrap` y `install` ayudan a preparar el proyecto, pero el nivel de documentación sigue siendo una decisión operativa. AgentForge guarda el valor en `.agentforge/state.json` y lo respeta en ejecuciones posteriores.

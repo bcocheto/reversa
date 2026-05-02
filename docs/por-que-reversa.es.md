@@ -1,44 +1,20 @@
-# Por qué existe agentforge
+# Contexto histórico: Reversa
 
-## El problema clásico
+Esta página se conserva como contexto legado.
 
-Imagina un sistema que entró en producción en 2015. Nadie que lo escribió sigue en la empresa. La documentación original era un archivo Word que nadie sabe dónde fue a parar. El código funciona, genera ingresos todos los días, pero hay partes que nadie se atreve a tocar porque "cambias esto, rompes aquello".
+Reversa fue el nombre anterior del flujo original de reverse-engineering que terminó evolucionando a AgentForge. El producto actual ya no gira solo en torno a un dump de specs. Crea y mantiene la capa agent-ready de un proyecto.
 
-Ese sistema carga años de conocimiento acumulado: reglas de negocio implícitas, decisiones arquitectónicas tomadas a las 11pm antes de un deadline, lógica crítica enterrada en funciones con nombres como `procesar_v2_final_revisado`. El conocimiento existe. Está en el código. Pero está atrapado ahí dentro, inaccesible para cualquier agente de IA.
+Si quieres la historia del producto actual, empieza en [Por qué existe AgentForge](por-que-agentforge.md).
 
----
+## Qué cambió
 
-## El problema con los agentes de IA
+- La fuente de verdad pasó a `.agentforge/`.
+- Los bootloaders se convirtieron en exports gestionados por motor.
+- El contexto ahora se enruta con harness y context index.
+- Skills, flows, policies, memory y reports pasaron a ser archivos canónicos de primera clase.
 
-Los agentes de IA son transformadores para crear y evolucionar software. Pero dependen de especificaciones para operar con seguridad.
+## Por qué conservar esta página
 
-Para sistemas nuevos funciona bien: escribes la spec, el agente ejecuta. ¿Pero para sistemas heredados? El agente no puede saber qué no puede romper. Si le pides "refactoriza el módulo de pagos", lo refactorizará basándose en lo que el código *parece* hacer, sin saber lo que el código *debe* hacer.
-
-El resultado es ese momento clásico: el agente rompe una regla de negocio que nadie había documentado, y solo nos enteramos cuando el cliente llama a reclamar.
-
----
-
-## La solución
-
-agentforge es el puente entre el sistema heredado y los agentes de IA.
-
-Analiza el código existente y extrae el conocimiento acumulado: reglas de negocio, flujos, contratos entre módulos, decisiones arquitectónicas retroactivas. Luego transforma todo en especificaciones ejecutables, trazables y listas para cualquier agente codificador.
-
-El resultado no es documentación para que los humanos lean en una tarde tranquila. Son **contratos operacionales** que permiten a un agente evolucionar el sistema con fidelidad a lo que ya existe.
-
----
-
-## Para quién es
-
-- **Empresas con sistemas heredados** que quieren modernizar sin reescribir todo desde cero
-- **Equipos que usan vibe coding** y nunca escribieron specs formales (sin juicios)
-- **Desarrolladores que heredaron un proyecto** y necesitan entender qué hace antes de cambiar algo
-- **Cualquier persona** con un sistema funcionando pero sin documentación que quiera usar agentes de IA para evolucionarlo con seguridad
-
----
-
-## Lo que agentforge no es
-
-agentforge no es una herramienta de análisis estático tradicional. No genera cobertura de código, no hace linting, no señala bugs. Es un framework de **extracción de conocimiento**: toma lo que está implícito en el código y lo hace explícito en especificaciones formales.
-
-Tampoco es una solución mágica. Las partes del sistema que son genuinamente inaccesibles por análisis estático aparecerán como brechas, marcadas con 🔴, esperando validación humana. La honestidad es parte del diseño.
+- preservar el nombre histórico para usuarios antiguos
+- dejar claro de dónde viene el proyecto
+- mostrar que AgentForge es el producto actual, no solo un rename

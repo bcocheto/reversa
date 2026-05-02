@@ -1,8 +1,8 @@
 # Como usar
 
-## Ativar o agentforge
+## Ativar o AgentForge
 
-Após instalar, abra o projeto no seu agente de IA e ative o agentforge:
+Depois de instalar, abra o projeto na sua engine e ative o orquestrador:
 
 === "Claude Code / Cursor / Gemini CLI"
 
@@ -16,83 +16,68 @@ Após instalar, abra o projeto no seu agente de IA e ative o agentforge:
     agentforge
     ```
 
-É só isso. O agentforge assume o controle e coordena toda a análise a partir daí.
+O orquestrador verifica `.agentforge/state.json`, retoma a sessão existente se houver uma, ou inicia o próximo passo seguro para o projeto.
 
 ---
 
-## O que acontece quando você ativa
+## Fluxos comuns
 
-O agentforge verifica se existe uma análise em andamento:
+### Projeto novo
 
-**Primeira vez:** ele cria um plano de exploração personalizado para o seu projeto, apresenta ao usuário para aprovação e começa a análise pela fase 1.
-
-**Sessão retomada:** ele lê o checkpoint salvo em `.agentforge/state.json` e continua exatamente de onde parou. Não importa se você fechou o editor, reiniciou a máquina ou deixou dormindo por três dias.
-
----
-
-## Fluxo típico de uma análise completa
-
-```
-Você digita /agentforge
-        ↓
-agentforge cria o plano de exploração
-        ↓
-Você revisa e aprova o plano
-        ↓
-Scout mapeia a superfície do projeto
-        ↓
-agentforge apresenta o resumo do Scout e você escolhe o nível de documentação
-        ↓
-Archaeologist analisa módulo por módulo
-        ↓
-Detective e Architect interpretam o que foi encontrado
-        ↓
-Writer gera as especificações (uma por vez, com sua aprovação)
-        ↓
-Reviewer revisa tudo e levanta perguntas para validação
-        ↓
-Especificações prontas em _agentforge_sdd/
+```bash
+npx agentforge install
+npx agentforge bootstrap
+npx agentforge compile
+npx agentforge validate
 ```
 
-O processo é incremental e conversacional. Você não precisa estar presente o tempo todo: o agentforge avisa quando precisa de você.
+### Projeto existente
+
+```bash
+npx agentforge install
+npx agentforge adopt
+npx agentforge audit-context
+npx agentforge refactor-context --apply
+npx agentforge suggest-skills
+npx agentforge compile
+npx agentforge validate
+```
+
+### Trabalho contínuo
+
+```bash
+npx agentforge add-agent
+npx agentforge add-flow
+npx agentforge suggest-skills
+npx agentforge create-skill run-tests
+npx agentforge improve
+```
 
 ---
 
-## Quanto tempo leva?
+## Read-only versus comandos que escrevem
 
-Depende do tamanho do projeto, mas uma regra geral:
+**Leem os arquivos originais sem modificá-los**
 
-| Tamanho do projeto | Estimativa |
-|--------------------|------------|
-| Pequeno (< 10 módulos) | 2 a 4 sessões |
-| Médio (10 a 30 módulos) | 5 a 10 sessões |
-| Grande (30+ módulos) | 10+ sessões |
+- `ingest`
+- `adopt`
+- `audit-context`
 
-O Archaeologist analisa um módulo por sessão para economizar contexto. Para projetos grandes, você vai retomar várias vezes, mas cada retomada é automática e sem perda de progresso.
+Esses comandos leem sinais do projeto e escrevem só em `.agentforge/`.
 
----
+**Escrevem de forma segura em `.agentforge/` ou em entrypoints gerenciados**
 
-## Dica: estouro de contexto
+- `bootstrap`
+- `refactor-context --apply`
+- `suggest-skills`
+- `create-skill`
+- `compile`
+- `export`
+- `update`
+- `improve --apply`
+- `uninstall`
 
-Se a sessão ficar muito longa e o contexto começar a acabar, o agentforge salva o checkpoint automaticamente e avisa:
-
-> "Vou pausar aqui. Tudo está salvo. Digite `/agentforge` em uma nova sessão para continuar."
-
-Sem drama. Sem perda. É só continuar depois.
-
----
-
-## Nível de documentação
-
-Depois que o Scout termina, o agentforge apresenta um resumo do que encontrou (quantos módulos, integrações, se há banco de dados) e pergunta qual volume de documentação você quer para o projeto:
-
-| Nível | Quando usar | O que gera |
-|-------|-------------|------------|
-| **Essencial** | Projetos simples, scripts, protótipos | Artefatos principais: análise de código, domínio, arquitetura, specs SDD |
-| **Completo** | Projetos médios, equipes pequenas (padrão) | Tudo do essencial + diagramas C4, ERD, ADRs, OpenAPI, user stories e matrizes de rastreabilidade |
-| **Detalhado** | Sistemas enterprise, múltiplas equipes | Tudo do completo + flowcharts por função, ADRs expandidos, diagrama de deployment e revisão cruzada obrigatória |
-
-A escolha fica salva em `.agentforge/state.json` e todos os agentes seguintes a respeitam automaticamente. Se precisar ajustar depois de iniciada a análise, basta editar o campo `doc_level` no arquivo.
+Esses comandos escrevem apenas na camada canônica ou nos entrypoints gerenciados pelo AgentForge.
 
 ---
 
@@ -106,4 +91,4 @@ Se quiser rodar um agente avulso, sem passar pelo orquestrador:
 /agentforge-data-master
 ```
 
-Útil quando você já tem uma análise em andamento e quer executar um agente específico por algum motivo pontual.
+Útil quando já há uma sessão em andamento e você precisa só de um papel específico.

@@ -1,6 +1,6 @@
 site_name: AgentForge
 site_url: https://bcocheto.github.io/agentforge
-site_description: Transforme sistemas legados em especificações executáveis por agentes de IA.
+site_description: Crie, organize, evolua e compile a camada agent-ready de um projeto.
 site_author: bcocheto
 repo_url: https://github.com/bcocheto/agentforge
 repo_name: bcocheto/agentforge
@@ -83,7 +83,7 @@ plugins:
             CLI: CLI
             Configuration: Configuração
             Supported engines: Engines suportadas
-            Analysis pipeline: Pipeline de análise
+            Lifecycle: Ciclo de vida
             Confidence scale: Escala de confiança
             Agents: Agentes
             Overview: Visão geral
@@ -92,6 +92,8 @@ plugins:
             Generated outputs: Saídas geradas
             Developing from specs: Desenvolvendo com as specs
             Contributing: Contribuindo
+            Legacy: Legado
+            Historical context: Contexto histórico
         - locale: es
           name: Español
           build: true
@@ -103,7 +105,7 @@ plugins:
             CLI: CLI
             Configuration: Configuración
             Supported engines: Motores compatibles
-            Analysis pipeline: Pipeline de análisis
+            Lifecycle: Ciclo de vida
             Confidence scale: Escala de confianza
             Agents: Agentes
             Overview: Visión general
@@ -112,6 +114,8 @@ plugins:
             Generated outputs: Salidas generadas
             Developing from specs: Desarrollando con las specs
             Contributing: Contribuir
+            Legacy: Legado
+            Historical context: Contexto histórico
 
 nav:
   - Home: index.md
@@ -121,7 +125,7 @@ nav:
   - CLI: cli.md
   - Configuration: configuracao.md
   - Supported engines: engines.md
-  - Analysis pipeline: pipeline.md
+  - Lifecycle: pipeline.md
   - Confidence scale: escala-confianca.md
   - Agents:
       - Overview: agentes/index.md
@@ -139,3 +143,5 @@ nav:
   - Generated outputs: saidas/index.md
   - Developing from specs: desenvolvendo-com-specs.md
   - Contributing: contribuindo.md
+  - Legacy:
+      - Historical context: por-que-reversa.md

@@ -1,88 +1,97 @@
-# agentforge
+# AgentForge
 
-**Turn legacy systems into executable specifications for AI agents.**
+**Create, organize, evolve, and compile the agent-ready layer of a project.**
 
-You know that system nobody wants to touch? The one that's been running for 10 years, makes money every day, but nobody really knows what it does on the inside? agentforge was built for it.
-
----
-
-## What is agentforge?
-
-agentforge is a specification reverse-engineering framework. You install it inside a legacy project, activate an AI agent you already use, and it coordinates a team of specialists to analyze the code and generate complete, traceable, ready-to-use specifications for any coding agent.
-
-**In other words:** agentforge turns undocumented code into operational contracts that an AI agent can understand and use to safely evolve the system.
+AgentForge gives a project a canonical `.agentforge/` source of truth, a context router, reusable skills, operational flows, policies, memory, and exports for Codex, Claude Code, Cursor, and GitHub Copilot.
 
 ---
 
-## Watch it in action
+## The problem
 
-[![Watch on YouTube](https://img.youtube.com/vi/ARQBBKnfP_c/maxresdefault.jpg)](https://www.youtube.com/watch?v=ARQBBKnfP_c)
+- `AGENTS.md` grows too large.
+- `CLAUDE.md` becomes a parallel source of truth.
+- Rules are duplicated across engines.
+- Context, policies, workflows, and commands get mixed.
+- Humans struggle to edit safely.
+- Agents receive too much or the wrong context.
 
 ---
 
-## Quick start
+## The solution
 
-In the root of the legacy project:
+- `.agentforge/` is the source of truth.
+- `harness/` routes context.
+- `context-index.yaml` controls what loads.
+- `skills/` hold reusable procedures.
+- `flows/` hold project workflows.
+- `policies/` define boundaries.
+- `compile` generates managed bootloaders for each engine.
+
+---
+
+## Start here
+
+### New project
 
 ```bash
 npx agentforge install
+npx agentforge bootstrap
+npx agentforge compile
+npx agentforge validate
 ```
 
-Then open the project in your favorite AI agent and type:
+### Existing project
 
-```
-/agentforge
+```bash
+npx agentforge install
+npx agentforge adopt
+npx agentforge audit-context
+npx agentforge refactor-context --apply
+npx agentforge suggest-skills
+npx agentforge compile
+npx agentforge validate
 ```
 
-That's it. agentforge takes the wheel and guides you to the end.
+### Continuous work
+
+```bash
+npx agentforge add-agent
+npx agentforge add-flow
+npx agentforge suggest-skills
+npx agentforge create-skill run-tests
+npx agentforge improve
+```
 
 ---
 
-## What you'll find here
+## Security
 
-<div class="grid cards" markdown>
+!!! note "Read-only commands"
+    `ingest`, `adopt`, and `audit-context` read project signals without modifying the original files.
 
-- **Why agentforge exists**
+!!! note "Managed writes"
+    `compile` and `export` write managed bootloader blocks and preserve manual content outside the block. `update` and `uninstall` respect the manifest and modified files.
 
-    The problem it solves and why it matters.
-
-    [:octicons-arrow-right-24: Read more](por-que-agentforge.md)
-
-- **Installation**
-
-    Two minutes and you're ready to go.
-
-    [:octicons-arrow-right-24: Install](instalacao.md)
-
-- **Analysis pipeline**
-
-    The 5 phases that turn code into specification.
-
-    [:octicons-arrow-right-24: See pipeline](pipeline.md)
-
-- **Agents**
-
-    Meet the team: 14 specialists, each with their own role.
-
-    [:octicons-arrow-right-24: See agents](agentes/index.md)
-
-</div>
+!!! note "Snapshots stay local"
+    Snapshots are stored under `.agentforge/imports/`. Reports are written under `.agentforge/reports/`.
 
 ---
 
-## Safety guarantee
+## Concepts
 
-!!! danger "💾 Back up your project before starting"
-    Although agentforge never modifies your files, AI agents can make mistakes. **We strongly recommend:**
+- **Harness**: the router that loads the right context at the right time.
+- **Context**: canonical project knowledge in `.agentforge/context/`.
+- **References**: commands, important files, external docs, and tools.
+- **Policies**: protected files, safety limits, and approval rules.
+- **Flows**: repeatable workflows for feature, bugfix, refactor, and review work.
+- **Skills**: reusable procedures promoted from suggestions.
+- **Agents**: the project roles that run the work.
+- **Memory**: decisions, conventions, glossary, lessons, and open questions.
+- **Reports**: audit, compile, bootstrap, improvement, and validation outputs.
+- **Engine exports**: generated entrypoints for Codex, Claude Code, Cursor, and GitHub Copilot.
 
-    1. **Version the project in Git** — make sure all files are committed before starting the analysis
-    2. **Have the repository on GitHub** (or GitLab, Bitbucket) — so you have a safe remote copy
-    3. **Make a local copy of the folder** — a simple `cp -r my-project my-project-backup` protects against any unexpected event
+---
 
-    If something unexpected happens during analysis, you can restore the original state with `git restore .` or from the backup copy.
+## Legacy
 
-!!! warning "agentforge never touches your files"
-    Agents write **only** to `.agentforge/` and `_agentforge_sdd/`. No file in your project is modified, deleted, or overwritten. Ever.
-
-!!! info "No API keys"
-    agentforge does not request, store, or transmit API keys from any service. The intelligence comes from the agent you already use in your environment.
+The historical origin story lives in [Historical context](por-que-reversa.md). It is kept for context, but the current product is the agent-ready layer described on this page.

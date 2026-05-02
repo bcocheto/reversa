@@ -4,65 +4,58 @@
 
 - **Node.js 18+** instalado na máquina
 
-Se você não tem Node.js, instale em [nodejs.org](https://nodejs.org) e volte aqui.
+Se você ainda não tem Node.js, instale em [nodejs.org](https://nodejs.org) e volte.
 
 ---
 
-## Um comando, isso é tudo
+## Um comando para criar a camada inicial
 
-Na raiz do projeto legado que você quer analisar:
+Na raiz do projeto que você quer preparar:
 
 ```bash
 npx agentforge install
 ```
 
-O instalador faz tudo isso pra você:
+O instalador cria a camada canônica `.agentforge/`, detecta as engines presentes e escreve os entrypoints gerenciados das engines escolhidas.
 
-1. Detecta as engines de IA presentes no ambiente (Claude Code, Codex, Cursor, Gemini CLI, Windsurf)
-2. Pergunta quais agentes instalar (todos selecionados por padrão)
-3. Coleta nome do projeto, idioma e preferências
-4. Copia os agentes para `.agents/skills/` e `.claude/skills/` (para Claude Code)
-5. Cria o arquivo de entrada da engine escolhida (`CLAUDE.md`, `AGENTS.md`, etc.)
-6. Cria a estrutura `.agentforge/` com estado, configuração e plano
-7. Gera o manifesto SHA-256 para atualizações seguras no futuro
+Ele cria:
 
-É tipo um `npm install`, mas para o seu time de agentes de engenharia agentforge.
+1. a estrutura base de `.agentforge/`
+2. o manifesto SHA-256 usado para updates seguros
+3. os arquivos de entrada das engines selecionadas na instalação
+4. o scaffolding inicial de team, flows, policies e memory
 
 ---
 
-## O que é criado no projeto
+## Modos de instalação
 
+- **bootstrap**: começar de um projeto novo e montar a base agent-ready inicial
+- **adopt**: inspecionar um projeto existente e importar sua superfície agentic com segurança
+- **hybrid**: fazer os dois, quando o projeto já tem alguma estrutura, mas ainda precisa de uma base canônica
+
+---
+
+## O que é criado
+
+```text
+projeto/
+├── .agentforge/
+├── AGENTS.md
+├── CLAUDE.md
+├── .cursor/rules/agentforge.md
+└── .github/copilot-instructions.md
 ```
-projeto-legado/
-├── .agentforge/               ← estado, config e contexto da análise
-├── .agents/skills/         ← agentes universais (todas as engines)
-├── .claude/skills/         ← mirror para Claude Code
-├── CLAUDE.md               ← ponto de entrada para Claude Code (se detectado)
-├── AGENTS.md               ← ponto de entrada para Codex (se detectado)
-└── _agentforge_sdd/           ← onde as especificações serão geradas (vazio inicialmente)
-```
 
-!!! success "Seus arquivos ficam intactos"
-    O instalador **só cria arquivos novos**. Jamais modifica ou apaga qualquer arquivo já existente no seu projeto.
+Dependendo das engines detectadas, o `install` também pode criar superfícies de compatibilidade como `.cursorrules`.
+
+!!! success "Os arquivos da aplicação ficam intactos"
+    O instalador cria arquivos novos e entrypoints gerenciados. Ele não reescreve o código da sua aplicação.
 
 ---
 
-## Backup antes de começar
+## Adicionando outra engine depois
 
-!!! warning "Recomendação forte: faça um backup"
-    Embora o agentforge nunca modifique seus arquivos, agentes de IA podem cometer erros. Antes de iniciar a análise:
-
-    1. Certifique-se de que todos os arquivos estão commitados no Git
-    2. Tenha o repositório no GitHub, GitLab ou Bitbucket
-    3. Faça uma cópia local da pasta como segurança extra: `cp -r meu-projeto meu-projeto-backup`
-
-    Se algo inesperado acontecer, `git restore .` resolve.
-
----
-
-## Instalando em outra engine depois
-
-Se depois quiser adicionar suporte a mais uma engine (por exemplo, você instalou só para Claude Code e agora quer Codex também):
+Se depois você quiser adicionar suporte a outra engine:
 
 ```bash
 npx agentforge add-engine

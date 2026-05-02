@@ -4,65 +4,58 @@
 
 - **Node.js 18+** instalado en tu máquina
 
-Si no tienes Node.js, instálalo en [nodejs.org](https://nodejs.org) y vuelve aquí.
+Si todavía no tienes Node.js, instálalo en [nodejs.org](https://nodejs.org) y vuelve.
 
 ---
 
-## Un comando, eso es todo
+## Un comando para crear la capa inicial
 
-En la raíz del proyecto heredado que quieres analizar:
+En la raíz del proyecto que quieres preparar:
 
 ```bash
 npx agentforge install
 ```
 
-El instalador hace todo esto por ti:
+El instalador crea la capa canónica `.agentforge/`, detecta los motores presentes y escribe los entrypoints gestionados de los motores que elegiste.
 
-1. Detecta los motores de IA presentes en el entorno (Claude Code, Codex, Cursor, Gemini CLI, Windsurf)
-2. Pregunta qué agentes instalar (todos seleccionados por defecto)
-3. Recopila el nombre del proyecto, idioma y preferencias
-4. Copia los agentes a `.agents/skills/` y `.claude/skills/` (para Claude Code)
-5. Crea el archivo de entrada del motor (`CLAUDE.md`, `AGENTS.md`, etc.)
-6. Crea la estructura `.agentforge/` con estado, configuración y plan
-7. Genera el manifiesto SHA-256 para actualizaciones seguras en el futuro
+Crea:
 
-Es como `npm install`, pero para tu equipo de agentes de ingeniería inversa.
+1. la estructura base de `.agentforge/`
+2. el manifiesto SHA-256 usado para updates seguros
+3. los archivos de entrada de los motores seleccionados en la instalación
+4. el scaffolding inicial de team, flows, policies y memory
 
 ---
 
-## Qué se crea en el proyecto
+## Modos de instalación
 
-```
-proyecto-heredado/
-├── .agentforge/               ← estado, config y contexto del análisis
-├── .agents/skills/         ← agentes universales (todos los motores)
-├── .claude/skills/         ← mirror para Claude Code
-├── CLAUDE.md               ← punto de entrada para Claude Code (si se detecta)
-├── AGENTS.md               ← punto de entrada para Codex (si se detecta)
-└── _agentforge_sdd/           ← donde se generarán las specs (vacío inicialmente)
-```
-
-!!! success "Tus archivos quedan intactos"
-    El instalador **solo crea archivos nuevos**. Nunca modifica ni elimina ningún archivo existente en tu proyecto.
+- **bootstrap**: empezar desde un proyecto nuevo y montar la base agent-ready inicial
+- **adopt**: inspeccionar un proyecto existente e importar su superficie agentic con seguridad
+- **hybrid**: hacer ambas cosas, cuando el proyecto ya tiene algo de estructura pero todavía necesita una base canónica
 
 ---
 
-## Backup antes de empezar
+## Qué se crea
 
-!!! warning "Recomendación fuerte: haz un backup"
-    Aunque agentforge nunca modifica tus archivos, los agentes de IA pueden cometer errores. Antes de iniciar el análisis:
+```text
+proyecto/
+├── .agentforge/
+├── AGENTS.md
+├── CLAUDE.md
+├── .cursor/rules/agentforge.md
+└── .github/copilot-instructions.md
+```
 
-    1. Asegúrate de que todos los archivos están commiteados en Git
-    2. Ten el repositorio en GitHub, GitLab o Bitbucket
-    3. Haz una copia local de la carpeta como seguridad extra: `cp -r mi-proyecto mi-proyecto-backup`
+Dependiendo de los motores detectados, `install` también puede crear superficies de compatibilidad como `.cursorrules`.
 
-    Si algo inesperado ocurre, `git restore .` lo resuelve.
+!!! success "Los archivos de tu aplicación quedan intactos"
+    El instalador crea archivos nuevos y entrypoints gestionados. No reescribe el código de tu aplicación.
 
 ---
 
 ## Agregar otro motor después
 
-Si quieres añadir soporte para otro motor más tarde:
+Si luego quieres añadir soporte para otro motor:
 
 ```bash
 npx agentforge add-engine

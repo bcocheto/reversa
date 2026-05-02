@@ -1,7 +1,7 @@
 {
   "name": "agentforge",
   "version": "1.2.14",
-  "description": "Create, install, and maintain custom agent teams inside projects",
+  "description": "Create, organize, evolve, and compile the agent-ready layer of projects",
   "bin": {
     "agentforge": "bin/agentforge.js",
     "reversa": "bin/reversa.js"
@@ -11,14 +11,22 @@
   },
   "type": "module",
   "keywords": [
-    "legacy",
-    "reverse-engineering",
-    "specifications",
+    "agent-ready",
+    "context",
+    "harness",
+    "skills",
+    "flows",
+    "policies",
     "ai",
     "claude",
     "codex",
+    "claude-code",
     "gemini",
     "cursor",
+    "github-copilot",
+    "bootstrap",
+    "adopt",
+    "compile",
     "agents"
   ],
   "files": [

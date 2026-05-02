@@ -1,19 +1,27 @@
 # AgentForge
 <small>by bcocheto</small>
 
-AgentForge is a CLI for creating, installing, and maintaining custom agent teams inside a project.
-It is inspired by the previous workflow, but the goal is different: instead of turning legacy systems into specs, AgentForge creates an operational layer for agents, subagents, flows, policies, memory, and exports.
+AgentForge creates, organizes, evolves, and compiles the agent-ready layer of a project.
+It is not just a generator of agents. It gives a project a canonical `.agentforge/` source of truth, a context router, reusable skills, operational flows, policies, memory, and engine exports.
 
 ## The problem
 
-- Isolated agents quickly become loose prompts with no shared structure.
-- Real projects need clear roles, reusable flows, guardrails, and persistent memory.
-- Teams need a source of truth that engines can read directly.
+- `AGENTS.md` grows too large and starts mixing unrelated concerns.
+- `CLAUDE.md` becomes a parallel source of truth instead of a thin entrypoint.
+- Rules get duplicated across engines and drift apart over time.
+- Context, policies, workflows, and commands end up mixed in the same place.
+- Humans struggle to edit safely when generated and manual content are tangled.
+- Agents receive too much context, or the wrong context, at the wrong time.
 
 ## The solution
 
-AgentForge creates a canonical `.agentforge/` layer inside the repo.
-That layer defines the team, the rules, the flow of work, and the engine-specific exports generated from the same source of truth.
+- `.agentforge/` is the source of truth for the project agent layer.
+- `harness/` routes context and keeps the load order explicit.
+- `context-index.yaml` maps what should load, when, and why.
+- `skills/` hold reusable procedures.
+- `flows/` hold project workflows.
+- `policies/` define boundaries and approvals.
+- `compile` turns the canonical layer into bootloaders and entrypoints for Codex, Claude Code, Cursor, and GitHub Copilot.
 
 AgentForge keeps a SHA-256 manifest so it can detect when a generated file was edited by hand and preserve those customizations during `update`, `compile`, and `uninstall`.
 
@@ -86,6 +94,14 @@ Engines that support slash commands can use:
 
 The legacy `reversa` alias is kept for compatibility with existing installs.
 
+## Modes
+
+AgentForge supports three installation modes:
+
+- `bootstrap`: start from a new project and build the initial agent-ready base
+- `adopt`: inspect an existing project and import its agentic surface safely
+- `hybrid`: do both, when a project has some structure already but still needs a canonical base
+
 ## What gets generated
 
 The canonical team lives under `.agentforge/`:
@@ -117,6 +133,47 @@ Engine-specific entry files and bootloaders are derived from that structure:
 - `.github/agents/*.md` when GitHub Copilot agent exports are configured
 
 `compile` and `export` standardize Cursor on `.cursor/rules/agentforge.md`; `.cursorrules` remains a legacy install-time compatibility surface.
+
+## Flows
+
+### New project
+
+```bash
+npx agentforge install
+npx agentforge bootstrap
+npx agentforge compile
+npx agentforge validate
+```
+
+### Existing project
+
+```bash
+npx agentforge install
+npx agentforge adopt
+npx agentforge audit-context
+npx agentforge refactor-context --apply
+npx agentforge suggest-skills
+npx agentforge compile
+npx agentforge validate
+```
+
+### Continuous work
+
+```bash
+npx agentforge add-agent
+npx agentforge add-flow
+npx agentforge suggest-skills
+npx agentforge create-skill run-tests
+npx agentforge improve
+```
+
+## Security
+
+- `ingest`, `adopt`, and `audit-context` read project signals without modifying the original files.
+- Snapshots are stored under `.agentforge/imports/`.
+- `compile` and `export` write managed bootloader blocks and preserve manual content outside those blocks.
+- The manifest preserves customizations and lets `update` and `uninstall` respect modified files.
+- `validate` and the report commands write only under `.agentforge/`.
 
 ## Concepts
 

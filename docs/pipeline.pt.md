@@ -1,123 +1,60 @@
-# Pipeline de análise
+# Ciclo de vida
 
-O agentforge transforma um sistema legado em especificações executáveis em 5 fases. Cada fase tem agentes específicos, e o orquestrador central coordena tudo para que aconteça na ordem certa.
+O AgentForge não trata mais o projeto como um dump único de specs. Ele gerencia um ciclo de vida agent-ready contínuo.
 
 ---
 
-## Visão geral
+## Os principais ciclos
 
+### 1. Montar um projeto novo
+
+```bash
+npx agentforge install
+npx agentforge bootstrap
+npx agentforge compile
+npx agentforge validate
 ```
-Fase 1          Fase 2        Fase 3              Fase 4        Fase 5
-Reconhecimento  Escavação     Interpretação       Geração       Revisão
-   Scout        Archaeologist    Detective            Writer       Reviewer
-                               Architect
+
+Use isso quando você está começando de um projeto novo e quer a camada canônica pronta desde o primeiro dia.
+
+### 2. Adotar um projeto existente
+
+```bash
+npx agentforge install
+npx agentforge adopt
+npx agentforge ingest
+npx agentforge audit-context
+npx agentforge refactor-context --apply
+npx agentforge suggest-skills
+npx agentforge compile
+npx agentforge validate
 ```
 
-**Agentes independentes** que rodam em qualquer fase: **Visor**, **Data Master**, **Design System**
+Use isso quando o projeto já existe e você quer organizar a superfície agentic atual com segurança.
+
+### 3. Evoluir a camada ao longo do tempo
+
+```bash
+npx agentforge add-agent
+npx agentforge add-flow
+npx agentforge suggest-skills
+npx agentforge create-skill run-tests
+npx agentforge improve
+```
+
+Use isso quando o time precisa refinar a camada sem perder o que já funciona.
 
 ---
 
-## Fase 1: Reconhecimento
+## O que permanece estável
 
-**Agente:** Scout
-
-O Scout faz o primeiro tour no projeto. Como um corretor de imóveis que visita um imóvel pela primeira vez: não abre gavetas, não lê todos os documentos, só mapeia o território.
-
-O que ele produz:
-
-- Inventário completo do projeto (`inventory.md`)
-- Lista de dependências com versões (`dependencies.md`)
-- Estrutura de dados em JSON para os próximos agentes (`.agentforge/context/surface.json`)
-
-Depois que o Scout termina, o agentforge usa o `surface.json` para personalizar a Fase 2: em vez de uma tarefa genérica "analisar o código", o plano vira uma tarefa por módulo identificado.
-
-Também é nesse momento que o agentforge apresenta o resumo do Scout e pergunta o **nível de documentação** (`doc_level`): essencial, completo ou detalhado. A escolha define quais artefatos cada agente vai gerar nas fases seguintes — veja [Como usar](uso.md#nível-de-documentação) para a tabela completa.
+- `.agentforge/` continua sendo a fonte da verdade.
+- O manifesto preserva edições personalizadas.
+- Blocos gerenciados de bootloader mantêm o conteúdo manual fora do bloco intacto.
+- Comandos read-only não modificam os arquivos originais do projeto.
 
 ---
 
-## Fase 2: Escavação
+## Nota histórica
 
-**Agente:** Archaeologist
-
-O Archaeologist escava o terreno módulo a módulo. Com paciência e precisão, cataloga cada artefato: funções, algoritmos, estruturas de dados, fluxos de controle. Ele não interpreta nem julga. Só descreve com precisão o que está lá.
-
-**Importante:** o Archaeologist roda um módulo por sessão, de propósito. Projetos grandes têm muitos módulos, e tentar analisar tudo de uma vez consome contexto e reduz a qualidade da análise.
-
-O que ele produz:
-
-- Análise técnica consolidada (`code-analysis.md`)
-- Dicionário de dados (`data-dictionary.md`)
-- Fluxogramas em Mermaid por módulo (`flowcharts/[modulo].md`)
-- Dados estruturados por módulo (`.agentforge/context/modules.json`)
-
----
-
-## Fase 3: Interpretação
-
-**Agentes:** Detective + Architect
-
-Aqui a análise deixa de ser descritiva e vira interpretativa. Dois agentes trabalham em paralelo nessa fase.
-
-**O Detective** é o Sherlock Holmes do time. Olha para o que o Archaeologist catalogou e pergunta: *"Mas por que isso está aqui? Quem tomou essa decisão? O que o histórico git revela?"*. Extrai regras de negócio implícitas, ADRs retroativos, máquinas de estado e matrizes de permissão.
-
-**O Architect** é o cartógrafo. Sintetiza tudo em documentação arquitetural formal: diagramas C4 nos três níveis (Contexto, Containers, Componentes), ERD completo, mapa de integrações, dívidas técnicas.
-
-O que eles produzem:
-
-- Domínio e regras de negócio (`domain.md`)
-- Máquinas de estado em Mermaid (`state-machines.md`)
-- Matriz de permissões (`permissions.md`)
-- ADRs retroativos (`adrs/`)
-- Diagramas C4 (`c4-context.md`, `c4-containers.md`, `c4-components.md`)
-- ERD completo (`erd-complete.md`)
-- Visão arquitetural geral (`architecture.md`)
-
----
-
-## Fase 4: Geração
-
-**Agente:** Writer
-
-O Writer é o tabelião do time. Transforma tudo que foi descoberto nas fases anteriores em contratos formais: especificações SDD por componente, specs OpenAPI para as APIs, user stories para os fluxos de usuário.
-
-Cada afirmação nas specs é marcada com a [escala de confiança](escala-confianca.md): 🟢 CONFIRMADO, 🟡 INFERIDO ou 🔴 LACUNA.
-
-O Writer não gera tudo de uma vez. Ele monta um plano, apresenta para você aprovar, e depois gera um arquivo por vez, esperando confirmação antes de continuar. Isso permite revisão incremental e evita desperdício de contexto.
-
-O que ele produz:
-
-- Specs por componente (`sdd/[componente].md`)
-- Specs de API (`openapi/[api].yaml`)
-- User stories (`user-stories/[fluxo].md`)
-- Matriz de rastreabilidade código-spec (`traceability/code-spec-matrix.md`)
-
----
-
-## Fase 5: Revisão
-
-**Agente:** Reviewer
-
-O Reviewer tenta furar as specs. Encontra contradições internas, conflitos entre specs diferentes, afirmações marcadas como 🟢 que são na verdade inferências, comportamentos óbvios não especificados.
-
-Ele também coleta as lacunas 🔴 que só você pode resolver e apresenta como perguntas para validação humana. Depois que você responde, ele atualiza as specs e gera o relatório final de confiança.
-
-Bônus: se o plugin do Codex estiver ativo na sessão, o Reviewer pode solicitar uma revisão cruzada independente antes de fazer a sua própria análise.
-
-O que ele produz:
-
-- Perguntas para validação (`questions.md`)
-- Relatório final de confiança (`confidence-report.md`)
-- Lacunas sem resposta (`gaps.md`)
-- Specs atualizadas in-place com as reclassificações
-
----
-
-## Agentes independentes
-
-Esses agentes não pertencem a uma fase específica e podem ser acionados a qualquer momento:
-
-| Agente | Quando usar |
-|--------|-------------|
-| **Visor** | Quando você tiver screenshots do sistema disponíveis |
-| **Data Master** | Quando houver DDL, migrations ou modelos ORM para analisar |
-| **Design System** | Quando houver arquivos CSS, temas ou screenshots de interface |
+A velha história de 5 fases de reverse-engineering ainda existe no arquivo legado, mas não é mais a narrativa principal do produto.
