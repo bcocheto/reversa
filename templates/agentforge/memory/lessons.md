@@ -2,14 +2,14 @@
 
 ## O que aprendemos
 
-- <lição 1>
-- <lição 2>
+- A preencher
+- A preencher
 
 ## Regras reaproveitáveis
 
-- <princípio que deve continuar valendo>
-- <padrão que vale repetir>
+- A preencher
+- A preencher
 
 ## Evitar
 
-- <comportamento que já causou problema>
+- A preencher

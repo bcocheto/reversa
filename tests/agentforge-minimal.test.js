@@ -585,22 +585,51 @@ test('compile warns when the minimum harness is absent', async () => {
   }
 });
 
-test('bootstrap populates human-readable context, updates state, and preserves modified files', async () => {
+test('bootstrap populates human-readable context and fills inferred project signals', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-bootstrap-'));
 
   try {
     await installFixture(projectRoot);
 
-    const overviewPath = join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md');
-    writeFileSync(overviewPath, `${readFileSync(overviewPath, 'utf8')}\nLinha manual preservada.\n`, 'utf8');
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      `${JSON.stringify({
+        name: 'agentforge-demo-app',
+        private: true,
+        scripts: {
+          test: 'vitest run',
+          lint: 'eslint .',
+          typecheck: 'tsc --noEmit',
+          dev: 'next dev',
+        },
+        devDependencies: {
+          typescript: '^5.5.0',
+        },
+      }, null, 2)}\n`,
+      'utf8',
+    );
+    writeFileSync(
+      join(projectRoot, 'README.md'),
+      [
+        '# AgentForge Demo App',
+        '',
+        '## Objective',
+        '',
+        'Track orders and surface operational status for the support team.',
+        '',
+        '## Audience',
+        '',
+        'Support engineers and operators.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+    mkdirSync(join(projectRoot, 'src'), { recursive: true });
+    writeFileSync(join(projectRoot, 'src', 'index.ts'), 'export const ping = () => "pong";\n', 'utf8');
 
     const result = spawnSync(process.execPath, [
       AGENTFORGE_BIN,
       'bootstrap',
-      '--project-type',
-      'SaaS/Web App',
-      '--stack',
-      'Node.js, TypeScript, PostgreSQL',
       '--primary-goals',
       'develop-features,review-prs',
       '--preferred-workflow',
@@ -628,11 +657,19 @@ test('bootstrap populates human-readable context, updates state, and preserves m
     assert.match(report, /Bootstrap Report/);
     assert.match(report, /Files written/);
 
-    const overview = readFileSync(overviewPath, 'utf8');
-    assert.match(overview, /Linha manual preservada\./);
+    const overview = readFileSync(join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md'), 'utf8');
+    assert.match(overview, /AgentForge Demo App|AgentForge Demo/);
+    assert.match(overview, /Track orders and surface operational status/);
+    assert.doesNotMatch(overview, /<nome do projeto>|A preencher/);
 
     const commands = readFileSync(join(projectRoot, PRODUCT.internalDir, 'references', 'commands.md'), 'utf8');
     assert.match(commands, /agentforge bootstrap/);
+    assert.match(commands, /`vitest run`/);
+    assert.match(commands, /`eslint \.`/);
+    assert.match(commands, /`tsc --noEmit`/);
+
+    const architecture = readFileSync(join(projectRoot, PRODUCT.internalDir, 'context', 'architecture.md'), 'utf8');
+    assert.match(architecture, /src\//);
 
     const contextIndex = readFileSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml'), 'utf8');
     assert.match(contextIndex, /bootstrap:/);
@@ -815,6 +852,41 @@ test('adopt --apply snapshots a legacy AGENTS.md and finalizes entrypoints as bo
   try {
     await installFixture(projectRoot);
 
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      `${JSON.stringify({
+        name: 'agentforge-adopt-demo',
+        private: true,
+        scripts: {
+          test: 'vitest run',
+          lint: 'eslint .',
+          typecheck: 'tsc --noEmit',
+        },
+        devDependencies: {
+          typescript: '^5.5.0',
+        },
+      }, null, 2)}\n`,
+      'utf8',
+    );
+    writeFileSync(
+      join(projectRoot, 'README.md'),
+      [
+        '# AgentForge Adopt Demo',
+        '',
+        '## Objective',
+        '',
+        'Track orders and alert the support team when delivery status changes.',
+        '',
+        '## Audience',
+        '',
+        'Support engineers and operations.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+    mkdirSync(join(projectRoot, 'src'), { recursive: true });
+    writeFileSync(join(projectRoot, 'src', 'index.ts'), 'export const ping = () => "pong";\n', 'utf8');
+
     const agentsPath = join(projectRoot, 'AGENTS.md');
     const legacySections = Array.from({ length: 60 }, (_, index) => [
       `## Project Overview ${index + 1}`,
@@ -823,7 +895,17 @@ test('adopt --apply snapshots a legacy AGENTS.md and finalizes entrypoints as bo
       `Architecture detail ${index + 1}`,
       `## Testing ${index + 1}`,
     ].join('\n')).join('\n');
-    writeFileSync(agentsPath, `${legacySections}\n`, 'utf8');
+    writeFileSync(
+      agentsPath,
+      [
+        '# Legacy Agent Notes',
+        '',
+        'Regra de domínio: pedidos pagos não podem ser cancelados.',
+        '',
+        legacySections,
+      ].join('\n'),
+      'utf8',
+    );
 
     const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'adopt', '--apply'], {
       cwd: projectRoot,
@@ -836,6 +918,7 @@ test('adopt --apply snapshots a legacy AGENTS.md and finalizes entrypoints as bo
     assert.match(finalAgents, /<!-- agentforge:start -->/);
     assert.match(finalAgents, /<!-- agentforge:end -->/);
     assert.ok(finalAgents.trimEnd().split(/\r?\n/).length <= 150);
+    assert.doesNotMatch(finalAgents, /<nome do projeto>|A preencher/);
 
     const snapshotRoot = join(projectRoot, PRODUCT.internalDir, 'imports', 'snapshots', 'AGENTS.md');
     assert.equal(existsSync(snapshotRoot), true);
@@ -847,15 +930,23 @@ test('adopt --apply snapshots a legacy AGENTS.md and finalizes entrypoints as bo
     assert.ok(state.refactor_context);
     assert.ok(state.refactor_context.classified_count > 0 || state.refactor_context.unclassified_count > 0);
 
-    const contextCandidates = [
-      join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md'),
+    const projectOverview = readFileSync(join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md'), 'utf8');
+    assert.match(projectOverview, /AgentForge Adopt Demo|AgentForge Demo/);
+    assert.match(projectOverview, /Track orders and alert the support team/);
+    assert.doesNotMatch(projectOverview, /<nome do projeto>/);
+
+    const commands = readFileSync(join(projectRoot, PRODUCT.internalDir, 'references', 'commands.md'), 'utf8');
+    assert.match(commands, /`vitest run`/);
+    assert.match(commands, /`eslint \.`/);
+    assert.match(commands, /`tsc --noEmit`/);
+
+    const domainCandidates = [
+      join(projectRoot, PRODUCT.internalDir, 'context', 'domain.md'),
       join(projectRoot, PRODUCT.internalDir, 'context', 'unclassified.md'),
-      join(projectRoot, PRODUCT.internalDir, 'policies', 'human-approval.md'),
-      join(projectRoot, PRODUCT.internalDir, 'references', 'commands.md'),
     ];
     assert.ok(
-      contextCandidates.some((filePath) => existsSync(filePath) && /UNIQUE_ADOPT_MARKER_\d+/.test(readFileSync(filePath, 'utf8'))),
-      'expected extracted or unclassified content to be written into the AgentForge context layer',
+      domainCandidates.some((filePath) => existsSync(filePath) && /pedidos pagos não podem ser cancelados/i.test(readFileSync(filePath, 'utf8'))),
+      'expected the legacy domain rule to be imported into the canonical context layer',
     );
 
     const validateResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {

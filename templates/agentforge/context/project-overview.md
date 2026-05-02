@@ -2,23 +2,23 @@
 
 ## Nome
 
-<nome do projeto>
+A preencher
 
 ## Objetivo
 
-<descreva o problema principal que este projeto resolve>
+A preencher
 
 ## Tipo de projeto
 
-<SaaS/Web App | API | CLI | Mobile | Biblioteca | Data/AI | Outro>
+A preencher
 
 ## Stack principal
 
-<liste tecnologias, runtime, framework, banco, infra>
+A preencher
 
 ## Público e usuários
 
-<quem usa este projeto e por quê>
+A preencher
 
 ## Estado atual
 
@@ -30,3 +30,10 @@
 
 - Mantenha este arquivo simples, direto e fácil de revisar.
 - Atualize sempre que a direção do projeto mudar.
+
+## A preencher
+
+- Nome real do projeto.
+- Objetivo consolidado após a análise inicial.
+- Stack detectada com sinais reais.
+- Público principal e casos de uso.

@@ -2,7 +2,7 @@
 
 ## Visão geral
 
-<resumo dos principais componentes e fronteiras do sistema>
+A preencher
 
 ## Camadas
 
@@ -21,10 +21,16 @@
 
 ## Decisões importantes
 
-- <decisão 1>
-- <decisão 2>
+- A preencher
+- A preencher
 
 ## Atenção
 
 - Registre dependências críticas.
 - Aponte integrações externas e pontos frágeis.
+
+## A preencher
+
+- Componentes principais e fronteiras do sistema.
+- Camadas relevantes da arquitetura.
+- Decisões que precisam ficar explícitas.

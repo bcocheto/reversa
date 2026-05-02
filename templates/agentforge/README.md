@@ -22,10 +22,17 @@ Ele reúne contexto, roteamento, referências, políticas, fluxos, skills e mem�
 
 ## Estado atual
 
-- Projeto: <nome do projeto>
-- Modo de instalação: <bootstrap | adopt | hybrid>
-- Engines ativas: <codex, claude-code, cursor, github-copilot>
-- Dono do contexto: <nome de quem mantém este projeto>
+- Projeto: A preencher
+- Modo de instalação: A preencher
+- Engines ativas: A preencher
+- Dono do contexto: A preencher
+
+## A preencher
+
+- Nome real do projeto.
+- Modo de instalação efetivamente usado.
+- Engines habilitadas de fato.
+- Pessoa responsável pelo contexto.
 
 ## Regras de edição
 

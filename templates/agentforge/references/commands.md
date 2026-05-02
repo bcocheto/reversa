@@ -24,7 +24,7 @@
 - Auditar a organização de contexto: `audit-context`
 - Segregar o contexto importado: `refactor-context`, `refactor-context --apply`
 - Sugerir skills de projeto: `suggest-skills`
-- Criar uma skill real a partir de uma sugestão: `create-skill <skill-id>`
+- Criar uma skill real a partir de uma sugestão: use `create-skill` com o `skill-id` retornado
 - Criar equipe e fluxos: `add-agent`, `add-flow`
 - Validar a estrutura: `validate`
 - Gerar derivados: `export`

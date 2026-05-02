@@ -8,7 +8,7 @@
 ## Comandos
 
 - `npm test`
-- `<outros comandos úteis do projeto>`
+- A preencher
 
 ## O que verificar
 
@@ -20,3 +20,8 @@
 ## Observações
 
 - Atualize esta página quando a cobertura crescer.
+
+## A preencher
+
+- Comando principal de teste quando ele ainda não foi detectado.
+- Arquivos e pastas de teste reais do projeto.

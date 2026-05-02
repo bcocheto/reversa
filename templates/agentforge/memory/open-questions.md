@@ -4,8 +4,12 @@
 
 | Pergunta | Por que importa | Dono | Status |
 | --- | --- | --- | --- |
-| <pergunta> | <motivo> | <pessoa> | <aberta/em andamento/resolvida> |
+| A preencher | A preencher | A preencher | A preencher |
 
 ## Regras
 
 - Atualize esta página quando uma dúvida passar a ter resposta.
+
+## A preencher
+
+- Perguntas abertas reais descobertas durante a análise.

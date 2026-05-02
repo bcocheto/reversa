@@ -97,9 +97,9 @@ test('agentforge bootstrap detects package scripts, writes report, and updates s
       join(projectRoot, PRODUCT.internalDir, 'references', 'commands.md'),
       'utf8',
     );
-    assert.match(commands, /`npm test`/);
-    assert.match(commands, /`npm run lint`/);
-    assert.match(commands, /`npm run typecheck`/);
+    assert.match(commands, /`node --test`/);
+    assert.match(commands, /`eslint \.`/);
+    assert.match(commands, /`tsc -p tsconfig\.json`/);
 
     const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
     assert.ok(typeof state.last_bootstrap_at === 'string');
@@ -107,9 +107,9 @@ test('agentforge bootstrap detects package scripts, writes report, and updates s
     assert.ok(state.bootstrap_detected_stack.includes('Node.js'));
     assert.ok(state.bootstrap_detected_stack.includes('TypeScript'));
     assert.ok(Array.isArray(state.bootstrap_detected_commands));
-    assert.ok(state.bootstrap_detected_commands.includes('npm test'));
-    assert.ok(state.bootstrap_detected_commands.includes('npm run lint'));
-    assert.ok(state.bootstrap_detected_commands.includes('npm run typecheck'));
+    assert.ok(state.bootstrap_detected_commands.includes('node --test'));
+    assert.ok(state.bootstrap_detected_commands.includes('eslint .'));
+    assert.ok(state.bootstrap_detected_commands.includes('tsc -p tsconfig.json'));
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }

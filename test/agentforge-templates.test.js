@@ -319,7 +319,8 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
       "utf8",
     );
     assert.match(contextOverview, /Project Overview/);
-    assert.match(contextOverview, /<nome do projeto>/);
+    assert.match(contextOverview, /A preencher/);
+    assert.doesNotMatch(contextOverview, /<[^>]+>/);
 
     const skillsReadme = readFileSync(
       join(projectRoot, PRODUCT.internalDir, "skills", "README.md"),

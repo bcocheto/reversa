@@ -15,8 +15,13 @@
 
 ## Rollback
 
-- <descreva como desfazer uma entrega com segurança>
+A preencher
 
 ## Observações
 
 - Registre aqui dependências operacionais e restrições de release.
+
+## A preencher
+
+- Estratégia de rollback real do projeto.
+- Ambientes ainda não descritos.
