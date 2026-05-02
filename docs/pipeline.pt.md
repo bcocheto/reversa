@@ -1,6 +1,6 @@
 # Ciclo de vida
 
-O AgentForge não trata mais o projeto como um dump único de specs. Ele gerencia um ciclo de vida agent-ready contínuo.
+O AgentForge não trata mais o projeto como um dump único de specs. Ele analisa o repositório, recomenda estrutura e gerencia um ciclo de vida agent-ready contínuo.
 
 ---
 
@@ -10,6 +10,8 @@ O AgentForge não trata mais o projeto como um dump único de specs. Ele gerenci
 
 ```bash
 npx @bcocheto/agentforge install
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge apply-suggestions
 npx @bcocheto/agentforge bootstrap
 npx @bcocheto/agentforge compile
 npx @bcocheto/agentforge validate
@@ -21,11 +23,15 @@ Use isso quando você está começando de um projeto novo e quer a camada canôn
 
 ```bash
 npx @bcocheto/agentforge install
+npx @bcocheto/agentforge analyze
 npx @bcocheto/agentforge adopt
 npx @bcocheto/agentforge ingest
 npx @bcocheto/agentforge audit-context
 npx @bcocheto/agentforge refactor-context --apply
+npx @bcocheto/agentforge research-patterns
+npx @bcocheto/agentforge suggest-agents
 npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge apply-suggestions
 npx @bcocheto/agentforge compile
 npx @bcocheto/agentforge validate
 ```
@@ -35,11 +41,17 @@ Use isso quando o projeto já existe e você quer organizar a superfície agenti
 ### 3. Evoluir a camada ao longo do tempo
 
 ```bash
-npx @bcocheto/agentforge add-agent
-npx @bcocheto/agentforge add-flow
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge research-patterns
+npx @bcocheto/agentforge suggest-agents
+npx @bcocheto/agentforge create-agent automation-planner
 npx @bcocheto/agentforge suggest-skills
 npx @bcocheto/agentforge create-skill run-tests
+npx @bcocheto/agentforge apply-suggestions
+npx @bcocheto/agentforge add-agent
+npx @bcocheto/agentforge add-flow
 npx @bcocheto/agentforge improve
+npx @bcocheto/agentforge compile
 ```
 
 Use isso quando o time precisa refinar a camada sem perder o que já funciona.

@@ -1,6 +1,6 @@
 # Lifecycle
 
-AgentForge no longer treats the project as a one-shot spec dump. It manages a continuous agent-ready lifecycle.
+AgentForge no longer treats the project as a one-shot spec dump. It analyzes the repository, recommends structure, and manages a continuous agent-ready lifecycle.
 
 ---
 
@@ -10,6 +10,8 @@ AgentForge no longer treats the project as a one-shot spec dump. It manages a co
 
 ```bash
 npx @bcocheto/agentforge install
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge apply-suggestions
 npx @bcocheto/agentforge bootstrap
 npx @bcocheto/agentforge compile
 npx @bcocheto/agentforge validate
@@ -21,11 +23,15 @@ Use this when you are starting from a new project and want the canonical layer r
 
 ```bash
 npx @bcocheto/agentforge install
+npx @bcocheto/agentforge analyze
 npx @bcocheto/agentforge adopt
 npx @bcocheto/agentforge ingest
 npx @bcocheto/agentforge audit-context
 npx @bcocheto/agentforge refactor-context --apply
+npx @bcocheto/agentforge research-patterns
+npx @bcocheto/agentforge suggest-agents
 npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge apply-suggestions
 npx @bcocheto/agentforge compile
 npx @bcocheto/agentforge validate
 ```
@@ -35,11 +41,17 @@ Use this when a project already exists and you want to organize the current agen
 ### 3. Evolve the layer over time
 
 ```bash
-npx @bcocheto/agentforge add-agent
-npx @bcocheto/agentforge add-flow
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge research-patterns
+npx @bcocheto/agentforge suggest-agents
+npx @bcocheto/agentforge create-agent automation-planner
 npx @bcocheto/agentforge suggest-skills
 npx @bcocheto/agentforge create-skill run-tests
+npx @bcocheto/agentforge apply-suggestions
+npx @bcocheto/agentforge add-agent
+npx @bcocheto/agentforge add-flow
 npx @bcocheto/agentforge improve
+npx @bcocheto/agentforge compile
 ```
 
 Use this when the team needs to refine the layer without losing what already works.

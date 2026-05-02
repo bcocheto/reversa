@@ -26,7 +26,8 @@ El orquestador verifica `.agentforge/state.json`, reanuda la sesión existente s
 
 ```bash
 npx @bcocheto/agentforge install
-npx @bcocheto/agentforge bootstrap
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge apply-suggestions
 npx @bcocheto/agentforge compile
 npx @bcocheto/agentforge validate
 ```
@@ -35,10 +36,8 @@ npx @bcocheto/agentforge validate
 
 ```bash
 npx @bcocheto/agentforge install
-npx @bcocheto/agentforge adopt
-npx @bcocheto/agentforge audit-context
-npx @bcocheto/agentforge refactor-context --apply
-npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge adopt --apply
 npx @bcocheto/agentforge compile
 npx @bcocheto/agentforge validate
 ```
@@ -46,11 +45,14 @@ npx @bcocheto/agentforge validate
 ### Trabajo continuo
 
 ```bash
-npx @bcocheto/agentforge add-agent
-npx @bcocheto/agentforge add-flow
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge research-patterns
+npx @bcocheto/agentforge suggest-agents
+npx @bcocheto/agentforge create-agent automation-planner
 npx @bcocheto/agentforge suggest-skills
 npx @bcocheto/agentforge create-skill run-tests
 npx @bcocheto/agentforge improve
+npx @bcocheto/agentforge compile
 ```
 
 ---
@@ -59,6 +61,9 @@ npx @bcocheto/agentforge improve
 
 **Leen los archivos originales sin modificarlos**
 
+- `analyze`
+- `research-patterns`
+- `suggest-agents`
 - `ingest`
 - `adopt`
 - `audit-context`
@@ -69,8 +74,10 @@ Estos comandos leen señales del proyecto y escriben solo en `.agentforge/`.
 
 - `bootstrap`
 - `refactor-context --apply`
+- `apply-suggestions`
 - `suggest-skills`
 - `create-skill`
+- `create-agent`
 - `compile`
 - `export`
 - `update`
@@ -78,6 +85,18 @@ Estos comandos leen señales del proyecto y escriben solo en `.agentforge/`.
 - `uninstall`
 
 Estos comandos escriben solo en la capa canónica o en los entrypoints gestionados por AgentForge.
+
+---
+
+## Registry y descubrimiento
+
+Usa el registry cuando quieras la lista canónica:
+
+```bash
+npx @bcocheto/agentforge commands
+npx @bcocheto/agentforge commands --json
+npx @bcocheto/agentforge commands --category agents
+```
 
 ---
 

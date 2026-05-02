@@ -16,22 +16,43 @@ In the root of the project you want to prepare:
 npx @bcocheto/agentforge install
 ```
 
-The installer creates the canonical `.agentforge/` layer, detects the engines already present, and writes the managed entrypoints for the engines you enabled.
+The installer now starts with analysis, then asks a small set of onboarding questions, shows a summary of what it detected, and only then applies the recommended structure if you approve it.
 
-It creates:
+It asks for:
+
+- new project or existing project
+- supported engines
+- project name
+- user name
+- git strategy
+- chat language
+- document language
+
+It infers:
+
+- stack
+- framework
+- probable architecture
+- agents
+- flows
+- skills
+- recommended patterns
+- entrypoints to regenerate
+
+It then writes or refreshes:
 
 1. the base `.agentforge/` structure
 2. the SHA-256 manifest used for safe updates
-3. the engine entry files for the engines selected during install
-4. the initial team, flows, policies, and memory scaffolding
+3. the engine entry files and managed bootloaders for the selected engines
+4. the initial analysis, pattern, suggestion, and validation reports
 
 ---
 
 ## Installation modes
 
 - **bootstrap**: start from a new project and build the initial agent-ready base
-- **adopt**: inspect an existing project and import its agentic surface safely
-- **hybrid**: do both, when the project already has some structure but still needs a canonical base
+- **adopt**: inspect an existing project and reorganize its agentic surface safely
+- **hybrid**: kept for legacy state normalization; it is not shown in the installer UI
 
 ---
 
@@ -49,7 +70,20 @@ project/
 Depending on the detected engines, `install` may also create compatibility surfaces like `.cursorrules`.
 
 !!! success "Original app files stay intact"
-    The installer creates new files and managed entrypoints. It does not rewrite your application source code.
+    The installer creates new files and managed entrypoints. It does not rewrite your application source code. Existing entrypoints are preserved as snapshots before takeover.
+
+---
+
+## Suggested follow-up
+
+After install, use:
+
+```bash
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge apply-suggestions
+npx @bcocheto/agentforge compile
+npx @bcocheto/agentforge validate
+```
 
 ---
 

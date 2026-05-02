@@ -1,31 +1,33 @@
 # AgentForge
 
-**Crea, organiza, evoluciona y compila la capa agent-ready de un proyecto.**
+**Analiza proyectos, recomienda agentes, skills, flows y policies, y compila bootloaders limpios para herramientas de codificación con IA.**
 
-AgentForge le da al proyecto una fuente de verdad en `.agentforge/`, un router de contexto, skills reutilizables, flows operacionales, policies, memoria y exports para Codex, Claude Code, Cursor y GitHub Copilot.
+AgentForge convierte proyectos nuevos o existentes en una capa canónica `.agentforge/` que humanos pueden leer, revisar y evolucionar con el tiempo.
 
 ---
 
 ## El problema
 
-- `AGENTS.md` crece demasiado.
-- `CLAUDE.md` se vuelve una fuente paralela.
-- Las reglas se duplican entre motores.
-- Contexto, policies, workflows y comandos quedan mezclados.
-- A los humanos les cuesta editar con seguridad.
+- `AGENTS.md` y `CLAUDE.md` crecen demasiado.
+- Las reglas, el contexto, los workflows, los comandos y las policies quedan mezclados.
+- Cada motor se vuelve una fuente paralela de verdad.
+- A los humanos les cuesta revisar y editar contenido generado con seguridad.
 - Los agents reciben demasiado contexto, o el contexto equivocado.
+- Los proyectos nuevos empiezan sin una base agent-ready clara.
+- Los proyectos existentes acumulan instrucciones agentic sin una estructura compartida.
 
 ---
 
 ## La solución
 
 - `.agentforge/` es la fuente de verdad.
-- `harness/` enruta el contexto.
-- `context-index.yaml` define qué cargar.
-- `skills/` guardan procedimientos reutilizables.
-- `flows/` guardan workflows del proyecto.
-- `policies/` definen límites.
-- `compile` genera bootloaders gestionados para cada motor.
+- `harness/context-index.yaml` controla qué se carga, cuándo y por qué.
+- `analyze` escanea el proyecto y produce una visión consolidada de stack, patrones, riesgos y señales.
+- `research-patterns` cruza el repositorio con un catálogo local de patrones.
+- `suggest-agents`, `suggest-skills` y las sugerencias de flows/policies/contexto generadas por `analyze` convierten señales en recomendaciones.
+- `apply-suggestions` promueve las recomendaciones en un paso controlado.
+- `compile` regenera bootloaders gestionados para cada motor.
+- `validate` e `improve` mantienen la capa legible y segura.
 
 ---
 
@@ -35,7 +37,8 @@ AgentForge le da al proyecto una fuente de verdad en `.agentforge/`, un router d
 
 ```bash
 npx @bcocheto/agentforge install
-npx @bcocheto/agentforge bootstrap
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge apply-suggestions
 npx @bcocheto/agentforge compile
 npx @bcocheto/agentforge validate
 ```
@@ -44,10 +47,8 @@ npx @bcocheto/agentforge validate
 
 ```bash
 npx @bcocheto/agentforge install
-npx @bcocheto/agentforge adopt
-npx @bcocheto/agentforge audit-context
-npx @bcocheto/agentforge refactor-context --apply
-npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge adopt --apply
 npx @bcocheto/agentforge compile
 npx @bcocheto/agentforge validate
 ```
@@ -55,11 +56,14 @@ npx @bcocheto/agentforge validate
 ### Trabajo continuo
 
 ```bash
-npx @bcocheto/agentforge add-agent
-npx @bcocheto/agentforge add-flow
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge research-patterns
+npx @bcocheto/agentforge suggest-agents
+npx @bcocheto/agentforge create-agent automation-planner
 npx @bcocheto/agentforge suggest-skills
 npx @bcocheto/agentforge create-skill run-tests
 npx @bcocheto/agentforge improve
+npx @bcocheto/agentforge compile
 ```
 
 ---
@@ -67,10 +71,10 @@ npx @bcocheto/agentforge improve
 ## Seguridad
 
 !!! note "Comandos read-only"
-    `ingest`, `adopt` y `audit-context` leen las señales del proyecto sin modificar los archivos originales.
+    `ingest`, `adopt`, `analyze` y `audit-context` leen las señales del proyecto sin modificar los archivos originales fuera de `.agentforge/`.
 
 !!! note "Escrituras gestionadas"
-    `compile` y `export` escriben bloques gestionados de bootloader y preservan el contenido manual fuera del bloque. `update` y `uninstall` respetan el manifiesto y los archivos modificados.
+    `compile` y `export` escriben bloques gestionados de bootloader y preservan el contenido manual fuera del bloque. `compile --takeover-entrypoints` preserva snapshots antes de reescribir entrypoints existentes. `update`, `apply-suggestions` y `uninstall` respetan el manifiesto y los archivos modificados.
 
 !!! note "Los snapshots quedan locales"
     Los snapshots viven en `.agentforge/imports/`. Los reportes viven en `.agentforge/reports/`.
@@ -79,16 +83,20 @@ npx @bcocheto/agentforge improve
 
 ## Conceptos
 
-- **Harness**: el router que carga el contexto correcto en el momento correcto.
-- **Context**: conocimiento canónico del proyecto en `.agentforge/context/`.
-- **References**: comandos, archivos importantes, docs externas y herramientas.
-- **Policies**: archivos protegidos, límites de seguridad y reglas de aprobación.
-- **Flows**: workflows repetibles para feature, bugfix, refactor y review.
+- **Analysis**: el escaneo consolidado del proyecto que detecta stack, framework, arquitectura, riesgos y señales.
+- **Pattern research**: una etapa offline basada en un catálogo local que recomienda patrones reutilizables.
+- **Suggestions**: recomendaciones generadas para agentes, skills, flows, policies y context files.
+- **Agents**: roles del proyecto en core, engineering, product, planning, automation, operations, data, knowledge, security, compliance, content, domain, support, integration y quality.
 - **Skills**: procedimientos reutilizables promovidos desde sugerencias.
-- **Agents**: los roles del proyecto que ejecutan el trabajo.
+- **Flows**: workflows repetibles para feature, bugfix, review, release y refactor.
+- **Policies**: archivos protegidos, límites de seguridad y reglas de aprobación.
+- **Harness**: el router que carga el contexto correcto en el momento correcto.
+- **Context index**: el mapa que decide qué se carga para cada modo de tarea.
+- **References**: comandos, archivos importantes, docs externas y herramientas.
 - **Memory**: decisiones, convenciones, glosario, lecciones y preguntas abiertas.
-- **Reports**: salidas de audit, compile, bootstrap, improve y validation.
-- **Engine exports**: entrypoints generados para Codex, Claude Code, Cursor y GitHub Copilot.
+- **Reports**: salidas de analysis, suggestions, adopt, compile, bootstrap, improve y validation.
+- **Engine entry points**: bootloaders generados para Codex, Claude Code, Cursor, Gemini y GitHub Copilot.
+- **Manifest**: el registro de hash que permite a AgentForge preservar ediciones manuales.
 
 ---
 

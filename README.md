@@ -1,30 +1,32 @@
 # AgentForge
 <small>by bcocheto</small>
 
-AgentForge creates, organizes, evolves, and compiles the agent-ready layer of a project.
-It is not just a generator of agents. It gives a project a canonical `.agentforge/` source of truth, a context router, reusable skills, operational flows, policies, memory, and engine exports.
+AgentForge analyzes your project, recommends agents, skills, flows and policies, organizes them in a human-readable `.agentforge/` layer, and compiles clean bootloaders for your AI coding tools.
+It works for new projects and existing projects, and it keeps evolving the same canonical layer over time.
 
 ## The problem
 
-- `AGENTS.md` grows too large and starts mixing unrelated concerns.
-- `CLAUDE.md` becomes a parallel source of truth instead of a thin entrypoint.
-- Rules get duplicated across engines and drift apart over time.
-- Context, policies, workflows, and commands end up mixed in the same place.
-- Humans struggle to edit safely when generated and manual content are tangled.
+- `AGENTS.md` and `CLAUDE.md` grow too large and start mixing unrelated concerns.
+- Rules, context, workflows, commands, and policies end up tangled together.
+- Each engine drifts toward a parallel source of truth instead of a thin bootloader.
+- Humans struggle to review and edit safely when generated and manual content are mixed.
 - Agents receive too much context, or the wrong context, at the wrong time.
+- New projects start without a clear agent-ready base.
+- Existing projects accumulate agentic instructions without a shared structure.
 
 ## The solution
 
-- `.agentforge/` is the source of truth for the project agent layer.
-- `harness/` routes context and keeps the load order explicit.
-- `context-index.yaml` maps what should load, when, and why.
-- `skills/` hold reusable procedures.
-- `flows/` hold project workflows.
-- `policies/` define boundaries and approvals.
-- `compile` turns the canonical layer into the real engine entrypoints in the project root.
-- `export-package` generates an isolated `_agentforge/` package when you explicitly want a portable bundle.
+- `.agentforge/` is the canonical source of truth for the project agent layer.
+- `harness/context-index.yaml` manages what context loads, when, and why.
+- `analyze` scans the project and builds a consolidated view of stack, architecture, patterns, risks, and signals.
+- `research-patterns` evaluates a local pattern catalog against the detected project evidence.
+- `suggest-agents`, `suggest-skills`, and the flow/policy/context suggestions from `analyze` turn signals into recommendations.
+- `apply-suggestions` promotes recommendations in a controlled way.
+- `compile` regenerates clean engine bootloaders from the canonical layer.
+- `validate` and `improve` keep the layer readable, safe, and consistent.
+- `export-package` generates an isolated `_agentforge/` bundle when you explicitly want a portable copy.
 
-AgentForge keeps a SHA-256 manifest so it can detect when a generated file was edited by hand and preserve those customizations during `update`, `compile`, and `uninstall`.
+AgentForge keeps a SHA-256 manifest so it can detect when a generated file was edited by hand and preserve those customizations during `update`, `compile`, `apply-suggestions`, and `uninstall`.
 
 ## Install
 
@@ -34,53 +36,28 @@ In the root of the project:
 npx @bcocheto/agentforge install
 ```
 
-Install guides you through:
+The installer asks for:
 
-- Setup mode: new project or existing project
-- Supported engines
-- Project name
-- How the agents should address the user
-- Git artifact strategy
-- Chat and document languages
+- new project or existing project
+- engines
+- project name
+- user name
+- git strategy
+- chat language
+- document language
 
 AgentForge infers the rest from the repository:
 
-- project type
-- main stack
-- primary objective
-- initial agents
-- initial flows
+- stack
+- framework
+- probable architecture
+- agents
+- flows
+- skills
+- patterns
+- entrypoints to regenerate
 
-It then creates:
-
-- `.agentforge/README.md`
-- `.agentforge/harness/`
-- `.agentforge/context/`
-- `.agentforge/references/`
-- `.agentforge/skills/`
-- `.agentforge/memory/`
-- `.agentforge/reports/`
-- `.agentforge/state.json`
-- `.agentforge/config.toml`
-- `.agentforge/plan.md`
-- `.agentforge/scope.md`
-- `.agentforge/agents/`
-- `.agentforge/subagents/`
-- `.agentforge/flows/`
-- `.agentforge/policies/`
-- `.agentforge/_config/files-manifest.json`
-- `AGENTS.md` for Codex when enabled or selected by default
-- `CLAUDE.md` for Claude Code when enabled
-- `.cursorrules` and `.cursor/rules/agentforge.md` for Cursor when enabled
-- `.github/copilot-instructions.md` for GitHub Copilot when enabled
-
-When the project already has entrypoints, AgentForge preserves snapshots first and rewrites those files as managed bootloaders at the end of the adoption flow.
-
-After install, `agentforge bootstrap` can complete the human-readable project context,
-flow docs, and initial skill guidance for the current repo using real repository signals
-such as `package.json`, `README.md`, `docs/`, `src/`, tests, and workflow files.
-
-AgentForge writes generated artifacts and entry files with merge-aware behavior. If an existing file was modified by the user, it is preserved unless you explicitly force an overwrite or a policy allows that change.
+The install flow shows a summary before it writes anything. If you approve it, AgentForge creates or refreshes the `.agentforge/` layer, takes over existing entrypoints as managed bootloaders, and validates the result. If you do not approve it, it still produces reports and suggestions only under `.agentforge/`.
 
 **Requirements:** Node.js 18+
 
@@ -98,14 +75,14 @@ Engines that support slash commands can use:
 /agentforge
 ```
 
-The legacy `reversa` alias is kept for compatibility with existing installs.
+The legacy `reversa` alias is kept for compatibility with existing installs, but the product narrative is now centered on analysis, suggestions, promotion, and compilation.
 
 ## Modes
 
-AgentForge supports three installation modes:
+AgentForge supports two user-facing installation modes:
 
 - `bootstrap`: start from a new project and build the initial agent-ready base
-- `adopt`: inspect an existing project and import its agentic surface safely
+- `adopt`: inspect an existing project and reorganize its agentic surface safely
 
 `hybrid` remains supported internally for legacy state normalization, but it is no longer shown in the installer UI.
 
@@ -139,7 +116,85 @@ Engine-specific entry files and bootloaders are derived from that structure:
 - `.claude/agents/*.md` when Claude Code agent exports are configured
 - `.github/agents/*.md` when GitHub Copilot agent exports are configured
 
-`compile` updates the real engine entrypoints in the repository root. `export-package` writes the isolated `_agentforge/` bundle without replacing those entrypoints. `export --package` is an explicit shortcut for that same package export.
+`compile` updates the real engine entrypoints in the repository root. `compile --takeover-entrypoints` snapshots existing entrypoints first and then rewrites them as managed bootloaders. `export-package` writes the isolated `_agentforge/` bundle without replacing those entrypoints. `export --package` is an explicit shortcut for that same package export.
+
+## Analysis
+
+`analyze` scans the project before you create or modify agents, skills, flows, policies, or context. It detects the stack, package manager, framework, architecture, risks, automation signals, product signals, integration and data signals, and whether the project already has agentic surfaces.
+
+It writes:
+
+- `.agentforge/reports/project-analysis.md`
+- `.agentforge/reports/analysis-plan.md`
+- `.agentforge/suggestions/agents/*.yaml`
+- `.agentforge/suggestions/skills/*.yaml`
+- `.agentforge/suggestions/flows/*.yaml`
+- `.agentforge/suggestions/policies/*.yaml`
+- `.agentforge/suggestions/context/*.yaml`
+
+## Pattern Research
+
+`research-patterns` is offline by default. It uses a local pattern catalog to match the repository against known patterns such as Node.js, TypeScript, NestJS, Next.js, React, Python, Docker, GitHub Actions, monorepo, API, CLI, SaaS, documentation-heavy, and automation-heavy projects.
+
+It writes:
+
+- `.agentforge/reports/pattern-research.md`
+- `.agentforge/suggestions/patterns/*.yaml`
+
+## Suggestions
+
+Suggestions are the bridge between analysis and final artifacts.
+
+- `suggest-agents` recommends team roles beyond engineering, including planning, automation, operations, data, knowledge, domain, security, compliance, support, integration, and quality.
+- `suggest-skills` recommends reusable skills from the project surface.
+- Flow and policy suggestions come from `analyze` and are promoted with `apply-suggestions`.
+
+### Agents
+
+Agents are project roles, not just software developers. Common categories include:
+
+- `core`
+- `engineering`
+- `product`
+- `planning`
+- `automation`
+- `operations`
+- `data`
+- `knowledge`
+- `security`
+- `compliance`
+- `content`
+- `domain`
+- `support`
+- `integration`
+- `quality`
+
+Examples:
+
+- `automation-planner`
+- `workflow-automation-designer`
+- `operations-coordinator`
+- `release-coordinator`
+- `data-analyst`
+- `documentation-curator`
+- `knowledge-manager`
+- `domain-specialist`
+- `support-ops`
+- `integration-specialist`
+- `security-reviewer`
+- `compliance-reviewer`
+
+### Skills
+
+Skills are reusable procedures, such as running tests, reviewing changes, diagnosing CI, updating docs, or handling migrations.
+
+### Flows
+
+Flows are repeatable playbooks such as feature development, bugfix, review, release, and refactor.
+
+### Policies
+
+Policies define safe-by-default behavior, protected files, and human approval gates.
 
 ## Flows
 
@@ -147,7 +202,8 @@ Engine-specific entry files and bootloaders are derived from that structure:
 
 ```bash
 npx @bcocheto/agentforge install
-npx @bcocheto/agentforge bootstrap
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge apply-suggestions
 npx @bcocheto/agentforge compile
 npx @bcocheto/agentforge validate
 ```
@@ -156,10 +212,8 @@ npx @bcocheto/agentforge validate
 
 ```bash
 npx @bcocheto/agentforge install
-npx @bcocheto/agentforge adopt
-npx @bcocheto/agentforge audit-context
-npx @bcocheto/agentforge refactor-context --apply
-npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge adopt --apply
 npx @bcocheto/agentforge compile
 npx @bcocheto/agentforge validate
 ```
@@ -167,83 +221,116 @@ npx @bcocheto/agentforge validate
 ### Continuous work
 
 ```bash
-npx @bcocheto/agentforge add-agent
-npx @bcocheto/agentforge add-flow
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge suggest-agents
+npx @bcocheto/agentforge create-agent automation-planner
 npx @bcocheto/agentforge suggest-skills
 npx @bcocheto/agentforge create-skill run-tests
 npx @bcocheto/agentforge improve
+npx @bcocheto/agentforge compile
 ```
 
 ## Security
 
-- `ingest`, `adopt`, and `audit-context` read project signals without modifying the original files.
-- Snapshots are stored under `.agentforge/imports/`.
+- `ingest`, `adopt`, `analyze`, and `audit-context` read project signals without modifying the original files outside `.agentforge/`.
+- `ingest` and `adopt` preserve snapshots before takeover.
 - `compile` and `export` write managed bootloader blocks and preserve manual content outside those blocks.
-- The manifest preserves customizations and lets `update` and `uninstall` respect modified files.
+- `compile --takeover-entrypoints` snapshots existing entrypoints before rewriting them as bootloaders.
+- `.agentforge/` is the source of truth for generated agent-ready content.
+- The manifest detects customizations and lets `update`, `apply-suggestions`, `compile`, and `uninstall` respect modified files.
+- `apply-suggestions` is controlled and only promotes explicit suggestions.
 - `validate` and the report commands write only under `.agentforge/`.
 
 ## Concepts
 
+### Analysis
+
+The project scan that consolidates stack, framework, architecture, commands, risks, and signals before suggestions are generated.
+
+### Pattern Research
+
+An offline, deterministic pass over a local catalog that recommends patterns, context files, agents, skills, and flows.
+
+### Suggestions
+
+Generated recommendations that can be reviewed, promoted, or ignored without touching application source code.
+
 ### Agents
 
-Primary roles in the project team, such as orchestrator, product owner, architect, engineer, reviewer, QA, security, and DevOps.
+Project roles, including core, engineering, product, planning, automation, operations, data, knowledge, security, compliance, content, domain, support, integration, and quality roles.
 
-### Subagents
+### Skills
 
-Narrow specialists used only when a flow or policy needs extra focus, such as database, API contract, or security review support.
+Reusable procedures promoted from suggestions into `.agentforge/skills/`.
 
 ### Flows
 
-Operational playbooks that describe how the team works, such as feature development, bugfix, refactor, and release.
+Repeatable playbooks for feature work, bugfixes, review, release, and refactor paths.
 
 ### Policies
 
 Guardrails that define permissions, protected files, and when human approval is required.
 
+### Harness
+
+The routing layer that decides what context loads, in what order, and for which task mode.
+
+### Context Index
+
+The file that maps context files to task modes and determines which files are relevant for a session.
+
+### References
+
+The index of commands, important files, external docs, and tools that make the layer easier to navigate.
+
 ### Memory
 
-Persistent project knowledge, including decisions, conventions, and glossary entries.
+Persistent project knowledge, including decisions, conventions, glossary entries, and lessons learned.
 
-### Exports
+### Reports
 
-Derived files generated for supported engines so they can consume the same AgentForge team from their native entry points.
+Human-readable outputs that explain analysis, suggestions, adoption, compilation, validation, and improvement decisions.
+
+### Engine Entry Points
+
+The thin bootloaders written to `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/agentforge.md`, and `.github/copilot-instructions.md`.
 
 ### Manifest
 
-The file hash record used to detect intact, modified, missing, and newly generated files. It is what lets AgentForge preserve manual edits instead of silently overwriting them.
+The file hash record used to detect intact, modified, missing, and newly generated files. It lets AgentForge preserve manual edits instead of silently overwriting them.
 
 ## Commands
 
 ```bash
-npx @bcocheto/agentforge install    # Install AgentForge and create the initial team
-agentforge bootstrap      # Complete or refresh the project base
-agentforge adopt          # Read existing agentic structure and generate an adoption plan
-agentforge improve        # Review the .agentforge/ structure and suggest upgrades
-agentforge refactor-context  # Split imported context into canonical .agentforge/ files
-agentforge suggest-skills  # Suggest project skills from repo signals
-agentforge audit-context  # Diagnose how context is organized
-agentforge create-skill <skill-id>  # Create a real skill from an existing suggestion
-agentforge status         # Show the current AgentForge state
-agentforge add-agent      # Create a custom project agent
-agentforge add-flow       # Create a custom operational flow
-agentforge add-engine     # Add support for an engine
-agentforge validate       # Validate the .agentforge/ structure
-agentforge ingest         # Import agentic instruction snapshots into .agentforge/
-agentforge compile        # Update the real engine entrypoints in the project root
-agentforge export         # Alias of compile
-agentforge export-package # Generate the isolated _agentforge/ package
-agentforge export --package  # Same as export-package
-agentforge update         # Refresh generated files while preserving custom edits
-agentforge uninstall      # Remove generated artifacts safely
+npx @bcocheto/agentforge install
+npx @bcocheto/agentforge commands
+npx @bcocheto/agentforge commands --json
+npx @bcocheto/agentforge commands --category agents
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge research-patterns
+npx @bcocheto/agentforge suggest-agents
+npx @bcocheto/agentforge create-agent automation-planner
+npx @bcocheto/agentforge apply-suggestions
+npx @bcocheto/agentforge ingest
+npx @bcocheto/agentforge adopt
+npx @bcocheto/agentforge bootstrap
+npx @bcocheto/agentforge audit-context
+npx @bcocheto/agentforge refactor-context
+npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge create-skill run-tests
+npx @bcocheto/agentforge add-agent
+npx @bcocheto/agentforge add-flow
+npx @bcocheto/agentforge add-engine
+npx @bcocheto/agentforge compile
+npx @bcocheto/agentforge export
+npx @bcocheto/agentforge export-package
+npx @bcocheto/agentforge validate
+npx @bcocheto/agentforge improve
+npx @bcocheto/agentforge status
+npx @bcocheto/agentforge update
+npx @bcocheto/agentforge uninstall
+npx @bcocheto/agentforge export-diagrams
 ```
-
-Optional utility:
-
-```bash
-agentforge export-diagrams
-```
-
-This renders Mermaid diagrams when the diagram toolchain is available.
 
 ## Security
 
@@ -255,40 +342,40 @@ This renders Mermaid diagrams when the diagram toolchain is available.
 
 ## Example workflow
 
-Create a team for a SaaS project:
+Create a team for a new project:
 
 ```bash
 npx @bcocheto/agentforge install
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge apply-suggestions
+npx @bcocheto/agentforge compile
+npx @bcocheto/agentforge validate
 ```
 
-Choose a SaaS/Web App project, select the initial team, and keep the default flows.
+AgentForge analyzes the project, suggests the initial team and supporting structure, and then compiles the bootloaders for your engines.
 
-Then verify the structure:
+For an existing project:
 
 ```bash
-agentforge validate
+npx @bcocheto/agentforge install
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge adopt --apply
+npx @bcocheto/agentforge validate
 ```
 
-And compile the bootloaders and derived files for your engine:
+Then evolve continuously:
 
 ```bash
-agentforge compile
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge suggest-agents
+npx @bcocheto/agentforge create-agent automation-planner
+npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge create-skill run-tests
+npx @bcocheto/agentforge improve
+npx @bcocheto/agentforge compile
 ```
 
-If you want AgentForge to suggest structural improvements without changing human-owned
-content, run:
-
-```bash
-agentforge improve
-```
-
-`agentforge improve` generates an improvement plan with a simple score and the safest
-recommended changes first.
-
-Use `agentforge improve --apply` only for safe structural additions like missing README
-files, placeholder documentation, and other small generated scaffolds.
-
-That gives you a project-local team definition that Codex, Claude Code, Cursor, and GitHub Copilot can read from the same canonical source of truth.
+`agentforge improve` still generates a reviewable improvement plan for the canonical layer, while `analyze`, `research-patterns`, `suggest-agents`, and `suggest-skills` focus on understanding and expanding the project agent surface.
 
 ## Roadmap
 

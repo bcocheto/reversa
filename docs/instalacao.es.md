@@ -16,22 +16,43 @@ En la raíz del proyecto que quieres preparar:
 npx @bcocheto/agentforge install
 ```
 
-El instalador crea la capa canónica `.agentforge/`, detecta los motores presentes y escribe los entrypoints gestionados de los motores que elegiste.
+El instalador ahora empieza con análisis, hace pocas preguntas de onboarding, muestra un resumen de lo detectado y solo entonces aplica la estructura recomendada si la apruebas.
 
-Crea:
+Pregunta:
+
+- proyecto nuevo o proyecto existente
+- motores soportados
+- nombre del proyecto
+- nombre del usuario
+- estrategia git
+- idioma del chat
+- idioma de los documentos
+
+Infiere:
+
+- stack
+- framework
+- arquitectura probable
+- agentes
+- flows
+- skills
+- patrones recomendados
+- entrypoints a regenerar
+
+Luego escribe o refresca:
 
 1. la estructura base de `.agentforge/`
 2. el manifiesto SHA-256 usado para updates seguros
-3. los archivos de entrada de los motores seleccionados en la instalación
-4. el scaffolding inicial de team, flows, policies y memory
+3. los entrypoints y bootloaders gestionados de los motores seleccionados
+4. los reportes de análisis, patrones, sugerencias y validación
 
 ---
 
 ## Modos de instalación
 
 - **bootstrap**: empezar desde un proyecto nuevo y montar la base agent-ready inicial
-- **adopt**: inspeccionar un proyecto existente e importar su superficie agentic con seguridad
-- **hybrid**: hacer ambas cosas, cuando el proyecto ya tiene algo de estructura pero todavía necesita una base canónica
+- **adopt**: inspeccionar un proyecto existente y reorganizar su superficie agentic con seguridad
+- **hybrid**: se mantiene para normalización de estado legado; no aparece en la UI del instalador
 
 ---
 
@@ -49,7 +70,20 @@ proyecto/
 Dependiendo de los motores detectados, `install` también puede crear superficies de compatibilidad como `.cursorrules`.
 
 !!! success "Los archivos de tu aplicación quedan intactos"
-    El instalador crea archivos nuevos y entrypoints gestionados. No reescribe el código de tu aplicación.
+    El instalador crea archivos nuevos y entrypoints gestionados. No reescribe el código de tu aplicación. Los entrypoints existentes se preservan como snapshots antes del takeover.
+
+---
+
+## Siguiente paso sugerido
+
+Después de `install`, usa:
+
+```bash
+npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge apply-suggestions
+npx @bcocheto/agentforge compile
+npx @bcocheto/agentforge validate
+```
 
 ---
 
