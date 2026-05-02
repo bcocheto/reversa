@@ -265,6 +265,7 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
     assert.ok(state.created_files.includes(".agentforge/agents/qa.yaml"));
     assert.ok(state.created_files.includes(".agentforge/agents/security.yaml"));
     assert.ok(state.created_files.includes(".agentforge/agents/devops.yaml"));
+    assert.ok(state.created_files.includes(".agentforge/flows/context-curation.md"));
     assert.ok(state.created_files.includes(".agentforge/flows/release.yaml"));
     assert.ok(
       state.created_files.includes(".agentforge/memory/conventions.md"),
@@ -397,6 +398,7 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
     assert.ok(manifest[".agentforge/agents/security.yaml"]);
     assert.ok(manifest[".agentforge/agents/devops.yaml"]);
     assert.ok(manifest[".agentforge/flows/feature-development.yaml"]);
+    assert.ok(manifest[".agentforge/flows/context-curation.md"]);
     assert.ok(manifest[".agentforge/flows/release.yaml"]);
     assert.ok(manifest[".agentforge/policies/permissions.yaml"]);
     assert.ok(manifest[".agentforge/memory/decisions.md"]);
@@ -416,6 +418,20 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
     );
     assert.match(contextMap, /generated_by: context-curator/);
     assert.match(contextMap, /items:\s*\[\]/);
+
+    const contextIndex = readFileSync(
+      join(projectRoot, PRODUCT.internalDir, "harness", "context-index.yaml"),
+      "utf8",
+    );
+    assert.match(contextIndex, /flows\/context-curation\.md/);
+    assert.match(contextIndex, /context-curation:/);
+
+    const taskModes = readFileSync(
+      join(projectRoot, PRODUCT.internalDir, "harness", "task-modes.yaml"),
+      "utf8",
+    );
+    assert.match(taskModes, /context-curation:/);
+    assert.match(taskModes, /Context Curation/);
 
     const agentsEntry = readFileSync(join(projectRoot, "AGENTS.md"), "utf8");
     assert.match(agentsEntry, /<!-- agentforge:start -->/);

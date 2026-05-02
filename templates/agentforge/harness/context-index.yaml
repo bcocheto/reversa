@@ -82,6 +82,9 @@ flows:
   - id: review
     path: flows/review.md
     purpose: Revisar mudanças antes da integração.
+  - id: context-curation
+    path: flows/context-curation.md
+    purpose: Organizar, revisar e indexar contexto durável do projeto.
   - id: release
     path: flows/release.md
     purpose: Promover uma entrega segura e rastreavel.
@@ -129,6 +132,23 @@ task_contexts:
       - flows/review.md
     policies:
       - policies/protected-files.md
+  context-curation:
+    always_load:
+      - harness/context-index.yaml
+      - harness/context-map.yaml
+    context:
+      - context/project-overview.md
+      - context/architecture.md
+      - context/glossary.md
+      - context/coding-standards.md
+    references:
+      - references/commands.md
+      - references/important-files.md
+    flows:
+      - flows/context-curation.md
+    policies:
+      - policies/protected-files.md
+      - policies/human-approval.md
   documentation:
     context:
       - context/conventions.md

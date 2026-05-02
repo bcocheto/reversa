@@ -145,6 +145,27 @@ test('validate rejects malformed context-map items', async () => {
   }
 });
 
+test('validate rejects context-curation task_contexts without a matching task mode', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-context-map-task-mode-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const taskModesPath = join(projectRoot, PRODUCT.internalDir, 'harness', 'task-modes.yaml');
+    const taskModes = YAML.parse(readFileSync(taskModesPath, 'utf8'));
+    delete taskModes['context-curation'];
+    writeFileSync(taskModesPath, `${YAML.stringify(taskModes).trim()}\n`, 'utf8');
+
+    const validateResult = runCommand(projectRoot, ['validate']);
+    assert.equal(validateResult.status, 1);
+    const validationReportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md');
+    assert.match(readFileSync(validationReportPath, 'utf8'), /context-curation/);
+    assert.match(readFileSync(validationReportPath, 'utf8'), /Modo de tarefa indefinido/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('context-map preserves curated items and marks stale ranges', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-context-map-stale-'));
 

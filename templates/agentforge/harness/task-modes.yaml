@@ -23,6 +23,15 @@ review:
   use_when:
     - O foco é avaliar, não implementar.
     - O trabalho precisa de checagem de regressão e clareza.
+context-curation:
+  label: Context Curation
+  purpose: Organizar e localizar contexto durável por tema, arquivo e linha.
+  use_when:
+    - usuário pede organização de contexto
+    - usuário pede segregação de glossário
+    - usuário pede localizar boas práticas por arquivo/linha
+    - refactor-context gera muitos unclassified
+    - context-map tem muitos itens needs-review
 documentation:
   label: Documentation
   purpose: Atualizar instruções e documentação sem alterar o comportamento do produto.

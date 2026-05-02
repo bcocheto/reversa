@@ -10,6 +10,7 @@ Ele reúne contexto, roteamento, referências, políticas, fluxos, skills, AI pl
 - Se algo depender de um processo manual, anote aqui ou nos arquivos relacionados.
 - Use `agentforge handoff` para obter o playbook da IA ativa.
 - Use `agentforge context-map --check` e `agentforge context-map --write` para curadoria granular de contexto.
+- Use o agente `context-curator` para organizar, segregar e revisar contexto durável.
 - Use `agentforge next` para determinar a fase atual e a próxima fase real.
 - Use `agentforge advance` para ver a orientação da próxima fase.
 - Use `agentforge handoff --engine <engine>` para receber notas específicas da engine configurada.

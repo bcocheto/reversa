@@ -149,6 +149,7 @@ test('install prompts include context-curator for adopt projects with docs and a
     ]);
 
     assert.ok(answers.initial_agents.includes('context-curator'));
+    assert.ok(answers.initial_flows.includes('context-curation'));
   } finally {
     inquirer.prompt = originalPrompt;
     process.chdir(cwd);
@@ -175,6 +176,35 @@ test('handoff discovery mentions context-curator and context-map commands', asyn
     assert.match(handoffResult.stdout, /context-curator/);
     assert.match(handoffResult.stdout, /context-map --check/);
     assert.match(handoffResult.stdout, /context-map --write/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('handoff context-curation points to context-curator and the curation flow', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-handoff-context-curation-'));
+
+  try {
+    const installResult = await runInstallWithAnswers(projectRoot, makeBaseAnswers({
+      engines: ['codex'],
+      setup_mode: 'bootstrap',
+    }));
+    assert.equal(installResult.status, 0);
+
+    const handoffResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'handoff', '--phase', 'context-curation'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(handoffResult.status, 0);
+    assert.match(handoffResult.stdout, /context-curator/);
+    assert.match(handoffResult.stdout, /context-curation/);
+    assert.match(handoffResult.stdout, /context-map --check/);
+    assert.match(handoffResult.stdout, /context-map --write/);
+    assert.match(handoffResult.stdout, /context-curation-input\.md/);
+    assert.match(handoffResult.stdout, /context-curation\.md/);
+    assert.match(handoffResult.stdout, /Atualize `\.agentforge\/harness\/context-map\.yaml`/);
+    assert.match(handoffResult.stdout, /agentforge validate/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -567,11 +597,13 @@ test('install applies structure on an existing project and keeps the manifest co
     }
 
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'flows', 'review.yaml')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'flows', 'context-curation.yaml')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'handoff.md')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'advance.md')), false);
 
     const state = JSON.parse(readFileSync(join(projectRoot, '.agentforge', 'state.json'), 'utf8'));
     assert.ok(state.flows.includes('review'));
+    assert.ok(state.flows.includes('context-curation'));
     assert.equal(state.flows.every((flowId) => existsSync(join(projectRoot, '.agentforge', 'flows', `${flowId}.yaml`))), true);
     assert.deepEqual(state.workflow.completed_phases, []);
     assert.deepEqual(state.workflow.pending_phases, ['discovery', 'agent-design', 'flow-design', 'policies', 'export', 'review']);

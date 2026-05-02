@@ -1,0 +1,34 @@
+id: context-curation
+name: Context Curation
+goal: Organizar, revisar e indexar contexto durável do projeto.
+trigger: Quando o usuário pedir organização, segregação, revisão ou localização granular de contexto.
+steps:
+  - id: load-map
+    name: Load context map
+    agent: context-curator
+    description: Ler context-index, context-map e relatórios de refactor.
+  - id: audit-context
+    name: Audit context
+    agent: context-curator
+    description: Identificar duplicações, lacunas, contexto genérico e trechos sem classificação.
+  - id: propose-changes
+    name: Propose changes
+    agent: context-curator
+    description: Propor alterações com arquivos afetados e ranges.
+  - id: apply-curation
+    name: Apply curation
+    agent: context-curator
+    description: Aplicar alterações aprovadas em context, references, glossary e context-map.
+  - id: validate-map
+    name: Validate map
+    agent: reviewer
+    description: Rodar validação e revisar consistência.
+checkpoints:
+  - context-map atualizado
+  - ranges válidos
+  - glossário sem termos genéricos de stack
+  - duplicações removidas ou justificadas
+done_when:
+  - context-map passa no validate
+  - context-index e context-map estão coerentes
+  - relatório de curadoria foi gerado

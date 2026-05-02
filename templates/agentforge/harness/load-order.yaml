@@ -38,6 +38,7 @@ order:
   - flows/bugfix.md
   - flows/refactor.md
   - flows/review.md
+  - flows/context-curation.md
   - skills/README.md
   - memory/README.md
   - memory/decisions.md
