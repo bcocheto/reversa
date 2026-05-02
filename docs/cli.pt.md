@@ -30,6 +30,19 @@ Use isso antes de auditar ou refatorar uma superfície existente.
 
 ---
 
+### `audit-context`
+
+```bash
+npx agentforge audit-context
+```
+
+Analisa snapshots importados e entrypoints existentes para diagnosticar a organização do contexto.
+Ele escreve `.agentforge/reports/context-audit.md` e atualiza os metadados da auditoria em `.agentforge/state.json`.
+
+Use depois de importar os snapshots ou quando quiser uma visão determinística e read-only da qualidade do contexto.
+
+---
+
 ### `status`
 
 ```bash

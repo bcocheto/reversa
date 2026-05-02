@@ -30,6 +30,19 @@ Use this before auditing or refactoring an existing project surface.
 
 ---
 
+### `audit-context`
+
+```bash
+npx agentforge audit-context
+```
+
+Analyzes imported snapshots and existing entrypoints to diagnose context organization.
+It writes `.agentforge/reports/context-audit.md` and updates the audit metadata in `.agentforge/state.json`.
+
+Use this after ingesting or when you want a deterministic, read-only overview of context quality.
+
+---
+
 ### `status`
 
 ```bash

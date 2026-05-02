@@ -18,6 +18,19 @@ Instala agentforge en el proyecto heredado actual. Detecta los motores presentes
 
 ---
 
+### `audit-context`
+
+```bash
+npx agentforge audit-context
+```
+
+Analiza snapshots importados y entrypoints existentes para diagnosticar la organización del contexto.
+Escribe `.agentforge/reports/context-audit.md` y actualiza los metadatos de la auditoría en `.agentforge/state.json`.
+
+Úsalo después de importar snapshots o cuando quieras una vista determinista y read-only de la calidad del contexto.
+
+---
+
 ### `status`
 
 ```bash

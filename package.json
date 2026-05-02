@@ -4,7 +4,7 @@
   "description": "Create, install, and maintain custom agent teams inside projects",
   "bin": {
     "agentforge": "bin/agentforge.js",
-    "agentforge": "bin/agentforge.js"
+    "reversa": "bin/reversa.js"
   },
   "scripts": {
     "test": "node --test"

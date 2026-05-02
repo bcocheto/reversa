@@ -83,6 +83,8 @@ Engines that support slash commands can use:
 /agentforge
 ```
 
+The legacy `reversa` alias is kept for compatibility with existing installs.
+
 ## What gets generated
 
 The canonical team lives under `.agentforge/`:
@@ -150,6 +152,7 @@ npx agentforge install    # Install AgentForge and create the initial team
 agentforge bootstrap      # Complete or refresh the project base
 agentforge adopt          # Read existing agentic structure and generate an adoption plan
 agentforge improve        # Review the .agentforge/ structure and suggest upgrades
+agentforge audit-context  # Diagnose how context is organized
 agentforge status         # Show the current AgentForge state
 agentforge add-agent      # Create a custom project agent
 agentforge add-flow       # Create a custom operational flow
