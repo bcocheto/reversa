@@ -43,6 +43,20 @@ Use depois de importar os snapshots ou quando quiser uma visão determinística 
 
 ---
 
+### `refactor-context`
+
+```bash
+npx agentforge refactor-context
+```
+
+Analisa snapshots importados e entrypoints existentes para separar o conteúdo em arquivos canônicos `.agentforge/`.
+Sem `--apply`, escreve apenas `.agentforge/reports/refactor-plan.md`.
+Com `--apply`, cria ou atualiza arquivos canônicos seguros e preserva os que foram editados manualmente.
+
+Use depois da auditoria quando quiser fazer a primeira segmentação do contexto.
+
+---
+
 ### `status`
 
 ```bash

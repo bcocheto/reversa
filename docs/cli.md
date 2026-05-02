@@ -43,6 +43,20 @@ Use this after ingesting or when you want a deterministic, read-only overview of
 
 ---
 
+### `refactor-context`
+
+```bash
+npx agentforge refactor-context
+```
+
+Analyzes imported snapshots and existing entrypoints to split content into canonical `.agentforge/` files.
+Without `--apply`, it writes only `.agentforge/reports/refactor-plan.md`.
+With `--apply`, it creates or updates safe canonical files and preserves manually modified ones.
+
+Use this after auditing context when you want the first segmentation pass.
+
+---
+
 ### `status`
 
 ```bash

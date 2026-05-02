@@ -26,6 +26,9 @@ items:
   - id: glossary
     path: context/glossary.md
     purpose: Termos recorrentes do projeto.
+  - id: unclassified
+    path: context/unclassified.md
+    purpose: Trechos importados que ainda não têm confiança suficiente para outra categoria.
 skills:
   - id: run-tests
     path: skills/run-tests/SKILL.md
@@ -102,3 +105,4 @@ task_contexts:
     references:
       - references/commands.md
       - references/important-files.md
+      - references/tools.md

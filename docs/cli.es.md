@@ -31,6 +31,20 @@ Escribe `.agentforge/reports/context-audit.md` y actualiza los metadatos de la a
 
 ---
 
+### `refactor-context`
+
+```bash
+npx agentforge refactor-context
+```
+
+Analiza snapshots importados y entrypoints existentes para separar el contenido en archivos canónicos `.agentforge/`.
+Sin `--apply`, escribe solo `.agentforge/reports/refactor-plan.md`.
+Con `--apply`, crea o actualiza archivos canónicos seguros y preserva los que fueron editados manualmente.
+
+Úsalo después de la auditoría cuando quieras hacer la primera segmentación del contexto.
+
+---
+
 ### `status`
 
 ```bash
