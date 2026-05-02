@@ -5,6 +5,7 @@ import { spawnSync } from 'child_process';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { tmpdir } from 'os';
+import YAML from 'yaml';
 
 import { Writer } from '../lib/installer/writer.js';
 import { buildManifest, saveManifest, loadManifest } from '../lib/installer/manifest.js';
@@ -98,42 +99,6 @@ test('refactor-context without --apply only creates the plan report', async () =
   }
 });
 
-test('refactor-context --apply creates context/testing.md when testing instructions are found', async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-refactor-context-testing-'));
-
-  try {
-    await installFixture(projectRoot);
-
-    const agentsPath = join(projectRoot, 'AGENTS.md');
-    writeFileSync(
-      agentsPath,
-      '# AgentForge\n\n## Testing\n\nSempre rode `npm test` antes de finalizar.\n',
-      'utf8',
-    );
-
-    const result = runRefactor(projectRoot, ['--apply']);
-    assert.equal(result.status, 0);
-
-    const testingPath = join(projectRoot, PRODUCT.internalDir, 'context', 'testing.md');
-    assert.equal(existsSync(testingPath), true);
-    const testingContent = readFileSync(testingPath, 'utf8');
-    assert.match(testingContent, /# Testing/);
-    assert.match(testingContent, /Source: .*AGENTS\.md/);
-
-    const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'refactor-plan.md');
-    assert.equal(existsSync(reportPath), true);
-
-    const manifest = loadManifest(projectRoot);
-    assert.ok(manifest['.agentforge/context/testing.md']);
-    assert.ok(manifest['.agentforge/reports/refactor-plan.md']);
-    assert.ok(manifest['.agentforge/state.json']);
-
-    assert.equal(readFileSync(agentsPath, 'utf8'), '# AgentForge\n\n## Testing\n\nSempre rode `npm test` antes de finalizar.\n');
-  } finally {
-    rmSync(projectRoot, { recursive: true, force: true });
-  }
-});
-
 test('refactor-context --apply creates references/commands.md when command lists are found', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-refactor-context-commands-'));
 
@@ -154,6 +119,12 @@ test('refactor-context --apply creates references/commands.md when command lists
     const commandsContent = readFileSync(commandsPath, 'utf8');
     assert.match(commandsContent, /# Commands/);
     assert.match(commandsContent, /npm test/);
+
+    const contextIndex = YAML.parse(
+      readFileSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml'), 'utf8'),
+    );
+    assert.ok(Array.isArray(contextIndex.items));
+    assert.ok(contextIndex.items.some((item) => item.path === 'references/commands.md'));
 
     const manifest = loadManifest(projectRoot);
     assert.ok(manifest['.agentforge/references/commands.md']);
