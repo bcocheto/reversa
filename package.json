@@ -1,6 +1,6 @@
 {
   "name": "@bcocheto/agentforge",
-  "version": "1.2.16",
+  "version": "1.2.17",
   "description": "Create, organize, evolve, and compile the agent-ready layer of projects",
   "bin": {
     "agentforge": "bin/agentforge.js",
