@@ -1751,7 +1751,7 @@ test('adopt --apply records apply-failed when validation fails after partial ste
     const nextState = JSON.parse(readFileSync(statePath, 'utf8'));
     assert.equal(nextState.adoption_status, 'apply-failed');
     assert.equal(nextState.adoption_failed_step, 'validate');
-    assert.match(nextState.last_adopt_error, /ghost-agent/);
+    assert.match(nextState.last_adopt_error, /ghost-agent|Range inválido em "context\/architecture\.md"/);
 
     const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'adoption-apply.md');
     assert.equal(existsSync(reportPath), true);

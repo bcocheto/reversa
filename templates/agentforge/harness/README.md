@@ -8,6 +8,7 @@ Aqui ficam as regras de carregamento, o roteamento inicial e o mapa entre modos 
 - Ordem de leitura dos arquivos.
 - Regras para escolher o próximo modo.
 - Mapeamento de engines e pontos de entrada.
+- Mapa granular de contexto com arquivo e ranges.
 
 ## O que evitar
 

@@ -9,6 +9,7 @@ Ele reúne contexto, roteamento, referências, políticas, fluxos, skills, AI pl
 - Prefira manter este diretório legível e sem segredos.
 - Se algo depender de um processo manual, anote aqui ou nos arquivos relacionados.
 - Use `agentforge handoff` para obter o playbook da IA ativa.
+- Use `agentforge context-map --check` e `agentforge context-map --write` para curadoria granular de contexto.
 - Use `agentforge next` para determinar a fase atual e a próxima fase real.
 - Use `agentforge advance` para ver a orientação da próxima fase.
 - Use `agentforge handoff --engine <engine>` para receber notas específicas da engine configurada.
@@ -17,6 +18,7 @@ Ele reúne contexto, roteamento, referências, políticas, fluxos, skills, AI pl
 ## Estrutura principal
 
 - `harness/`: regras de leitura, roteamento e carga.
+- `harness/context-map.yaml`: mapa granular de contexto com arquivos e ranges.
 - `ai/`: handoff, playbooks e notas específicas da engine.
 - `context/`: contexto do projeto, arquitetura e padrões.
 - `references/`: atalhos para comandos, arquivos importantes e docs externas.

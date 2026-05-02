@@ -1,11 +1,16 @@
 version: 2
 always_load:
   - harness/router.md
+  - harness/context-index.yaml
+  - harness/context-map.yaml
   - harness/task-modes.yaml
   - harness/load-order.yaml
   - harness/engine-map.yaml
   - ai/README.md
 items:
+  - id: context-map
+    path: harness/context-map.yaml
+    purpose: Mapa granular de contexto com arquivos, ranges e estado de curadoria.
   - id: ai-readme
     path: ai/README.md
     purpose: Guia da camada AI-engine driven e da execução por handoff.

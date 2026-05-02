@@ -384,6 +384,7 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
     assert.ok(manifest[".agentforge/scope.md"]);
     assert.ok(manifest[".agentforge/README.md"]);
     assert.ok(manifest[".agentforge/harness/router.md"]);
+    assert.ok(manifest[".agentforge/harness/context-map.yaml"]);
     assert.ok(manifest[".agentforge/context/project-overview.md"]);
     assert.ok(manifest[".agentforge/references/commands.md"]);
     assert.ok(manifest[".agentforge/policies/protected-files.md"]);
@@ -409,12 +410,21 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
       true,
     );
 
+    const contextMap = readFileSync(
+      join(projectRoot, PRODUCT.internalDir, "harness", "context-map.yaml"),
+      "utf8",
+    );
+    assert.match(contextMap, /generated_by: context-curator/);
+    assert.match(contextMap, /items:\s*\[\]/);
+
     const agentsEntry = readFileSync(join(projectRoot, "AGENTS.md"), "utf8");
     assert.match(agentsEntry, /<!-- agentforge:start -->/);
     assert.match(agentsEntry, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
     assert.match(agentsEntry, /Não assuma Codex como o único runtime; use a IA ativa configurada no ambiente\./);
     assert.match(agentsEntry, /Leia `\.agentforge\/harness\/router\.md` e `\.agentforge\/harness\/context-index\.yaml`\./);
+    assert.match(agentsEntry, /Leia `\.agentforge\/harness\/context-map\.yaml` para localizar itens por arquivo e linha\./);
     assert.match(agentsEntry, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.match(agentsEntry, /acione o agente `context-curator`/);
     assert.match(agentsEntry, /Ao concluir, rode `agentforge checkpoint <phase> --status done` e depois `agentforge validate`\./);
     assert.match(
       agentsEntry,
@@ -434,7 +444,9 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
     assert.match(claudeEntry, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
     assert.match(claudeEntry, /Não assuma Codex como o único runtime; use a IA ativa configurada no ambiente\./);
     assert.match(claudeEntry, /Leia `\.agentforge\/harness\/router\.md` e `\.agentforge\/harness\/context-index\.yaml`\./);
+    assert.match(claudeEntry, /Leia `\.agentforge\/harness\/context-map\.yaml` para localizar itens por arquivo e linha\./);
     assert.match(claudeEntry, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.match(claudeEntry, /acione o agente `context-curator`/);
     assert.match(
       claudeEntry,
       /Considere `\.agentforge\/memory\/` quando relevante\./,

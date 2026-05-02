@@ -4,6 +4,7 @@ order:
   - harness/router.md
   - harness/task-modes.yaml
   - harness/context-index.yaml
+  - harness/context-map.yaml
   - harness/load-order.yaml
   - harness/engine-map.yaml
   - ai/README.md

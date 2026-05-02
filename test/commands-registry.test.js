@@ -11,7 +11,7 @@ function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-test('agentforge commands lists install, compile, and validate', () => {
+test('agentforge commands lists install, compile, validate, and context-map', () => {
   const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'commands'], {
     encoding: 'utf8',
   });
@@ -20,6 +20,7 @@ test('agentforge commands lists install, compile, and validate', () => {
   assert.match(result.stdout, /install/);
   assert.match(result.stdout, /compile/);
   assert.match(result.stdout, /validate/);
+  assert.match(result.stdout, /context-map/);
 });
 
 test('agentforge commands --json returns valid JSON', () => {
@@ -34,6 +35,7 @@ test('agentforge commands --json returns valid JSON', () => {
   assert.ok(payload.commands.some((entry) => entry.id === 'install'));
   assert.ok(payload.commands.some((entry) => entry.id === 'compile'));
   assert.ok(payload.commands.some((entry) => entry.id === 'validate'));
+  assert.ok(payload.commands.some((entry) => entry.id === 'context-map'));
 });
 
 test('agentforge commands --category skills lists suggest-skills and create-skill', () => {

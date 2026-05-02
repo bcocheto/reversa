@@ -121,6 +121,65 @@ test('install prompt only asks for mode, engines, name, user, git strategy, and 
   }
 });
 
+test('install prompts include context-curator for adopt projects with docs and agent docs', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-prompts-context-curator-'));
+  const cwd = process.cwd();
+  const originalPrompt = inquirer.prompt;
+
+  try {
+    mkdirSync(join(projectRoot, 'docs'), { recursive: true });
+    writeFileSync(join(projectRoot, 'docs', 'guide.md'), '# Guide\n\nContext docs.\n', 'utf8');
+    mkdirSync(join(projectRoot, '.agents'), { recursive: true });
+    writeFileSync(join(projectRoot, '.agents', 'legacy.md'), '# Legacy\n\nAgent docs.\n', 'utf8');
+    writeFileSync(join(projectRoot, 'AGENTS.md'), '# AGENTS\n\nProtect docs and context.\n', 'utf8');
+
+    process.chdir(projectRoot);
+    inquirer.prompt = async () => ({
+      setup_mode: 'adopt',
+      engines: ['codex'],
+      project_name: 'Context Curator Demo',
+      user_name: 'Ana',
+      git_strategy: 'commit',
+      chat_language: 'pt-br',
+      doc_language: 'pt-br',
+    });
+
+    const answers = await runInstallPrompts([
+      { id: 'codex', name: 'Codex', star: true, detected: true },
+    ]);
+
+    assert.ok(answers.initial_agents.includes('context-curator'));
+  } finally {
+    inquirer.prompt = originalPrompt;
+    process.chdir(cwd);
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('handoff discovery mentions context-curator and context-map commands', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-handoff-context-curator-'));
+
+  try {
+    const installResult = await runInstallWithAnswers(projectRoot, makeBaseAnswers({
+      engines: ['codex'],
+      setup_mode: 'bootstrap',
+    }));
+    assert.equal(installResult.status, 0);
+
+    const handoffResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'handoff'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(handoffResult.status, 0);
+    assert.match(handoffResult.stdout, /context-curator/);
+    assert.match(handoffResult.stdout, /context-map --check/);
+    assert.match(handoffResult.stdout, /context-map --write/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('install output is engine-aware for Codex, Claude, and Gemini', async () => {
   const scenarios = [
     {
