@@ -9,12 +9,14 @@ import { tmpdir } from 'os';
 import { Writer } from '../lib/installer/writer.js';
 import { buildManifest, saveManifest, loadManifest, mergeUpdateManifest } from '../lib/installer/manifest.js';
 import { compileAgentForge } from '../lib/exporter/index.js';
+import { renderManagedEntrypoint } from '../lib/exporter/bootloader.js';
 import { runUninstall } from '../lib/commands/uninstall.js';
 import { shouldDefaultFinalizeAdoption } from '../lib/commands/install.js';
 import { validateAgentForgeStructure } from '../lib/commands/validate.js';
 import { checkExistingInstallation } from '../lib/installer/validator.js';
 import { detectEngines, ENGINES } from '../lib/installer/detector.js';
 import { AGENT_SKILL_IDS, PRODUCT } from '../lib/product.js';
+import { COMMAND_REGISTRY } from '../lib/commands/registry.js';
 
 const AGENTFORGE_BIN = fileURLToPath(new URL('../bin/agentforge.js', import.meta.url));
 
@@ -161,7 +163,9 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
     const agentsEntry = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
     assert.match(agentsEntry, /<!-- agentforge:start -->/);
     assert.match(agentsEntry, /<!-- agentforge:end -->/);
-    assert.match(agentsEntry, /Leia `\.agentforge\/harness\/router\.md`/);
+    assert.match(agentsEntry, /Não use web search por padrão\./);
+    assert.match(agentsEntry, /Primeiro leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml`, `\.agentforge\/state\.json` e `\.agentforge\/scope\.md`\./);
+    assert.match(agentsEntry, /Para comandos AgentForge, tente nesta ordem/);
 
     const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
     assert.equal(state.project, answers.project_name);
@@ -172,6 +176,27 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
+});
+
+test('managed bootloaders require local reads, npx fallback, and explicit confirmation', () => {
+  const agentContent = renderManagedEntrypoint({
+    entryFile: 'AGENTS.md',
+    activationText: 'Quando o usuário digitar `agentforge`, ative o orquestrador AgentForge.',
+  });
+  const claudeContent = renderManagedEntrypoint({ entryFile: 'CLAUDE.md' });
+  const cursorContent = renderManagedEntrypoint({ entryFile: '.cursor/rules/agentforge.md' });
+  const copilotContent = renderManagedEntrypoint({ entryFile: '.github/copilot-instructions.md' });
+
+  for (const content of [agentContent, claudeContent, cursorContent, copilotContent]) {
+    assert.match(content, /Não use web search por padrão\./);
+    assert.match(content, /Primeiro leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml`, `\.agentforge\/state\.json` e `\.agentforge\/scope\.md`\./);
+    assert.match(content, /Para comandos AgentForge, tente nesta ordem: `agentforge <command>`, `npx @bcocheto\/agentforge <command>`, depois `\.agentforge\/references\/commands\.md` apenas como fallback documental\./);
+    assert.match(content, /Se a confirmação for vaga, como "sim" ou "continue", peça confirmação explícita do plano antes de editar amplamente\./);
+    assert.match(content, /Não avance fases do AgentForge apenas porque o usuário disse "sim"; trate isso como confirmação do último plano explícito\./);
+  }
+  assert.match(claudeContent, /Quando o usuário digitar `agentforge` ou usar `\/agentforge`, ative o orquestrador AgentForge\./);
+  assert.match(cursorContent, /Quando o usuário usar `agentforge` ou `\/agentforge`, siga estas regras\./);
+  assert.match(copilotContent, /Quando a sessão precisar de AgentForge, siga estas instruções e respeite `\/agentforge` quando aplicável\./);
 });
 
 test('install keeps review canonical and manifest/state in sync with YAML flows', async () => {
@@ -241,8 +266,8 @@ test('compile after install updates only the managed bootloader block', async ()
     const agentsPath = join(projectRoot, 'AGENTS.md');
     const original = readFileSync(agentsPath, 'utf8');
     const mutated = original.replace(
-      'Use `.agentforge/harness/context-index.yaml` para localizar o contexto mínimo necessário.',
-      'Use `.agentforge/harness/context-index.yaml` para localizar o contexto mínimo necessário.\nLinha manual interna.',
+      'Primeiro leia `.agentforge/harness/router.md`, `.agentforge/harness/context-index.yaml`, `.agentforge/state.json` e `.agentforge/scope.md`.',
+      'Primeiro leia `.agentforge/harness/router.md`, `.agentforge/harness/context-index.yaml`, `.agentforge/state.json` e `.agentforge/scope.md`.\nLinha manual interna.',
     );
     writeFileSync(agentsPath, `${mutated}\nLinha manual externa.\n`, 'utf8');
 
@@ -260,7 +285,7 @@ test('compile after install updates only the managed bootloader block', async ()
     assert.doesNotMatch(content, /Linha manual interna\./);
     assert.equal((content.match(/<!-- agentforge:start -->/g) ?? []).length, 1);
     assert.equal((content.match(/<!-- agentforge:end -->/g) ?? []).length, 1);
-    assert.match(content, /Use `\.agentforge\/harness\/context-index\.yaml` para localizar o contexto mínimo necessário\./);
+    assert.match(content, /Primeiro leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml`, `\.agentforge\/state\.json` e `\.agentforge\/scope\.md`\./);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -617,6 +642,146 @@ test('validate warns when engine-map is missing an installed engine', async () =
   }
 });
 
+test('commands lists the full registry and emits valid json', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-commands-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'commands'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /\bnext\b/);
+    assert.match(result.stdout, /\banalyze\b/);
+    assert.match(result.stdout, /\bresearch-patterns\b/);
+    assert.match(result.stdout, /\bsuggest-agents\b/);
+    assert.match(result.stdout, /\bcreate-agent\b/);
+    assert.match(result.stdout, /\bapply-suggestions\b/);
+
+    const jsonResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'commands', '--json'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(jsonResult.status, 0);
+    const payload = JSON.parse(jsonResult.stdout);
+    assert.equal(Array.isArray(payload.commands), true);
+    assert.deepEqual(
+      payload.commands.map((entry) => entry.id),
+      COMMAND_REGISTRY.map((entry) => entry.id),
+    );
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('next detects plan/state divergence and status repair fills missing pending phases', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-next-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
+    const planPath = join(projectRoot, PRODUCT.internalDir, 'plan.md');
+
+    const state = JSON.parse(readFileSync(statePath, 'utf8'));
+    state.phase = 'review';
+    state.completed = ['discovery', 'agent-design', 'flow-design', 'policies', 'review'];
+    state.pending = [];
+    writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+
+    let plan = readFileSync(planPath, 'utf8');
+    for (const regex of [
+      /## Fase 1 — Discovery[\s\S]*?(?=## Fase 2 — Agent Design)/,
+      /## Fase 2 — Agent Design[\s\S]*?(?=## Fase 3 — Flow Design)/,
+      /## Fase 3 — Flow Design[\s\S]*?(?=## Fase 4 — Policies)/,
+      /## Fase 4 — Policies[\s\S]*?(?=## Fase 5 — Export)/,
+      /## Fase 6 — Review[\s\S]*$/,
+    ]) {
+      plan = plan.replace(regex, (section) => section.replace(/- \[ \]/g, '- [x]'));
+    }
+    writeFileSync(planPath, plan, 'utf8');
+
+    const nextResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'next'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(nextResult.status, 0);
+    assert.match(nextResult.stdout, /phase: review/);
+    assert.match(nextResult.stdout, /Next recommended phase:\n- export/);
+    assert.match(nextResult.stdout, /state says no pending phases, but plan\.md still has open Export tasks\./);
+    assert.match(nextResult.stdout, /agentforge status --repair/);
+
+    const statusResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'status', '--repair'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(statusResult.status, 0);
+    assert.match(statusResult.stdout, /Repair applied to state\.json\./);
+    const repairedState = JSON.parse(readFileSync(statePath, 'utf8'));
+    assert.ok(repairedState.pending.includes('export'));
+
+    const statusJsonResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'status', '--json'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(statusJsonResult.status, 0);
+    const statusPayload = JSON.parse(statusJsonResult.stdout);
+    assert.equal(statusPayload.next_phase, 'export');
+    assert.equal(statusPayload.repair_applied, false);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('validate warns on plan/state divergence and fails on invalid state json', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-plan-state-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
+    const planPath = join(projectRoot, PRODUCT.internalDir, 'plan.md');
+    const state = JSON.parse(readFileSync(statePath, 'utf8'));
+    state.phase = 'review';
+    state.completed = ['discovery', 'agent-design', 'flow-design', 'policies', 'review'];
+    state.pending = [];
+    writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+
+    let plan = readFileSync(planPath, 'utf8');
+    for (const regex of [
+      /## Fase 1 — Discovery[\s\S]*?(?=## Fase 2 — Agent Design)/,
+      /## Fase 2 — Agent Design[\s\S]*?(?=## Fase 3 — Flow Design)/,
+      /## Fase 3 — Flow Design[\s\S]*?(?=## Fase 4 — Policies)/,
+      /## Fase 4 — Policies[\s\S]*?(?=## Fase 5 — Export)/,
+      /## Fase 6 — Review[\s\S]*$/,
+    ]) {
+      plan = plan.replace(regex, (section) => section.replace(/- \[ \]/g, '- [x]'));
+    }
+    writeFileSync(planPath, plan, 'utf8');
+
+    const validation = validateAgentForgeStructure(projectRoot);
+    assert.equal(validation.valid, true);
+    assert.ok(validation.warnings.some((entry) => entry.message.includes('state says no pending phases, but plan.md still has open Export tasks.')));
+
+    writeFileSync(statePath, '{ invalid json', 'utf8');
+    const invalidValidation = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(invalidValidation.status, 1);
+    assert.match(invalidValidation.stdout, /validação encontrou/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('ingest snapshots AGENTS.md and CLAUDE.md without modifying the originals', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-ingest-'));
 
@@ -866,10 +1031,20 @@ test('bootstrap populates human-readable context and fills inferred project sign
     assert.doesNotMatch(overview, /<nome do projeto>|A preencher/);
 
     const commands = readFileSync(join(projectRoot, PRODUCT.internalDir, 'references', 'commands.md'), 'utf8');
-    assert.match(commands, /agentforge bootstrap/);
-    assert.match(commands, /`vitest run`/);
-    assert.match(commands, /`eslint \.`/);
-    assert.match(commands, /`tsc --noEmit`/);
+    assert.match(commands, /`install`/);
+    assert.match(commands, /`analyze`/);
+    assert.match(commands, /`research-patterns`/);
+    assert.match(commands, /`suggest-agents`/);
+    assert.match(commands, /`create-agent`/);
+    assert.match(commands, /`apply-suggestions`/);
+    assert.match(commands, /`status`/);
+    assert.match(commands, /`next`/);
+    assert.match(commands, /`validate`/);
+    assert.match(commands, /`commands`/);
+    assert.match(commands, /npx @bcocheto\/agentforge commands/);
+    assert.match(commands, /npx @bcocheto\/agentforge validate/);
+    assert.match(commands, /npx @bcocheto\/agentforge compile/);
+    assert.match(commands, /npx @bcocheto\/agentforge analyze/);
 
     const architecture = readFileSync(join(projectRoot, PRODUCT.internalDir, 'context', 'architecture.md'), 'utf8');
     assert.match(architecture, /src\//);
@@ -1150,8 +1325,11 @@ test('adopt --apply snapshots a legacy AGENTS.md and finalizes entrypoints as bo
     assert.doesNotMatch(projectOverview, /<nome do projeto>/);
 
     const commands = readFileSync(join(projectRoot, PRODUCT.internalDir, 'references', 'commands.md'), 'utf8');
-    assert.match(commands, /`npm test`/);
-    assert.match(commands, /`agentforge adopt`/);
+    assert.match(commands, /`commands`/);
+    assert.match(commands, /`research-patterns`/);
+    assert.match(commands, /`status`/);
+    assert.match(commands, /`next`/);
+    assert.match(commands, /npx @bcocheto\/agentforge commands/);
 
     const testingContext = readFileSync(join(projectRoot, PRODUCT.internalDir, 'context', 'testing.md'), 'utf8');
     assert.match(testingContext, /<!-- Source:/);

@@ -397,11 +397,9 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
 
     const agentsEntry = readFileSync(join(projectRoot, "AGENTS.md"), "utf8");
     assert.match(agentsEntry, /<!-- agentforge:start -->/);
-    assert.match(agentsEntry, /Leia `\.agentforge\/harness\/router\.md`/);
-    assert.match(
-      agentsEntry,
-      /Use `\.agentforge\/harness\/context-index\.yaml`/,
-    );
+    assert.match(agentsEntry, /Não use web search por padrão\./);
+    assert.match(agentsEntry, /Primeiro leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml`, `\.agentforge\/state\.json` e `\.agentforge\/scope\.md`\./);
+    assert.match(agentsEntry, /Para comandos AgentForge, tente nesta ordem/);
     assert.match(
       agentsEntry,
       /Considere `\.agentforge\/memory\/` quando relevante\./,
@@ -417,11 +415,9 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
 
     const claudeEntry = readFileSync(join(projectRoot, "CLAUDE.md"), "utf8");
     assert.match(claudeEntry, /<!-- agentforge:start -->/);
-    assert.match(claudeEntry, /Leia `\.agentforge\/harness\/router\.md`/);
-    assert.match(
-      claudeEntry,
-      /Use `\.agentforge\/harness\/context-index\.yaml`/,
-    );
+    assert.match(claudeEntry, /Não use web search por padrão\./);
+    assert.match(claudeEntry, /Primeiro leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml`, `\.agentforge\/state\.json` e `\.agentforge\/scope\.md`\./);
+    assert.match(claudeEntry, /Para comandos AgentForge, tente nesta ordem/);
     assert.match(
       claudeEntry,
       /Considere `\.agentforge\/memory\/` quando relevante\./,
@@ -437,6 +433,7 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
 
     const cursorEntry = readFileSync(join(projectRoot, ".cursorrules"), "utf8");
     assert.match(cursorEntry, /<!-- agentforge:start -->/);
+    assert.match(cursorEntry, /Não use web search por padrão\./);
     assert.match(
       cursorEntry,
       /Considere `\.agentforge\/memory\/` quando relevante\./,
@@ -456,6 +453,7 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
     );
     assert.match(cursorRulesEntry, /<!-- agentforge:start -->/);
     assert.match(cursorRulesEntry, /alwaysApply: true/);
+    assert.match(cursorRulesEntry, /Não use web search por padrão\./);
     assert.match(
       cursorRulesEntry,
       /Considere `\.agentforge\/memory\/` quando relevante\./,
@@ -474,6 +472,7 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
       "utf8",
     );
     assert.match(copilotEntry, /<!-- agentforge:start -->/);
+    assert.match(copilotEntry, /Não use web search por padrão\./);
     assert.match(
       copilotEntry,
       /Considere `\.agentforge\/memory\/` quando relevante\./,
@@ -509,21 +508,18 @@ test("agentforge status shows the AgentForge team state on a fresh install", asy
 
     assert.equal(result.status, 0);
     assert.match(result.stdout, /AgentForge status/);
-    assert.match(result.stdout, /Project:/);
-    assert.match(result.stdout, /User:/);
-    assert.match(result.stdout, /Version:/);
     assert.match(result.stdout, /Setup mode:/);
+    assert.match(result.stdout, /State status:/);
+    assert.match(result.stdout, /Active engines:/);
     assert.match(result.stdout, /bootstrap/);
     assert.match(result.stdout, /Current phase:/);
-    assert.match(result.stdout, /Engines:/);
-    assert.match(result.stdout, /Generated agents:/);
-    assert.match(result.stdout, /Generated subagents:/);
-    assert.match(result.stdout, /Flows:/);
+    assert.match(result.stdout, /Completed phases:/);
+    assert.match(result.stdout, /Pending phases:/);
+    assert.match(result.stdout, /Next phase:/);
+    assert.match(result.stdout, /Validation status:/);
     assert.match(result.stdout, /Policies status:/);
-    assert.match(result.stdout, /Last validation status:/);
-    assert.match(result.stdout, /Output folder:/);
-    assert.match(result.stdout, /orchestrator/);
-    assert.match(result.stdout, /release/);
+    assert.match(result.stdout, /Entrypoints:/);
+    assert.match(result.stdout, /Plan\/state consistency:/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -553,7 +549,7 @@ test("agentforge status reports the last validation status when report exists", 
     });
 
     assert.equal(result.status, 0);
-    assert.match(result.stdout, /Last validation status:/);
+    assert.match(result.stdout, /Validation status:/);
     assert.match(result.stdout, /válido/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });

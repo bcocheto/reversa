@@ -97,9 +97,13 @@ test('agentforge bootstrap detects package scripts, writes report, and updates s
       join(projectRoot, PRODUCT.internalDir, 'references', 'commands.md'),
       'utf8',
     );
-    assert.match(commands, /`node --test`/);
-    assert.match(commands, /`eslint \.`/);
-    assert.match(commands, /`tsc -p tsconfig\.json`/);
+    assert.match(commands, /`install`/);
+    assert.match(commands, /`analyze`/);
+    assert.match(commands, /`status`/);
+    assert.match(commands, /`next`/);
+    assert.match(commands, /`validate`/);
+    assert.match(commands, /npx @bcocheto\/agentforge analyze/);
+    assert.match(commands, /npx @bcocheto\/agentforge validate/);
 
     const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
     assert.ok(typeof state.last_bootstrap_at === 'string');
