@@ -482,6 +482,83 @@ test('ingest snapshots AGENTS.md and CLAUDE.md without modifying the originals',
   }
 });
 
+test('ingest and refactor legacy .agents references into canonical files', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-legacy-agents-'));
+
+  try {
+    await installFixture(projectRoot, { setupMode: 'adopt' });
+
+    mkdirSync(join(projectRoot, '.agents', 'references'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, '.agents', 'references', 'domain.md'),
+      [
+        '# Domain Reference',
+        '',
+        'Termo principal: explica o vocabulário estável do produto.',
+        '',
+        '- Link canônico: https://example.com/domain',
+        '- Consulte sempre esta lista antes de mudar regras de negócio.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+
+    const ingestResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'ingest'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(ingestResult.status, 0);
+    const legacyReportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'legacy-agents-import.md');
+    assert.equal(existsSync(legacyReportPath), true);
+
+    const legacyReport = readFileSync(legacyReportPath, 'utf8');
+    assert.match(legacyReport, /\.agents\/references\/domain\.md/);
+    assert.match(legacyReport, /legacy-reference/);
+
+    const snapshotDir = join(projectRoot, PRODUCT.internalDir, 'imports', 'snapshots', '.agents', 'references', 'domain.md');
+    assert.equal(existsSync(snapshotDir), true);
+    assert.ok(readdirSync(snapshotDir).some((name) => name.endsWith('.json')));
+
+    const stateAfterIngest = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.ok(stateAfterIngest.imported_sources.some((item) => item.source_path === '.agents/references/domain.md' && item.source_type === 'legacy-reference'));
+
+    const refactorResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'refactor-context', '--apply'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(refactorResult.status, 0);
+
+    const canonicalTargets = [
+      join(projectRoot, PRODUCT.internalDir, 'references', 'domain.md'),
+      join(projectRoot, PRODUCT.internalDir, 'context', 'domain.md'),
+    ];
+    const canonicalTarget = canonicalTargets.find((filePath) => existsSync(filePath));
+    assert.ok(canonicalTarget, 'expected a canonical domain file to be created');
+
+    const canonicalContent = readFileSync(canonicalTarget, 'utf8');
+    assert.match(canonicalContent, /Domain Reference|Domain/);
+    assert.match(canonicalContent, /\.agents\/references\/domain\.md/);
+
+    const contextIndex = readFileSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml'), 'utf8');
+    assert.match(contextIndex, canonicalTarget.includes('/references/domain.md') ? /references\/domain\.md/ : /context\/domain\.md/);
+
+    const agentsEntry = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
+    assert.match(agentsEntry, /<!-- agentforge:start -->/);
+    assert.match(agentsEntry, /\.agentforge\/harness\/router\.md/);
+    assert.doesNotMatch(agentsEntry, /\.agents\//);
+
+    const validateResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(validateResult.status, 0);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('compile warns when the minimum harness is absent', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-compile-missing-harness-'));
 
