@@ -102,6 +102,7 @@ async function createInstalledProjectWithClaude(projectRoot) {
 
 function buildManagedEntrypointContent({
   manualLines = 0,
+  includeLegacyReversaBlockInsideManagedBlock = false,
   includeLegacyReversaBlock = false,
   includeLegacyReversaPath = false,
 } = {}) {
@@ -117,8 +118,18 @@ function buildManagedEntrypointContent({
     'Use skills de `.agentforge/skills/` quando apropriado.',
     'Siga flows de `.agentforge/flows/`.',
     'Consulte `.agentforge/references/` quando necessário.',
-    '<!-- agentforge:end -->',
   ];
+
+  if (includeLegacyReversaBlockInsideManagedBlock) {
+    lines.push(
+      '',
+      '<!-- reversa:start -->',
+      'Bloco legado Reversa.',
+      '<!-- reversa:end -->',
+    );
+  }
+
+  lines.push('<!-- agentforge:end -->');
 
   if (includeLegacyReversaBlock) {
     lines.push(
@@ -568,8 +579,7 @@ test('validate fails when AGENTS.md still contains a Reversa legacy block', asyn
       agentsPath,
       buildManagedEntrypointContent({
         manualLines: 20,
-        includeLegacyReversaBlock: true,
-        includeLegacyReversaPath: true,
+        includeLegacyReversaBlockInsideManagedBlock: true,
       }),
       'utf8',
     );
@@ -582,7 +592,37 @@ test('validate fails when AGENTS.md still contains a Reversa legacy block', asyn
     assert.equal(result.status, 1);
     const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
     assert.match(report, /Conteúdo legado Reversa detectado/);
-    assert.match(report, /\.reversa\/|_reversa_sdd\//);
+    assert.match(report, /reversa:start|reversa:end/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('validate allows Reversa references outside the managed AgentForge block', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-agents-reversa-compat-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const agentsPath = join(projectRoot, 'AGENTS.md');
+    writeFileSync(
+      agentsPath,
+      buildManagedEntrypointContent({
+        manualLines: 20,
+        includeLegacyReversaPath: true,
+      }),
+      'utf8',
+    );
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
+    assert.match(report, /Status: válido/);
+    assert.doesNotMatch(report, /Conteúdo legado Reversa detectado/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
