@@ -155,6 +155,7 @@ agentforge improve        # Review the .agentforge/ structure and suggest upgrad
 agentforge refactor-context  # Split imported context into canonical .agentforge/ files
 agentforge suggest-skills  # Suggest project skills from repo signals
 agentforge audit-context  # Diagnose how context is organized
+agentforge create-skill <skill-id>  # Create a real skill from an existing suggestion
 agentforge status         # Show the current AgentForge state
 agentforge add-agent      # Create a custom project agent
 agentforge add-flow       # Create a custom operational flow

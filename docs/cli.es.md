@@ -58,6 +58,20 @@ Escribe `.agentforge/reports/skill-suggestions.md` y sugerencias YAML en `.agent
 
 ---
 
+### `create-skill`
+
+```bash
+npx agentforge create-skill <skill-id>
+npx agentforge create-skill <skill-id> --force
+```
+
+Crea una skill real a partir de una sugerencia existente en `.agentforge/skill-suggestions/`.
+Escribe `.agentforge/skills/<skill-id>/SKILL.md`, actualiza `.agentforge/state.json` y refresca `context-index.yaml` cuando sea posible.
+
+Úsalo después de `suggest-skills` cuando quieras promover una sugerencia a una skill reutilizable.
+
+---
+
 ### `status`
 
 ```bash

@@ -70,6 +70,20 @@ Use quando quiser uma shortlist determinística de skills para criar depois, nã
 
 ---
 
+### `create-skill`
+
+```bash
+npx agentforge create-skill <skill-id>
+npx agentforge create-skill <skill-id> --force
+```
+
+Cria uma skill real a partir de uma sugestão existente em `.agentforge/skill-suggestions/`.
+Escreve `.agentforge/skills/<skill-id>/SKILL.md`, atualiza `.agentforge/state.json` e refresca `context-index.yaml` quando possível.
+
+Use depois de `suggest-skills` quando quiser promover uma sugestão para uma skill reutilizável.
+
+---
+
 ### `status`
 
 ```bash
