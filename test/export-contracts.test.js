@@ -1,13 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'child_process';
 import { mkdtempSync, rmSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import { fileURLToPath } from 'url';
 import { tmpdir } from 'os';
 
 import { Writer } from '../lib/installer/writer.js';
 import { buildManifest, saveManifest, loadManifest } from '../lib/installer/manifest.js';
-import { compileAgentForge } from '../lib/exporter/index.js';
+import { compileAgentForge, exportPackageAgentForge } from '../lib/exporter/index.js';
 import { AGENT_SKILL_IDS, PRODUCT } from '../lib/product.js';
+
+const AGENTFORGE_BIN = fileURLToPath(new URL('../bin/agentforge.js', import.meta.url));
 
 function createInstallAnswers(overrides = {}) {
   return {
@@ -119,6 +123,11 @@ async function assertEngineExportContract({ id, label, entryPath, absentLegacyPa
     const manifest = loadManifest(projectRoot);
     assert.ok(manifest[entryPath], `${label} entrypoint should be tracked in the manifest`);
 
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(state.completed.includes('export'), true, `${label} compile should finalize export`);
+    assert.equal(state.checkpoints.export.mode, 'entrypoints');
+    assert.ok(state.checkpoints.export.written.includes(entryPath));
+
     const manualLine = `Linha manual preservada para ${id}.`;
     writeFileSync(join(projectRoot, entryPath), `${content}\n${manualLine}\n`, 'utf8');
     const beforeRerun = readFileSync(join(projectRoot, entryPath), 'utf8');
@@ -137,6 +146,54 @@ async function assertEngineExportContract({ id, label, entryPath, absentLegacyPa
     rmSync(projectRoot, { recursive: true, force: true });
   }
 }
+
+test('export-package writes an isolated _agentforge bundle', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-export-package-'));
+
+  try {
+    await createCompileFixture(projectRoot, 'codex');
+
+    const result = await exportPackageAgentForge(projectRoot);
+
+    assert.equal(result.errors.length, 0, 'export-package should not report errors');
+    assert.equal(existsSync(join(projectRoot, '_agentforge', 'AGENTS.md')), true);
+    assert.equal(existsSync(join(projectRoot, '_agentforge', 'CLAUDE.md')), false);
+    assert.equal(existsSync(join(projectRoot, 'AGENTS.md')), false);
+    assert.equal(existsSync(join(projectRoot, '_agentforge', '.agentforge', 'state.json')), true);
+    assert.equal(result.written.some((path) => path.startsWith('_agentforge/')), true);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(state.completed?.includes('export') ?? false, false);
+    assert.equal(state.checkpoints?.export_package?.output_folder, '_agentforge');
+    assert.equal(Array.isArray(state.pending), true);
+    assert.equal(state.pending.includes('export'), true);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('export --package generates the isolated _agentforge bundle via CLI', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-export-cli-package-'));
+
+  try {
+    await createCompileFixture(projectRoot, 'codex');
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'export', '--package'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.equal(existsSync(join(projectRoot, '_agentforge', 'AGENTS.md')), true);
+    assert.equal(existsSync(join(projectRoot, 'AGENTS.md')), false);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(state.completed.includes('export'), false);
+    assert.equal(state.checkpoints.export_package.output_folder, '_agentforge');
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
 
 for (const engineCase of ENGINE_CASES) {
   test(`compile/export contract for ${engineCase.label}`, async () => {

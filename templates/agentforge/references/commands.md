@@ -13,7 +13,9 @@
 - `agentforge add-flow`
 - `agentforge add-engine`
 - `agentforge validate`
+- `agentforge compile`
 - `agentforge export`
+- `agentforge export-package`
 - `agentforge update`
 - `agentforge uninstall`
 
@@ -27,4 +29,5 @@
 - Criar uma skill real a partir de uma sugestão: use `create-skill` com o `skill-id` retornado
 - Criar equipe e fluxos: `add-agent`, `add-flow`
 - Validar a estrutura: `validate`
-- Gerar derivados: `export`
+- Atualizar entrypoints reais: `compile`
+- Gerar pacote isolado: `export-package`, `export --package`

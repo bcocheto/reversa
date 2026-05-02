@@ -237,6 +237,10 @@ test('compile warns and preserves an existing AGENTS.md without a managed block'
     assert.equal(content, `${manualContent}\n`);
     assert.doesNotMatch(content, /<!-- agentforge:start -->/);
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'compile.md')), true);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(state.completed.includes('export'), false);
+    assert.equal(state.checkpoints.export, undefined);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -1061,8 +1065,11 @@ test('adopt --apply snapshots a legacy AGENTS.md and finalizes entrypoints as bo
     const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
     assert.equal(state.adoption_status, 'applied');
     assert.equal(typeof state.last_adopt_at, 'string');
+    assert.ok(state.completed.includes('export'));
+    assert.ok(state.checkpoints.export);
     assert.ok(state.refactor_context);
     assert.ok(state.refactor_context.classified_count > 0 || state.refactor_context.unclassified_count > 0);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.outputDir)), false);
 
     const projectOverview = readFileSync(join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md'), 'utf8');
     assert.match(projectOverview, /AgentForge Adopt Demo|AgentForge Demo/);

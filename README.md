@@ -21,7 +21,8 @@ It is not just a generator of agents. It gives a project a canonical `.agentforg
 - `skills/` hold reusable procedures.
 - `flows/` hold project workflows.
 - `policies/` define boundaries and approvals.
-- `compile` turns the canonical layer into bootloaders and entrypoints for Codex, Claude Code, Cursor, and GitHub Copilot.
+- `compile` turns the canonical layer into the real engine entrypoints in the project root.
+- `export-package` generates an isolated `_agentforge/` package when you explicitly want a portable bundle.
 
 AgentForge keeps a SHA-256 manifest so it can detect when a generated file was edited by hand and preserve those customizations during `update`, `compile`, and `uninstall`.
 
@@ -132,7 +133,7 @@ Engine-specific entry files and bootloaders are derived from that structure:
 - `.claude/agents/*.md` when Claude Code agent exports are configured
 - `.github/agents/*.md` when GitHub Copilot agent exports are configured
 
-`compile` and `export` standardize Cursor on `.cursor/rules/agentforge.md`; `.cursorrules` remains a legacy install-time compatibility surface.
+`compile` updates the real engine entrypoints in the repository root. `export-package` writes the isolated `_agentforge/` bundle without replacing those entrypoints. `export --package` is an explicit shortcut for that same package export.
 
 ## Flows
 
@@ -222,8 +223,10 @@ agentforge add-flow       # Create a custom operational flow
 agentforge add-engine     # Add support for an engine
 agentforge validate       # Validate the .agentforge/ structure
 agentforge ingest         # Import agentic instruction snapshots into .agentforge/
-agentforge compile        # Generate bootloaders and derived files for configured engines
+agentforge compile        # Update the real engine entrypoints in the project root
 agentforge export         # Alias of compile
+agentforge export-package # Generate the isolated _agentforge/ package
+agentforge export --package  # Same as export-package
 agentforge update         # Refresh generated files while preserving custom edits
 agentforge uninstall      # Remove generated artifacts safely
 ```

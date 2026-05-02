@@ -1187,8 +1187,9 @@ test("agentforge help advertises the compile command", () => {
   assert.equal(result.status, 0);
   assert.match(
     result.stdout,
-    /compile\s+Gera bootloaders pequenos e arquivos derivados para engines configuradas/,
+    /compile\s+Atualiza os bootloaders reais do projeto e os entrypoints das engines/,
   );
+  assert.match(result.stdout, /export-package\s+Gera o pacote isolado em _agentforge\//);
   assert.match(result.stdout, /export\s+Alias de compile/);
   assert.match(
     result.stdout,

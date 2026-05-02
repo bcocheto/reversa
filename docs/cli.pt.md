@@ -19,7 +19,9 @@ O AgentForge tem um CLI pequeno para gerenciar a camada agent-ready do projeto. 
 | `add-agent` | Adiciona um agente customizado ao projeto. |
 | `add-flow` | Adiciona um workflow customizado. |
 | `add-engine` | Adiciona suporte a outra engine. |
-| `compile` / `export` | Gera bootloaders gerenciados e arquivos derivados para as engines configuradas. |
+| `compile` | Atualiza os entrypoints reais do projeto nas engines configuradas. |
+| `export` | Alias de `compile`. |
+| `export-package` | Gera o pacote isolado em `_agentforge/` sem alterar os entrypoints reais. |
 | `validate` | Valida a estrutura canônica `.agentforge/` e os entrypoints gerenciados. |
 | `update` | Atualiza os arquivos gerados preservando edições personalizadas. |
 | `improve` | Revê `.agentforge/` e sugere melhorias mais seguras e legíveis para humanos. |
@@ -38,8 +40,9 @@ Esses comandos leem sinais do projeto sem modificar os arquivos originais:
 
 ---
 
-## `compile` versus `export`
+## `compile` versus `export-package`
 
-`export` é alias de `compile`.
+`compile` atualiza os bootloaders reais do projeto. `export-package` gera o pacote isolado em `_agentforge/`.
+`export --package` é um atalho explícito para o mesmo pacote isolado.
 
 O Cursor fica padronizado em `.cursor/rules/agentforge.md`. O arquivo legado `.cursorrules` fica apenas para compatibilidade na detecção durante a instalação.
