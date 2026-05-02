@@ -99,6 +99,40 @@ test('refactor-context without --apply only creates the plan report', async () =
   }
 });
 
+test('refactor-context --curation-input generates structured curation reports', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-refactor-context-curation-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    writeFileSync(
+      join(projectRoot, 'AGENTS.md'),
+      '# AgentForge\n\n## Testing\n\nSempre rode `npm test` antes de finalizar.\n',
+      'utf8',
+    );
+
+    const result = runRefactor(projectRoot, ['--curation-input']);
+    assert.equal(result.status, 0);
+
+    const jsonPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'refactor-context.json');
+    const inputPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'context-curation-input.md');
+    assert.equal(existsSync(jsonPath), true);
+    assert.equal(existsSync(inputPath), true);
+
+    const report = JSON.parse(readFileSync(jsonPath, 'utf8'));
+    assert.equal(report.score >= 0, true);
+    assert.ok(Array.isArray(report.snippets));
+    assert.ok(report.snippets.length > 0);
+    assert.ok(report.snippets.every((snippet) => snippet.curation_status === 'needs-review'));
+    assert.ok(report.snippets.some((snippet) => Number.isInteger(snippet.source_start_line) && Number.isInteger(snippet.source_end_line)));
+    assert.match(readFileSync(inputPath, 'utf8'), /# Context Curation Input/);
+    assert.match(readFileSync(inputPath, 'utf8'), /context-curator/);
+    assert.match(readFileSync(inputPath, 'utf8'), /Suggested next step/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('refactor-context --apply creates references/commands.md when command lists are found', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-refactor-context-commands-'));
 
@@ -125,6 +159,9 @@ test('refactor-context --apply creates references/commands.md when command lists
     );
     assert.ok(Array.isArray(contextIndex.items));
     assert.ok(contextIndex.items.some((item) => item.path === 'references/commands.md'));
+    assert.ok(Array.isArray(contextIndex.flows));
+    assert.ok(contextIndex.flows.some((item) => item.id === 'release'));
+    assert.equal(contextIndex.task_contexts.release, undefined);
 
     const manifest = loadManifest(projectRoot);
     assert.ok(manifest['.agentforge/references/commands.md']);

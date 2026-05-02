@@ -11,6 +11,7 @@ import { Writer } from '../lib/installer/writer.js';
 import { buildManifest, saveManifest, loadManifest } from '../lib/installer/manifest.js';
 import { ENGINES } from '../lib/installer/detector.js';
 import { PRODUCT } from '../lib/product.js';
+import { buildContextMapForProject } from '../lib/commands/context-map.js';
 
 const AGENTFORGE_BIN = fileURLToPath(new URL('../bin/agentforge.js', import.meta.url));
 
@@ -139,6 +140,37 @@ test('validate rejects malformed context-map items', async () => {
     validateResult = runCommand(projectRoot, ['validate']);
     assert.equal(validateResult.status, 1);
     assert.match(readFileSync(validationReportPath, 'utf8'), /Arquivo ausente em "context\/does-not-exist\.md"/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('context-map preserves curated items and marks stale ranges', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-context-map-stale-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const initial = buildContextMapForProject(projectRoot);
+    const mapPath = join(projectRoot, PRODUCT.internalDir, 'harness', 'context-map.yaml');
+    const original = initial.doc;
+    const curated = { ...original.items[0], curation_status: 'curated' };
+    original.items[0] = curated;
+    writeFileSync(mapPath, `${YAML.stringify(original).trim()}\n`, 'utf8');
+
+    const preserved = buildContextMapForProject(projectRoot);
+    const preservedItem = preserved.doc.items.find((item) => item.id === curated.id);
+    assert.equal(preservedItem?.curation_status, 'curated');
+    assert.equal(preservedItem?.summary, curated.summary);
+
+    const staleDoc = YAML.parse(readFileSync(mapPath, 'utf8'));
+    staleDoc.items[0].end_line = 9999;
+    writeFileSync(mapPath, `${YAML.stringify(staleDoc).trim()}\n`, 'utf8');
+
+    const refreshed = buildContextMapForProject(projectRoot);
+    const staleItem = refreshed.doc.items.find((item) => item.id === curated.id);
+    assert.equal(staleItem?.curation_status, 'stale');
+    assert.equal(staleItem?.summary, curated.summary);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
