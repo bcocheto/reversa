@@ -102,8 +102,12 @@ test('agentforge bootstrap detects package scripts, writes report, and updates s
     assert.match(commands, /`status`/);
     assert.match(commands, /`next`/);
     assert.match(commands, /`validate`/);
+    assert.match(commands, /## Project commands/);
+    assert.match(commands, /`test`/);
+    assert.match(commands, /node --test/);
     assert.match(commands, /npx @bcocheto\/agentforge analyze/);
     assert.match(commands, /npx @bcocheto\/agentforge validate/);
+    assert.match(commands, /npx @bcocheto\/agentforge <command>/);
 
     const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
     assert.ok(typeof state.last_bootstrap_at === 'string');

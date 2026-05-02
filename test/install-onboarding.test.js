@@ -275,16 +275,65 @@ test('install runs analysis first and can stop after generating reports and sugg
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'suggestions', 'agents', 'product-owner.yaml')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'suggestions', 'agents', 'architect.yaml')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'suggestions', 'agents', 'devops.yaml')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'context', 'project-overview.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'context', 'architecture.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'context', 'testing.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'context', 'deployment.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'context', 'glossary.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'references', 'commands.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'references', 'external-docs.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'README.md')), true);
+
+    const overview = readFileSync(join(projectRoot, '.agentforge', 'context', 'project-overview.md'), 'utf8');
+    assert.match(overview, /Preview Demo/);
+    assert.match(overview, /## A confirmar/);
+    assert.doesNotMatch(overview, /A preencher|<[^>]+>|TBD/);
+
+    const architecture = readFileSync(join(projectRoot, '.agentforge', 'context', 'architecture.md'), 'utf8');
+    assert.match(architecture, /## Arquitetura provável/);
+    assert.match(architecture, /src\//);
+    assert.doesNotMatch(architecture, /A preencher|<[^>]+>|TBD/);
+
+    const testing = readFileSync(join(projectRoot, '.agentforge', 'context', 'testing.md'), 'utf8');
+    assert.match(testing, /## Comandos detectados/);
+    assert.match(testing, /node --test/);
+    assert.doesNotMatch(testing, /A preencher|<[^>]+>|TBD/);
+
+    const commands = readFileSync(join(projectRoot, '.agentforge', 'references', 'commands.md'), 'utf8');
+    assert.match(commands, /## AgentForge commands/);
+    assert.match(commands, /## Project commands/);
+    assert.match(commands, /`test`/);
+    assert.match(commands, /`release`/);
+    assert.match(commands, /analyze \[--write-context\]/);
+    assert.match(commands, /npx @bcocheto\/agentforge <command>/);
+    assert.doesNotMatch(commands, /A preencher|TBD/);
+
+    const readme = readFileSync(join(projectRoot, '.agentforge', 'README.md'), 'utf8');
+    assert.match(readme, /## Próxima fase recomendada/);
+    assert.match(readme, /Preview Demo/);
+    assert.doesNotMatch(readme, /A preencher|TBD/);
+
     const manifest = loadManifest(projectRoot);
     assert.ok(manifest['legacy-note.md']);
     assert.ok(manifest['.agentforge/reports/project-analysis.md']);
     assert.ok(manifest['.agentforge/reports/analysis-plan.md']);
+    assert.ok(manifest['.agentforge/context/project-overview.md']);
+    assert.ok(manifest['.agentforge/context/architecture.md']);
+    assert.ok(manifest['.agentforge/context/testing.md']);
+    assert.ok(manifest['.agentforge/context/deployment.md']);
+    assert.ok(manifest['.agentforge/context/glossary.md']);
+    assert.ok(manifest['.agentforge/references/commands.md']);
+    assert.ok(manifest['.agentforge/references/external-docs.md']);
+    assert.ok(manifest['.agentforge/README.md']);
     const state = JSON.parse(readFileSync(join(projectRoot, '.agentforge', 'state.json'), 'utf8'));
     assert.ok(Array.isArray(state.suggested_agents));
     assert.ok(state.suggested_agents.some((entry) => entry.id === 'product-owner'));
     assert.ok(state.suggested_agents.some((entry) => entry.id === 'architect'));
     assert.ok(state.suggested_agents.some((entry) => entry.id === 'devops'));
     assert.equal(state.last_analysis_at.length > 0, true);
+    assert.equal(typeof state.last_context_synthesis_at, 'string');
+    assert.ok(Array.isArray(state.synthesized_context_files));
+    assert.ok(state.synthesized_context_files.includes('.agentforge/context/project-overview.md'));
   } finally {
     inquirer.prompt = originalPrompt;
     process.chdir(cwd);
