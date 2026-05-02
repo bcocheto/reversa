@@ -230,13 +230,23 @@ test('handoff reports engine-specific notes and playbooks for active engines', a
   try {
     await installFixture(projectRoot, { engines: ['codex', 'claude-code', 'gemini-cli'] });
 
+    const discovery = buildHandoffData(projectRoot, { engine: 'codex', phase: 'discovery' });
+    const agentDesign = buildHandoffData(projectRoot, { engine: 'claude', phase: 'agent-design' });
+    const exportPhase = buildHandoffData(projectRoot, { engine: 'gemini', phase: 'export' });
     const codex = buildHandoffData(projectRoot, { engine: 'codex' });
     const claude = buildHandoffData(projectRoot, { engine: 'claude' });
     const gemini = buildHandoffData(projectRoot, { engine: 'gemini' });
 
+    assert.equal(discovery.playbook.path, '.agentforge/ai/playbooks/discovery.md');
+    assert.equal(agentDesign.playbook.path, '.agentforge/ai/playbooks/agent-design.md');
+    assert.equal(exportPhase.playbook.path, '.agentforge/ai/playbooks/export.md');
     assert.equal(codex.engine_note.path, '.agentforge/ai/engines/codex.md');
     assert.equal(claude.engine_note.path, '.agentforge/ai/engines/claude.md');
     assert.equal(gemini.engine_note.path, '.agentforge/ai/engines/gemini.md');
+    assert.match(renderHandoffReport(discovery), /Leia o playbook da fase: `\.agentforge\/ai\/playbooks\/discovery\.md`\./);
+    assert.match(renderHandoffReport(agentDesign), /Leia o playbook da fase: `\.agentforge\/ai\/playbooks\/agent-design\.md`\./);
+    assert.match(renderHandoffReport(exportPhase), /Leia o playbook da fase: `\.agentforge\/ai\/playbooks\/export\.md`\./);
+    assert.ok(exportPhase.commands.some((command) => command.includes('compile --takeover-entrypoints --include-existing-entrypoints')));
     assert.match(renderHandoffReport(codex), /Leia a nota da engine: `\.agentforge\/ai\/engines\/codex\.md`\./);
     assert.match(renderHandoffReport(claude), /Leia a nota da engine: `\.agentforge\/ai\/engines\/claude\.md`\./);
     assert.match(renderHandoffReport(gemini), /Leia a nota da engine: `\.agentforge\/ai\/engines\/gemini\.md`\./);

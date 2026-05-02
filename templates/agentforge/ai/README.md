@@ -1,16 +1,31 @@
 # AgentForge AI
 
-Esta pasta descreve como a IA ativa deve executar o AgentForge.
-O CLI prepara a estrutura, o handoff e a validação; a engine configurada executa o trabalho inteligente.
+Esta camada descreve como a IA ativa executa o AgentForge.
+O CLI prepara a estrutura, o handoff e as validações. A engine configurada executa as fases inteligentes com julgamento contextual.
 
-## Como usar
+## Papel de cada parte
 
-- Leia `README.md` antes de começar.
-- Leia o playbook da fase atual em `playbooks/`.
-- Leia a nota específica da sua engine em `engines/`.
-- Execute a fase com julgamento contextual.
-- Registre o checkpoint ao concluir.
-- Valide a estrutura antes de encerrar.
+- O CLI prepara `state.json`, `plan.md`, reports, context packs e bootloaders.
+- A IA ativa lê o handoff, escolhe o próximo passo e executa a fase.
+- `agentforge validate` confirma se a estrutura continua consistente.
+
+## Regras
+
+- Nunca edite `state.json` ou `plan.md` manualmente.
+- Nunca assuma que o produto é preso a uma engine específica.
+- Use `agentforge handoff` para receber a orientação da próxima fase.
+- Use `agentforge context-pack <phase-or-task>` quando o contexto precisar ser reduzido.
+- Termine cada fase com `agentforge checkpoint <phase> --status done`.
+- Finalize com `agentforge validate`.
+
+## Fases
+
+- `discovery`: entender o projeto e preencher o contexto canônico.
+- `agent-design`: decidir a equipe AgentForge adequada ao projeto.
+- `flow-design`: definir a sequência operacional e os checkpoints.
+- `policies`: consolidar permissões, proteções e aprovações.
+- `export`: preparar e compilar os bootloaders gerenciados.
+- `review`: revisar consistência, pendências e prontidão geral.
 
 ## Playbooks
 
@@ -22,7 +37,7 @@ O CLI prepara a estrutura, o handoff e a validação; a engine configurada execu
 - `playbooks/review.md`
 - `playbooks/task-execution.md`
 
-## Engine notes
+## Notas por engine
 
 - `engines/codex.md`
 - `engines/claude.md`
@@ -30,9 +45,3 @@ O CLI prepara a estrutura, o handoff e a validação; a engine configurada execu
 - `engines/cursor.md`
 - `engines/copilot.md`
 
-## Regras
-
-- Não edite `state.json` manualmente.
-- Não edite `plan.md` manualmente.
-- Não assuma uma engine única como runtime obrigatório.
-- Mantenha a saída curta, rastreável e específica ao projeto.
