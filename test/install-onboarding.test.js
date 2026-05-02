@@ -12,7 +12,7 @@ import { runInstallPrompts } from '../lib/installer/prompts.js';
 import { Writer } from '../lib/installer/writer.js';
 import { ENGINES } from '../lib/installer/detector.js';
 import { compileAgentForge } from '../lib/exporter/index.js';
-import { buildManifest, saveManifest } from '../lib/installer/manifest.js';
+import { buildManifest, loadManifest, saveManifest } from '../lib/installer/manifest.js';
 import { PRODUCT } from '../lib/product.js';
 import install from '../lib/commands/install.js';
 
@@ -244,6 +244,8 @@ test('install runs analysis first and can stop after generating reports and sugg
       '  return "cron";',
       '}',
     ].join('\n'), 'utf8');
+    writeFileSync(join(projectRoot, 'legacy-note.md'), 'Keep this note.\n', 'utf8');
+    saveManifest(projectRoot, buildManifest(projectRoot, ['legacy-note.md']));
 
     const promptCalls = [];
     inquirer.prompt = async (questions) => {
@@ -273,6 +275,10 @@ test('install runs analysis first and can stop after generating reports and sugg
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'suggestions', 'agents', 'product-owner.yaml')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'suggestions', 'agents', 'architect.yaml')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'suggestions', 'agents', 'devops.yaml')), true);
+    const manifest = loadManifest(projectRoot);
+    assert.ok(manifest['legacy-note.md']);
+    assert.ok(manifest['.agentforge/reports/project-analysis.md']);
+    assert.ok(manifest['.agentforge/reports/analysis-plan.md']);
     const state = JSON.parse(readFileSync(join(projectRoot, '.agentforge', 'state.json'), 'utf8'));
     assert.ok(Array.isArray(state.suggested_agents));
     assert.ok(state.suggested_agents.some((entry) => entry.id === 'product-owner'));
