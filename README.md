@@ -116,6 +116,8 @@ Engine-specific entry files and bootloaders are derived from that structure:
 - `.claude/agents/*.md` when Claude Code agent exports are configured
 - `.github/agents/*.md` when GitHub Copilot agent exports are configured
 
+`compile` and `export` standardize Cursor on `.cursor/rules/agentforge.md`; `.cursorrules` remains a legacy install-time compatibility surface.
+
 ## Concepts
 
 ### Agents
