@@ -1,0 +1,469 @@
+version: 1
+description: Local deterministic catalog used by agentforge research-patterns.
+patterns:
+  - id: node
+    name: Node.js foundation
+    applies_when:
+      - node_project
+    evidence_patterns:
+      - '\bpackage\.json\b'
+      - '\bnpm\b'
+      - '\bpnpm\b'
+      - '\byarn\b'
+      - '\bnode\b'
+      - '\bnode --test\b'
+      - '\bscripts\b'
+    benefits:
+      - Provides a reproducible runtime and script surface.
+      - Keeps tooling and validation close to the project entrypoint.
+    tradeoffs:
+      - Package scripts can become a catch-all for unrelated concerns.
+      - Runtime assumptions may spread silently across the repo.
+    recommended_context_files:
+      - references/commands.md
+      - context/testing.md
+      - context/conventions.md
+    recommended_agents:
+      - engineer
+      - qa
+    recommended_skills:
+      - run-tests
+      - create-implementation-plan
+    recommended_flows:
+      - feature-development
+      - bugfix
+
+  - id: typescript
+    name: TypeScript type safety
+    applies_when:
+      - node_project
+      - typescript_project
+    evidence_patterns:
+      - '\btsconfig\.json\b'
+      - '\btypescript\b'
+      - '\.ts(x)?\b'
+      - '\btypecheck\b'
+      - '\btsc\b'
+    benefits:
+      - Catches contract drift earlier than runtime-only feedback.
+      - Improves navigation and refactoring confidence in larger codebases.
+    tradeoffs:
+      - Typecheck steps add friction to the delivery loop.
+      - Types can hide missing runtime validation if overtrusted.
+    recommended_context_files:
+      - context/coding-standards.md
+      - context/testing.md
+      - context/architecture.md
+    recommended_agents:
+      - architect
+      - qa
+      - reviewer
+    recommended_skills:
+      - run-tests
+      - review-changes
+      - create-implementation-plan
+    recommended_flows:
+      - feature-development
+      - review
+
+  - id: nestjs
+    name: NestJS modular architecture
+    applies_when:
+      - nestjs_project
+    evidence_patterns:
+      - '@nestjs/'
+      - '\bNestFactory\b'
+      - '@Module\('
+      - '@Controller\('
+      - '@Injectable\('
+      - '\bcontrollers:\s'
+      - '\bproviders:\s'
+      - '\bmodules?\b'
+    benefits:
+      - Encourages explicit module boundaries and dependency injection.
+      - Keeps API and service layers easier to reason about.
+    tradeoffs:
+      - Module nesting can become opaque without documentation.
+      - Framework abstractions can hide simple flows if overused.
+    recommended_context_files:
+      - context/architecture.md
+      - context/conventions.md
+      - references/commands.md
+    recommended_agents:
+      - architect
+      - engineer
+      - qa
+    recommended_skills:
+      - create-implementation-plan
+      - run-tests
+      - review-changes
+    recommended_flows:
+      - feature-development
+      - review
+
+  - id: nextjs
+    name: Next.js application surface
+    applies_when:
+      - nextjs_project
+    evidence_patterns:
+      - '\bnext\s+(dev|build|start)\b'
+      - '\bapp/\b'
+      - '\blayout\.tsx\b'
+      - '\bpage\.tsx\b'
+      - '\bnext\.config\b'
+      - 'use client'
+    benefits:
+      - Supports fast product iteration with a clear application router surface.
+      - Combines server and client concerns in a single delivery model.
+    tradeoffs:
+      - Server and client boundaries need discipline.
+      - UI and delivery logic can mix too easily.
+    recommended_context_files:
+      - context/architecture.md
+      - context/testing.md
+      - context/conventions.md
+    recommended_agents:
+      - architect
+      - engineer
+      - qa
+    recommended_skills:
+      - run-tests
+      - review-changes
+      - create-implementation-plan
+    recommended_flows:
+      - feature-development
+      - review
+
+  - id: react
+    name: React component model
+    applies_when:
+      - react_project
+    evidence_patterns:
+      - '\breact\b'
+      - '\breact-dom\b'
+      - '\.tsx\b'
+      - '\buseState\b'
+      - '\buseEffect\b'
+      - '\bcomponent\b'
+    benefits:
+      - Fits component-driven user interfaces well.
+      - Keeps reusable UI logic close to the presentation surface.
+    tradeoffs:
+      - Shared component libraries can sprawl without ownership rules.
+      - State management complexity grows quickly.
+    recommended_context_files:
+      - context/conventions.md
+      - context/testing.md
+      - context/architecture.md
+    recommended_agents:
+      - engineer
+      - qa
+      - reviewer
+    recommended_skills:
+      - run-tests
+      - review-changes
+      - create-implementation-plan
+    recommended_flows:
+      - feature-development
+      - review
+
+  - id: python
+    name: Python runtime surface
+    applies_when:
+      - python_project
+    evidence_patterns:
+      - '\bpyproject\.toml\b'
+      - '\brequirements\.txt\b'
+      - '\bpytest\b'
+      - '\buv\s+run\b'
+      - '\.py\b'
+      - '\bpython\b'
+    benefits:
+      - Gives a compact runtime for scripting, services, and data workflows.
+      - Has a strong ecosystem for tooling and automation.
+    tradeoffs:
+      - Environment management can drift across machines.
+      - Dependency pinning and virtualenv rules need to be explicit.
+    recommended_context_files:
+      - context/testing.md
+      - context/architecture.md
+      - context/conventions.md
+    recommended_agents:
+      - engineer
+      - qa
+    recommended_skills:
+      - run-tests
+      - create-implementation-plan
+    recommended_flows:
+      - feature-development
+      - bugfix
+
+  - id: docker
+    name: Docker runtime packaging
+    applies_when:
+      - docker_surface
+    evidence_patterns:
+      - '\bDockerfile\b'
+      - '\bdocker-compose\.yml\b'
+      - '\bcompose\.yaml\b'
+      - '\bFROM\b'
+      - '\bservices:\b'
+      - '\bcontainer\b'
+    benefits:
+      - Makes runtime assumptions reproducible.
+      - Simplifies local and CI parity.
+    tradeoffs:
+      - Image and compose drift can hide configuration mistakes.
+      - Container layers can obscure the real application boundary.
+    recommended_context_files:
+      - context/deployment.md
+      - context/architecture.md
+      - references/tools.md
+    recommended_agents:
+      - devops
+      - security
+      - reviewer
+    recommended_skills:
+      - run-tests
+      - review-changes
+    recommended_flows:
+      - release
+      - review
+
+  - id: github-actions
+    name: GitHub Actions automation
+    applies_when:
+      - github_actions_surface
+    evidence_patterns:
+      - '\.github/workflows/'
+      - '\bjobs:\b'
+      - '\buses:\b'
+      - '\bon:\b'
+      - '\bactions/checkout\b'
+      - '\bworkflow\b'
+    benefits:
+      - Automates validation and delivery.
+      - Documents CI behavior where it is executed.
+    tradeoffs:
+      - Workflow logic can be harder to debug than application code.
+      - Secrets and environment assumptions require care.
+    recommended_context_files:
+      - context/deployment.md
+      - references/commands.md
+      - context/testing.md
+    recommended_agents:
+      - devops
+      - reviewer
+      - security
+    recommended_skills:
+      - run-tests
+      - review-changes
+      - create-implementation-plan
+    recommended_flows:
+      - release
+      - review
+
+  - id: monorepo
+    name: Monorepo structure
+    applies_when:
+      - monorepo_surface
+    evidence_patterns:
+      - '\bworkspaces\b'
+      - '\bpnpm-workspace\.yaml\b'
+      - '\blibs/\b'
+      - '\bmodules/\b'
+      - '\bpackages/\b'
+      - '\bshared\b'
+    benefits:
+      - Shares code and tooling across multiple areas.
+      - Keeps related services close enough for coordinated changes.
+    tradeoffs:
+      - Ownership boundaries become harder to see.
+      - Build and test commands need precise scoping.
+    recommended_context_files:
+      - context/architecture.md
+      - context/conventions.md
+      - references/important-files.md
+    recommended_agents:
+      - architect
+      - orchestrator
+      - reviewer
+    recommended_skills:
+      - create-implementation-plan
+      - review-changes
+    recommended_flows:
+      - feature-development
+      - refactor
+
+  - id: api
+    name: API surface
+    applies_when:
+      - api_surface
+    evidence_patterns:
+      - '\bapi\b'
+      - '\bendpoint\b'
+      - '\bcontroller\b'
+      - '\broute\b'
+      - '\brequest\b'
+      - '\bresponse\b'
+      - '\bREST\b'
+      - '\bGraphQL\b'
+    benefits:
+      - Keeps contracts and error handling explicit.
+      - Supports clear integration boundaries.
+    tradeoffs:
+      - Contract changes can ripple widely.
+      - Validation and compatibility need discipline.
+    recommended_context_files:
+      - context/architecture.md
+      - context/testing.md
+      - references/commands.md
+    recommended_agents:
+      - architect
+      - engineer
+      - qa
+    recommended_skills:
+      - create-implementation-plan
+      - run-tests
+      - review-changes
+    recommended_flows:
+      - feature-development
+      - bugfix
+      - review
+
+  - id: cli
+    name: CLI surface
+    applies_when:
+      - cli_surface
+    evidence_patterns:
+      - '\bcommander\b'
+      - '\byargs\b'
+      - '\bprocess\.argv\b'
+      - '\busage\b'
+      - '\bhelp\b'
+      - '\bcommands\b'
+      - '\bbin\b'
+    benefits:
+      - Creates a reproducible operator interface.
+      - Makes commands easy to document and test.
+    tradeoffs:
+      - Small UX inconsistencies are visible immediately.
+      - Argument parsing and help text can drift from behavior.
+    recommended_context_files:
+      - references/commands.md
+      - context/testing.md
+      - context/conventions.md
+    recommended_agents:
+      - engineer
+      - reviewer
+      - orchestrator
+    recommended_skills:
+      - run-tests
+      - review-changes
+    recommended_flows:
+      - feature-development
+      - bugfix
+      - review
+
+  - id: saas
+    name: SaaS product shape
+    applies_when:
+      - saas_signals
+    evidence_patterns:
+      - '\bsaas\b'
+      - '\bsubscription\b'
+      - '\bbilling\b'
+      - '\btenant\b'
+      - '\bworkspace\b'
+      - '\bdashboard\b'
+      - '\bauth\b'
+      - '\bpricing\b'
+    benefits:
+      - Focuses the repo on a product with clear business constraints.
+      - Highlights auth, tenancy, and release boundaries early.
+    tradeoffs:
+      - Product terminology can be ambiguous without a glossary.
+      - Operational and business concerns tend to interleave.
+    recommended_context_files:
+      - context/project-overview.md
+      - context/architecture.md
+      - context/glossary.md
+    recommended_agents:
+      - product-owner
+      - architect
+      - devops
+    recommended_skills:
+      - create-implementation-plan
+      - review-changes
+    recommended_flows:
+      - feature-development
+      - release
+
+  - id: documentation-heavy
+    name: Documentation-heavy project
+    applies_when:
+      - documentation_heavy
+    evidence_patterns:
+      - 'README\.md'
+      - '\bdocs/\b'
+      - '\bAGENTS\.md\b'
+      - '\bCLAUDE\.md\b'
+      - '\bobjective\b'
+      - '\baudience\b'
+      - '\btesting\b'
+      - '\barchitecture\b'
+    benefits:
+      - Onboarding and handoff become easier.
+      - Creates a durable source of truth for future agents.
+    tradeoffs:
+      - Docs can drift if changes are not mirrored in code.
+      - Too many docs can hide the authoritative source.
+    recommended_context_files:
+      - context/project-overview.md
+      - context/conventions.md
+      - context/architecture.md
+    recommended_agents:
+      - documentation-curator
+      - product-owner
+      - reviewer
+    recommended_skills:
+      - create-implementation-plan
+      - review-changes
+    recommended_flows:
+      - review
+      - feature-development
+
+  - id: automation-heavy
+    name: Automation-heavy project
+    applies_when:
+      - automation_heavy
+    evidence_patterns:
+      - '\.github/workflows/'
+      - '\bDockerfile\b'
+      - '\bdocker-compose\b'
+      - '\bdeploy\b'
+      - '\brelease\b'
+      - '\blint\b'
+      - '\btypecheck\b'
+      - '\bvalidate\b'
+    benefits:
+      - Moves repetitive checks into deterministic automation.
+      - Makes delivery and validation repeatable.
+    tradeoffs:
+      - Automation layers can fail silently if not observed.
+      - Pipelines can become the de facto product surface.
+    recommended_context_files:
+      - context/deployment.md
+      - context/testing.md
+      - references/tools.md
+    recommended_agents:
+      - devops
+      - security
+      - reviewer
+    recommended_skills:
+      - run-tests
+      - review-changes
+      - create-implementation-plan
+    recommended_flows:
+      - release
+      - review
