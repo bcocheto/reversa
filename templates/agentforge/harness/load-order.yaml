@@ -2,7 +2,10 @@ version: 1
 order:
   - README.md
   - harness/router.md
+  - harness/task-modes.yaml
   - harness/context-index.yaml
+  - harness/load-order.yaml
+  - harness/engine-map.yaml
   - context/README.md
   - context/project-overview.md
   - context/architecture.md

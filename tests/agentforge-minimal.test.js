@@ -239,6 +239,29 @@ test('validate fails when context-index.yaml points to a missing file', async ()
   }
 });
 
+test('validate fails when context-index.yaml is absent', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-missing-context-index-file-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    rmSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml'));
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 1);
+
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
+    assert.match(report, /context-index\.yaml/);
+    assert.match(report, /Arquivo ausente/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('validate fails when state.generated_agents lists a missing agent', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-state-mismatch-'));
 
@@ -260,6 +283,36 @@ test('validate fails when state.generated_agents lists a missing agent', async (
     const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
     assert.match(report, /generated_agents/);
     assert.match(report, /ghost-agent/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('validate warns when AGENTS.md is unmanaged and missing a managed block', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-unmanaged-agents-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const agentsPath = join(projectRoot, 'AGENTS.md');
+    writeFileSync(agentsPath, '# Manual AGENTS\nLinha manual.\n', 'utf8');
+    rmSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), { force: true });
+
+    const manifest = loadManifest(projectRoot);
+    delete manifest['AGENTS.md'];
+    saveManifest(projectRoot, manifest);
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
+    assert.match(report, /Status: válido com avisos/);
+    assert.match(report, /AGENTS\.md/);
+    assert.match(report, /Arquivo unmanaged sem bloco AgentForge/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -289,6 +342,74 @@ test('validate warns when engine-map is missing an installed engine', async () =
     assert.match(report, /Status: válido com avisos/);
     assert.match(report, /Avisos/);
     assert.match(report, /codex/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('ingest snapshots AGENTS.md and CLAUDE.md without modifying the originals', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-ingest-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const agentsPath = join(projectRoot, 'AGENTS.md');
+    const claudePath = join(projectRoot, 'CLAUDE.md');
+    writeFileSync(claudePath, '# Claude Instructions\nUse this file only for tests.\n', 'utf8');
+
+    const agentsBefore = readFileSync(agentsPath, 'utf8');
+    const claudeBefore = readFileSync(claudePath, 'utf8');
+
+    const first = spawnSync(process.execPath, [AGENTFORGE_BIN, 'ingest'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(first.status, 0);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'imports', 'README.md')), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'ingest.md')), true);
+
+    const stateAfterFirst = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(stateAfterFirst.last_ingest_at.length > 0, true);
+    assert.equal(stateAfterFirst.ingest_count, 1);
+    assert.equal(stateAfterFirst.imported_sources.length, 2);
+    assert.ok(stateAfterFirst.imported_sources.some((item) => item.source_path === 'AGENTS.md' && item.source_type === 'codex-entrypoint'));
+    assert.ok(stateAfterFirst.imported_sources.some((item) => item.source_path === 'CLAUDE.md' && item.source_type === 'claude-entrypoint'));
+
+    for (const item of stateAfterFirst.imported_sources) {
+      assert.equal(existsSync(join(projectRoot, item.snapshot_path)), true);
+    }
+
+    const manifestAfterFirst = loadManifest(projectRoot);
+    assert.ok(manifestAfterFirst['.agentforge/imports/README.md']);
+    assert.ok(manifestAfterFirst['.agentforge/reports/ingest.md']);
+    for (const item of stateAfterFirst.imported_sources) {
+      assert.ok(manifestAfterFirst[item.snapshot_path]);
+    }
+
+    assert.equal(readFileSync(agentsPath, 'utf8'), agentsBefore);
+    assert.equal(readFileSync(claudePath, 'utf8'), claudeBefore);
+
+    const second = spawnSync(process.execPath, [AGENTFORGE_BIN, 'ingest'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(second.status, 0);
+    const stateAfterSecond = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(stateAfterSecond.ingest_count, 2);
+    assert.equal(stateAfterSecond.imported_sources.length, 2);
+    assert.equal(
+      stateAfterSecond.imported_sources.every((item) => stateAfterFirst.imported_sources.some((previous) => previous.source_path === item.source_path && previous.source_hash === item.source_hash)),
+      true,
+    );
+
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'ingest.md'), 'utf8');
+    assert.match(report, /AgentForge Ingest Report/);
+    assert.match(report, /AGENTS\.md/);
+    assert.match(report, /CLAUDE\.md/);
+    assert.match(report, /agentforge audit-context/);
+    assert.match(report, /snapshot já importado com o mesmo hash/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -470,11 +591,10 @@ test('adopt generates a read-only adoption plan', async () => {
     await installFixture(projectRoot);
 
     const agentsPath = join(projectRoot, 'AGENTS.md');
+    const claudePath = join(projectRoot, 'CLAUDE.md');
+    writeFileSync(claudePath, '# Claude Code\nUse this file only for tests.\n', 'utf8');
     const agentsBefore = readFileSync(agentsPath, 'utf8');
-
-    const readmePath = join(projectRoot, 'README.md');
-    writeFileSync(readmePath, '# Manual Project\nConteúdo manual.\n', 'utf8');
-    const readmeBefore = readFileSync(readmePath, 'utf8');
+    const claudeBefore = readFileSync(claudePath, 'utf8');
 
     const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'adopt'], {
       cwd: projectRoot,
@@ -491,15 +611,55 @@ test('adopt generates a read-only adoption plan', async () => {
     assert.match(report, /## 1\. Ingest/);
     assert.match(report, /## 2\. Audit context/);
     assert.match(report, /## 3\. Refactor context \(dry run\)/);
+    assert.match(report, /agentforge audit-context/);
+    assert.match(report, /agentforge refactor-context/);
     assert.match(report, /agentforge refactor-context --apply/);
-    assert.match(report, /agentforge create-skill <id>/);
+    assert.match(report, /agentforge suggest-skills/);
+    assert.match(report, /Refactor applied: no/);
     assert.match(report, /Read-only guarantee/);
+    assert.match(report, /Imported snapshots/);
+    assert.match(report, /AGENTS\.md/);
+    assert.match(report, /CLAUDE\.md/);
 
     assert.equal(readFileSync(agentsPath, 'utf8'), agentsBefore);
-    assert.equal(readFileSync(readmePath, 'utf8'), readmeBefore);
+    assert.equal(readFileSync(claudePath, 'utf8'), claudeBefore);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(typeof state.last_adopt_at, 'string');
+    assert.equal(state.adoption_status, 'plan-generated');
+    assert.ok(Array.isArray(state.imported_sources));
+    assert.ok(state.imported_sources.length >= 2);
 
     const manifest = loadManifest(projectRoot);
     assert.ok(manifest['.agentforge/reports/adoption-plan.md']);
+    assert.ok(manifest['.agentforge/reports/ingest.md']);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('adopt generates a plan even when no agentic files are present', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-empty-'));
+
+  try {
+    await installFixture(projectRoot);
+    rmSync(join(projectRoot, 'AGENTS.md'), { force: true });
+    rmSync(join(projectRoot, 'CLAUDE.md'), { force: true });
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'adopt'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'adoption-plan.md'), 'utf8');
+    assert.match(report, /AgentForge Adoption Plan/);
+    assert.match(report, /No known entry files were found/);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(state.adoption_status, 'plan-generated');
+    assert.equal(state.imported_sources.length, 0);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }

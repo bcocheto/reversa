@@ -1,18 +1,31 @@
-bootstrap:
-  label: Bootstrap
-  purpose: Criar a base agent-ready de um projeto novo.
+version: 1
+feature:
+  label: Feature
+  purpose: Entregar uma nova capacidade ou expansão de comportamento.
   use_when:
-    - O projeto ainda não possui uma camada AgentForge.
-    - O time quer começar com estrutura, contexto e fluxos.
-adopt:
-  label: Adopt
-  purpose: Ler e auditar uma base existente antes de organizar a equipe.
+    - O usuário pediu algo novo.
+    - O trabalho precisa de descoberta, design, implementação e validação.
+bugfix:
+  label: Bugfix
+  purpose: Corrigir um defeito reproduzível com a menor mudança segura.
   use_when:
-    - Já existem arquivos de engine e documentação útil.
-    - É preciso entender o que já está instalado.
-hybrid:
-  label: Hybrid
-  purpose: Criar uma base nova e importar artefatos existentes.
+    - O comportamento está quebrado ou inconsistente.
+    - A causa raiz pode ser isolada.
+refactor:
+  label: Refactor
+  purpose: Melhorar a estrutura sem alterar o comportamento esperado.
   use_when:
-    - Há um projeto vivo com arquivos legados relevantes.
-    - É desejável combinar base nova e material já existente.
+    - O código está difícil de manter.
+    - A mudança deve preservar o contrato atual.
+review:
+  label: Review
+  purpose: Inspecionar mudanças e reduzir risco antes de integrar.
+  use_when:
+    - O foco é avaliar, não implementar.
+    - O trabalho precisa de checagem de regressão e clareza.
+documentation:
+  label: Documentation
+  purpose: Atualizar instruções e documentação sem alterar o comportamento do produto.
+  use_when:
+    - O trabalho é de explicação, orientação ou catálogo.
+    - Apenas documentação ou instruções precisam mudar.

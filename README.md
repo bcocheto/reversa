@@ -155,6 +155,7 @@ agentforge add-agent      # Create a custom project agent
 agentforge add-flow       # Create a custom operational flow
 agentforge add-engine     # Add support for an engine
 agentforge validate       # Validate the .agentforge/ structure
+agentforge ingest         # Import agentic instruction snapshots into .agentforge/
 agentforge compile        # Generate bootloaders and derived files for configured engines
 agentforge export         # Alias of compile
 agentforge update         # Refresh generated files while preserving custom edits

@@ -18,6 +18,18 @@ Use uma vez, na raiz do projeto que você quer analisar.
 
 ---
 
+### `ingest`
+
+```bash
+npx agentforge ingest
+```
+
+Importa arquivos de instrução agentic seguros e explícitos que já existem no projeto para `.agentforge/imports/snapshots/`, sem tocar nos originais.
+
+Use isso antes de auditar ou refatorar uma superfície existente.
+
+---
+
 ### `status`
 
 ```bash

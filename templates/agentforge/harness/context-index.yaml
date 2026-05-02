@@ -1,4 +1,9 @@
 version: 2
+always_load:
+  - harness/router.md
+  - harness/task-modes.yaml
+  - harness/load-order.yaml
+  - harness/engine-map.yaml
 items:
   - id: project-overview
     path: context/project-overview.md
@@ -44,3 +49,56 @@ flows:
   - id: review
     path: flows/review.md
     purpose: Revisar mudanças antes da integração.
+task_contexts:
+  feature:
+    context:
+      - context/project-overview.md
+      - context/architecture.md
+      - context/coding-standards.md
+    skills:
+      - skills/create-implementation-plan/SKILL.md
+      - skills/run-tests/SKILL.md
+    flows:
+      - flows/feature-development.md
+    policies:
+      - policies/protected-files.md
+      - policies/human-approval.md
+  bugfix:
+    context:
+      - context/project-overview.md
+      - context/testing.md
+    skills:
+      - skills/run-tests/SKILL.md
+    flows:
+      - flows/bugfix.md
+    policies:
+      - policies/protected-files.md
+  refactor:
+    context:
+      - context/architecture.md
+      - context/conventions.md
+    skills:
+      - skills/create-implementation-plan/SKILL.md
+    flows:
+      - flows/refactor.md
+    policies:
+      - policies/protected-files.md
+  review:
+    context:
+      - context/coding-standards.md
+      - context/testing.md
+    skills:
+      - skills/review-changes/SKILL.md
+    flows:
+      - flows/review.md
+    policies:
+      - policies/protected-files.md
+  documentation:
+    context:
+      - context/conventions.md
+      - context/glossary.md
+    skills:
+      - skills/create-implementation-plan/SKILL.md
+    references:
+      - references/commands.md
+      - references/important-files.md
