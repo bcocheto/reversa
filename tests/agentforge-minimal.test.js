@@ -814,6 +814,9 @@ test('agentforge advance --all completes the workflow in order', async () => {
       .filter(Boolean);
     assert.ok(history.length >= 6);
 
+    const manifest = loadManifest(projectRoot);
+    assert.ok(manifest[`${PRODUCT.internalDir}/workflow/history.jsonl`], 'history.jsonl should be registered in the manifest');
+
     const validation = validateAgentForgeStructure(projectRoot);
     assert.equal(validation.valid, true);
   } finally {
