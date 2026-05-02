@@ -471,7 +471,7 @@ test('validate fails when state.generated_agents lists a missing agent', async (
   }
 });
 
-test('validate warns when AGENTS.md is unmanaged and missing a managed block', async () => {
+test('validate fails when AGENTS.md is unmanaged and missing a managed block', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-unmanaged-agents-'));
 
   try {
@@ -490,11 +490,12 @@ test('validate warns when AGENTS.md is unmanaged and missing a managed block', a
       encoding: 'utf8',
     });
 
-    assert.equal(result.status, 0);
+    assert.equal(result.status, 1);
 
     const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
-    assert.match(report, /Status: válido com avisos/);
+    assert.match(report, /Status: inválido/);
     assert.match(report, /AGENTS\.md/);
+    assert.match(report, /plan\.md diverge do workflow estruturado/);
     assert.match(report, /Arquivo unmanaged sem bloco AgentForge/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
@@ -678,6 +679,107 @@ test('commands lists the full registry and emits valid json', async () => {
   }
 });
 
+test('agentforge phases, next, phase-status, and advance expose the phase engine', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-phase-engine-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const phasesResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'phases'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(phasesResult.status, 0);
+    assert.match(phasesResult.stdout, /AgentForge phases/);
+    assert.match(phasesResult.stdout, /- discovery \(Discovery\)/);
+    assert.match(phasesResult.stdout, /- review \(Review\)/);
+    assert.match(phasesResult.stdout, /Current phase: discovery/);
+    assert.match(phasesResult.stdout, /Next phase: agent-design/);
+
+    const nextResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'next'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(nextResult.status, 0);
+    assert.match(nextResult.stdout, /Current phase: discovery/);
+    assert.match(nextResult.stdout, /Next phase: agent-design/);
+    assert.match(nextResult.stdout, /context\/project-overview\.md tem placeholders/);
+    assert.match(nextResult.stdout, /context\/architecture\.md tem placeholders/);
+    assert.match(nextResult.stdout, /agentforge advance --phase agent-design/);
+
+    const phaseStatusResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'phase-status'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(phaseStatusResult.status, 0);
+    assert.match(phaseStatusResult.stdout, /Phase\s+Status\s+Checks/);
+    assert.match(phaseStatusResult.stdout, /discovery\s+pending\s+2 checks/);
+
+    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
+    const planPath = join(projectRoot, PRODUCT.internalDir, 'plan.md');
+    const planBefore = readFileSync(planPath, 'utf8');
+
+    const advanceResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'advance'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(advanceResult.status, 0);
+    assert.match(advanceResult.stdout, /discovery -> agent-design \(passed\)/);
+
+    const advancedState = JSON.parse(readFileSync(statePath, 'utf8'));
+    assert.equal(advancedState.workflow.current_phase, 'agent-design');
+    assert.equal(advancedState.phase, 'agent-design');
+    assert.ok(advancedState.workflow.completed_phases.includes('discovery'));
+    assert.ok(advancedState.workflow.pending_phases.includes('export'));
+
+    const planAfter = readFileSync(planPath, 'utf8');
+    assert.notEqual(planAfter, planBefore);
+    assert.match(planAfter, /Generated from `\.agentforge\/workflow\/phases\.yaml` and `\.agentforge\/state\.json`/);
+
+    const validation = validateAgentForgeStructure(projectRoot);
+    assert.equal(validation.valid, true);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge advance --all completes the workflow in order', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-advance-all-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'advance', '--all'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /discovery -> agent-design \(passed\)/);
+    assert.match(result.stdout, /agent-design -> flow-design \(passed\)/);
+    assert.match(result.stdout, /flow-design -> policies \(passed\)/);
+    assert.match(result.stdout, /policies -> export \(passed\)/);
+    assert.match(result.stdout, /export -> review \(passed\)/);
+    assert.match(result.stdout, /review -> review \(passed\)/);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(state.workflow.current_phase, 'review');
+    assert.ok(state.workflow.completed_phases.includes('export'));
+    assert.ok(state.workflow.completed_phases.includes('review'));
+
+    const history = readFileSync(join(projectRoot, PRODUCT.internalDir, 'workflow', 'history.jsonl'), 'utf8')
+      .trim()
+      .split(/\r?\n/)
+      .filter(Boolean);
+    assert.ok(history.length >= 6);
+
+    const validation = validateAgentForgeStructure(projectRoot);
+    assert.equal(validation.valid, true);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('next detects plan/state divergence and status repair fills missing pending phases', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-next-'));
 
@@ -711,10 +813,11 @@ test('next detects plan/state divergence and status repair fills missing pending
     });
 
     assert.equal(nextResult.status, 0);
-    assert.match(nextResult.stdout, /phase: review/);
-    assert.match(nextResult.stdout, /Next recommended phase:\n- export/);
-    assert.match(nextResult.stdout, /state says no pending phases, but plan\.md still has open Export tasks\./);
-    assert.match(nextResult.stdout, /agentforge status --repair/);
+    assert.match(nextResult.stdout, /Current phase: review/);
+    assert.match(nextResult.stdout, /Next phase: none/);
+    assert.match(nextResult.stdout, /Pending checks:\n- ok/);
+    assert.match(nextResult.stdout, /agentforge advance/);
+    assert.match(nextResult.stdout, /agentforge advance --all/);
 
     const statusResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'status', '--repair'], {
       cwd: projectRoot,
@@ -732,14 +835,14 @@ test('next detects plan/state divergence and status repair fills missing pending
     });
     assert.equal(statusJsonResult.status, 0);
     const statusPayload = JSON.parse(statusJsonResult.stdout);
-    assert.equal(statusPayload.next_phase, 'export');
+    assert.equal(statusPayload.next_phase, null);
     assert.equal(statusPayload.repair_applied, false);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
 });
 
-test('validate warns on plan/state divergence and fails on invalid state json', async () => {
+test('validate fails on plan/state divergence and invalid state json', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-validate-plan-state-'));
 
   try {
@@ -766,8 +869,9 @@ test('validate warns on plan/state divergence and fails on invalid state json', 
     writeFileSync(planPath, plan, 'utf8');
 
     const validation = validateAgentForgeStructure(projectRoot);
-    assert.equal(validation.valid, true);
-    assert.ok(validation.warnings.some((entry) => entry.message.includes('state says no pending phases, but plan.md still has open Export tasks.')));
+    assert.equal(validation.valid, false);
+    assert.ok(validation.errors.some((entry) => entry.message.includes('plan.md diverge do workflow estruturado.')));
+    assert.ok(validation.errors.some((entry) => entry.message.includes('A fase concluída "discovery" não cumpre os checks requeridos.')));
 
     writeFileSync(statePath, '{ invalid json', 'utf8');
     const invalidValidation = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {

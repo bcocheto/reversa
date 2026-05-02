@@ -52,6 +52,9 @@ flows:
   - id: review
     path: flows/review.md
     purpose: Revisar mudanças antes da integração.
+  - id: release
+    path: flows/release.md
+    purpose: Promover uma entrega segura e rastreavel.
 task_contexts:
   feature:
     context:

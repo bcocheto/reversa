@@ -193,7 +193,20 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
     assert.equal(state.project_type, "SaaS/Web App");
     assert.equal(state.stack, "Node.js, TypeScript, PostgreSQL");
     assert.equal(state.objective, "develop-features");
-    assert.equal(state.phase, null);
+    assert.equal(state.phase, "discovery");
+    assert.deepEqual(state.workflow, {
+      current_phase: "discovery",
+      completed_phases: [],
+      pending_phases: [
+        "discovery",
+        "agent-design",
+        "flow-design",
+        "policies",
+        "export",
+        "review",
+      ],
+      phase_history: [],
+    });
     assert.deepEqual(state.pending, [
       "discovery",
       "agent-design",
@@ -281,9 +294,10 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
     );
     assert.match(plan, /Fase 1 — Discovery/);
     assert.match(plan, /Fase 6 — Review/);
-    assert.match(plan, /Tipo de projeto: SaaS\/Web App/);
-    assert.match(plan, /Stack principal: Node\.js, TypeScript, PostgreSQL/);
-    assert.match(plan, /Objetivo principal: develop-features/);
+    assert.match(plan, /Current phase: discovery/);
+    assert.match(plan, /Next phase: agent-design/);
+    assert.match(plan, /entrypoints_compiled/);
+    assert.match(plan, /validate_passes/);
     assert.doesNotMatch(plan, /Reconhecimento|Escavação|Geração|Revisão/);
 
     const scope = readFileSync(

@@ -5,6 +5,8 @@
 | Arquivo | Função |
 | --- | --- |
 | `.agentforge/state.json` | Estado persistente do projeto. |
+| `.agentforge/workflow/phases.yaml` | Definição estruturada das fases. |
+| `.agentforge/workflow/history.jsonl` | Histórico append-only das transições. |
 | `.agentforge/harness/router.md` | Regras de roteamento. |
 | `.agentforge/context/project-overview.md` | Resumo do projeto. |
 | `.agentforge/policies/protected-files.md` | Caminhos protegidos. |

@@ -309,7 +309,8 @@ test('install runs analysis first and can stop after generating reports and sugg
     assert.doesNotMatch(commands, /A preencher|TBD/);
 
     const readme = readFileSync(join(projectRoot, '.agentforge', 'README.md'), 'utf8');
-    assert.match(readme, /## Próxima fase recomendada/);
+    assert.match(readme, /Use `agentforge next` para determinar a próxima fase\./);
+    assert.match(readme, /## A confirmar/);
     assert.match(readme, /Preview Demo/);
     assert.doesNotMatch(readme, /A preencher|TBD/);
 

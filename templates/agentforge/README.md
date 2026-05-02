@@ -8,6 +8,9 @@ Ele reúne contexto, roteamento, referências, políticas, fluxos, skills e mem�
 - Edite os arquivos quando o projeto mudar.
 - Prefira manter este diretório legível e sem segredos.
 - Se algo depender de um processo manual, anote aqui ou nos arquivos relacionados.
+- Use `agentforge next` para determinar a fase atual e a próxima fase real.
+- Use `agentforge advance` para avançar a Phase Engine.
+- Nunca edite `state.json` ou `plan.md` manualmente.
 
 ## Estrutura principal
 
@@ -26,6 +29,7 @@ Ele reúne contexto, roteamento, referências, políticas, fluxos, skills e mem�
 - Modo de instalação: A preencher
 - Engines ativas: A preencher
 - Dono do contexto: A preencher
+- Use `agentforge next` para determinar a próxima fase.
 
 ## A preencher
 

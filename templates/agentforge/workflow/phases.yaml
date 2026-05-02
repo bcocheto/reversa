@@ -1,0 +1,104 @@
+version: 1
+phases:
+  - id: discovery
+    name: Discovery
+    order: 10
+    purpose: Mapear objetivos, restricoes, superfices e contexto persistente.
+    reads:
+      - state.json
+      - scope.md
+      - reports/project-analysis.md
+      - reports/analysis-plan.md
+      - suggestions/context/
+    writes:
+      - context/project-overview.md
+      - context/architecture.md
+      - context/testing.md
+      - references/important-files.md
+    completion:
+      required_files:
+        - context/project-overview.md
+        - context/architecture.md
+      required_checks:
+        - no_placeholder_core_context
+
+  - id: agent-design
+    name: Agent Design
+    order: 20
+    purpose: Promover agentes sugeridos e consolidar papeis.
+    reads:
+      - suggestions/agents/
+      - agents/
+      - context/project-overview.md
+      - context/architecture.md
+    writes:
+      - agents/
+      - memory/decisions.md
+    completion:
+      required_files:
+        - agents/orchestrator.yaml
+      required_checks:
+        - generated_agents_valid
+
+  - id: flow-design
+    name: Flow Design
+    order: 30
+    purpose: Consolidar flows operacionais em YAML e Markdown.
+    reads:
+      - suggestions/flows/
+      - flows/
+      - agents/
+    writes:
+      - flows/
+      - memory/decisions.md
+    completion:
+      required_checks:
+        - all_state_flows_in_context_index
+        - flow_yaml_md_pairs
+
+  - id: policies
+    name: Policies
+    order: 40
+    purpose: Consolidar permissoes, seguranca e aprovacao humana.
+    reads:
+      - suggestions/policies/
+      - policies/
+    writes:
+      - policies/
+      - memory/decisions.md
+    completion:
+      required_checks:
+        - required_policies_valid
+
+  - id: export
+    name: Export
+    order: 50
+    purpose: Compilar entrypoints e validar manifest.
+    reads:
+      - harness/
+      - agents/
+      - flows/
+      - policies/
+    writes:
+      - AGENTS.md
+      - CLAUDE.md
+      - reports/compile.md
+    completion:
+      required_checks:
+        - entrypoints_compiled
+        - validate_passes
+
+  - id: review
+    name: Review
+    order: 60
+    purpose: Revisar consistencia final.
+    reads:
+      - reports/validation.md
+      - state.json
+      - plan.md
+    writes:
+      - reports/review.md
+    completion:
+      required_checks:
+        - validate_passes
+        - no_state_plan_drift

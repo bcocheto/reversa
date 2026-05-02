@@ -23,6 +23,7 @@ A preencher
 
 - A preencher
 - A preencher
+- Use `agentforge next` para determinar a próxima fase.
 
 ## Atenção
 

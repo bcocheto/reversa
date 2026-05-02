@@ -25,6 +25,7 @@ A preencher
 - O que já está pronto:
 - O que ainda está em andamento:
 - O que precisa de atenção:
+- Use `agentforge next` para determinar a próxima fase.
 
 ## Observações
 

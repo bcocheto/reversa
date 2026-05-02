@@ -17,6 +17,8 @@ Escolher o caminho certo entre bootstrap, adopt e hybrid com base no estado do p
    - o motivo da mudança.
 5. Aguarde confirmação explícita antes de editar.
 6. Se a confirmação for vaga, responda com um plano curto em vez de escrever imediatamente.
+7. Para avançar fases, use `agentforge advance` e nunca edite `state.json` ou `plan.md` manualmente.
+8. Se `agentforge` não existir, use `npx @bcocheto/agentforge advance`.
 
 ## Regras de roteamento
 

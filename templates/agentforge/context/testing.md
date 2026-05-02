@@ -20,6 +20,7 @@
 ## Observações
 
 - Atualize esta página quando a cobertura crescer.
+- Use `agentforge next` para determinar a próxima fase.
 
 ## A preencher
 
