@@ -1,7 +1,7 @@
 {
   "name": "@bcocheto/agentforge",
-  "version": "1.2.17",
-  "description": "Create, organize, evolve, and compile the agent-ready layer of projects",
+  "version": "1.3.0",
+  "description": "Analyze projects, suggest agents, skills, flows, and policies, and compile clean agent-ready bootloaders",
   "bin": {
     "agentforge": "bin/agentforge.js",
     "reversa": "bin/reversa.js"
