@@ -1197,4 +1197,5 @@ test("agentforge help advertises the compile command", () => {
     result.stdout,
     /add-flow\s+Cria um fluxo operacional customizado/,
   );
+  assert.doesNotMatch(result.stdout, /reversa/i);
 });

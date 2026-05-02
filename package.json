@@ -11,7 +11,9 @@
   },
   "type": "module",
   "keywords": [
+    "agentforge",
     "agent-ready",
+    "agentic",
     "context",
     "harness",
     "skills",
