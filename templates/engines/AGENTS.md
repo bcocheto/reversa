@@ -4,12 +4,17 @@ Este arquivo é um bootloader pequeno e humano.
 O conteúdo manual fora do bloco é preservado.
 
 <!-- agentforge:start -->
-Quando o usuário digitar `agentforge`, ative o orquestrador AgentForge.
-Leia `.agentforge/harness/router.md`.
-Use `.agentforge/harness/context-index.yaml` para localizar o contexto mínimo necessário.
-Respeite `.agentforge/policies/`.
-Use skills de `.agentforge/skills/` quando apropriado.
-Siga flows de `.agentforge/flows/`.
-Consulte `.agentforge/references/` quando necessário.
-Considere `.agentforge/memory/` quando relevante.
+## Como usar
+
+- Abra Codex e digite `agentforge`.
+- Se o comando local falhar, use `npx @bcocheto/agentforge`.
+- Leia `.agentforge/ai/README.md` para o playbook geral.
+- Leia `.agentforge/ai/engines/codex.md` para notas específicas da engine.
+
+## Regras
+
+- Siga o handoff gerado pela CLI.
+- Execute o playbook da fase antes de agir.
+- Registre checkpoint ao concluir.
+- Nunca edite `state.json` ou `plan.md` manualmente.
 <!-- agentforge:end -->

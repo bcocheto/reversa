@@ -8,6 +8,10 @@ engines:
     activation: agentforge
     slash_command: /agentforge
     entry_file: CLAUDE.md
+  gemini-cli:
+    activation: agentforge
+    slash_command: /agentforge
+    entry_file: GEMINI.md
   cursor:
     activation: agentforge
     slash_command: /agentforge

@@ -4,7 +4,32 @@ always_load:
   - harness/task-modes.yaml
   - harness/load-order.yaml
   - harness/engine-map.yaml
+  - ai/README.md
 items:
+  - id: ai-readme
+    path: ai/README.md
+    purpose: Guia da camada AI-engine driven e da execução por handoff.
+  - id: ai-playbooks-discovery
+    path: ai/playbooks/discovery.md
+    purpose: Playbook da fase discovery para a IA ativa.
+  - id: ai-playbooks-agent-design
+    path: ai/playbooks/agent-design.md
+    purpose: Playbook da fase agent-design para a IA ativa.
+  - id: ai-playbooks-flow-design
+    path: ai/playbooks/flow-design.md
+    purpose: Playbook da fase flow-design para a IA ativa.
+  - id: ai-playbooks-policies
+    path: ai/playbooks/policies.md
+    purpose: Playbook da fase policies para a IA ativa.
+  - id: ai-playbooks-export
+    path: ai/playbooks/export.md
+    purpose: Playbook da fase export para a IA ativa.
+  - id: ai-playbooks-review
+    path: ai/playbooks/review.md
+    purpose: Playbook da fase review para a IA ativa.
+  - id: ai-playbooks-task-execution
+    path: ai/playbooks/task-execution.md
+    purpose: Playbook para executar tarefas com julgamento contextual.
   - id: project-overview
     path: context/project-overview.md
     purpose: Visão geral do projeto, objetivo e público.

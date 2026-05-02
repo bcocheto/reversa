@@ -42,6 +42,30 @@ function makeBaseAnswers(overrides = {}) {
   };
 }
 
+async function runInstallWithAnswers(projectRoot, answers) {
+  const cwd = process.cwd();
+  const originalPrompt = inquirer.prompt;
+  const originalLog = console.log;
+  const lines = [];
+
+  try {
+    process.chdir(projectRoot);
+    console.log = (...args) => {
+      lines.push(args.map((value) => String(value)).join(' '));
+    };
+    inquirer.prompt = async () => answers;
+    const status = await install([]);
+    return {
+      status,
+      output: lines.join('\n'),
+    };
+  } finally {
+    console.log = originalLog;
+    inquirer.prompt = originalPrompt;
+    process.chdir(cwd);
+  }
+}
+
 test('install prompt only asks for mode, engines, name, user, git strategy, and languages', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-prompts-'));
   const cwd = process.cwd();
@@ -94,6 +118,48 @@ test('install prompt only asks for mode, engines, name, user, git strategy, and 
     inquirer.prompt = originalPrompt;
     process.chdir(cwd);
     rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('install output is engine-aware for Codex, Claude, and Gemini', async () => {
+  const scenarios = [
+    {
+      label: 'Codex',
+      engines: ['codex'],
+      expected: /Codex:/,
+      rejected: /Claude Code \/ Claude CLI:|Gemini CLI:/,
+    },
+    {
+      label: 'Claude',
+      engines: ['claude-code'],
+      expected: /Claude Code \/ Claude CLI:/,
+      rejected: /Codex:|Gemini CLI:/,
+    },
+    {
+      label: 'Gemini',
+      engines: ['gemini-cli'],
+      expected: /Gemini CLI:/,
+      rejected: /Codex:|Claude Code \/ Claude CLI:/,
+    },
+  ];
+
+  for (const scenario of scenarios) {
+    const projectRoot = mkdtempSync(join(tmpdir(), `agentforge-install-${scenario.label.toLowerCase()}-`));
+    try {
+      const result = await runInstallWithAnswers(projectRoot, makeBaseAnswers({
+        engines: scenario.engines,
+        setup_mode: 'bootstrap',
+      }));
+
+      assert.equal(result.status, 0);
+      assert.match(result.output, scenario.expected);
+      assert.doesNotMatch(result.output, scenario.rejected);
+      assert.match(result.output, /Executor recomendado: sua IA ativa configurada\./);
+      assert.match(result.output, /Próximo passo:/);
+      assert.match(result.output, /agentforge/);
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true });
+    }
   }
 });
 

@@ -4,12 +4,10 @@ Este arquivo é um bootloader pequeno e humano.
 O conteúdo manual fora do bloco é preservado.
 
 <!-- agentforge:start -->
-Quando o usuário usar `agentforge` ou `/agentforge`, siga estas regras.
-Leia `.agentforge/harness/router.md`.
-Use `.agentforge/harness/context-index.yaml` para localizar o contexto mínimo necessário.
-Respeite `.agentforge/policies/`.
-Use skills de `.agentforge/skills/` quando apropriado.
-Siga flows de `.agentforge/flows/`.
-Consulte `.agentforge/references/` quando necessário.
+Quando o usuário usar `agentforge` ou `/agentforge`, siga o handoff do AgentForge.
+Leia `.agentforge/ai/README.md` e `.agentforge/ai/engines/cursor.md`.
+Leia `.agentforge/harness/router.md` e `.agentforge/harness/context-index.yaml`.
+Use `agentforge handoff` para obter o playbook da fase atual.
+Registre `agentforge checkpoint <phase> --status done` ao concluir.
 Considere `.agentforge/memory/` quando relevante.
 <!-- agentforge:end -->

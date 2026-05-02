@@ -1,7 +1,7 @@
 # AgentForge
 <small>by bcocheto</small>
 
-AgentForge analyzes your project, recommends agents, skills, flows and policies, organizes them in a human-readable `.agentforge/` layer, and compiles clean bootloaders for your AI coding tools.
+AgentForge is AI-engine driven. The CLI prepares the harness and handoff, while your configured AI engine executes the intelligent workflow.
 It works for new projects and existing projects, and it keeps evolving the same canonical layer over time.
 
 ## The problem
@@ -17,12 +17,14 @@ It works for new projects and existing projects, and it keeps evolving the same 
 ## The solution
 
 - `.agentforge/` is the canonical source of truth for the project agent layer.
+- `.agentforge/ai/` stores engine-agnostic playbooks plus engine-specific notes.
 - `harness/context-index.yaml` manages what context loads, when, and why.
 - `analyze` scans the project and builds a consolidated view of stack, architecture, patterns, risks, and signals.
 - `research-patterns` evaluates a local pattern catalog against the detected project evidence.
 - `suggest-agents`, `suggest-skills`, and the flow/policy/context suggestions from `analyze` turn signals into recommendations.
 - `apply-suggestions` promotes recommendations in a controlled way.
 - `compile` regenerates clean engine bootloaders from the canonical layer.
+- `handoff` prepares the next intelligent phase for the active AI engine.
 - `validate` and `improve` keep the layer readable, safe, and consistent.
 - `export-package` generates an isolated `_agentforge/` bundle when you explicitly want a portable copy.
 
@@ -57,13 +59,13 @@ AgentForge infers the rest from the repository:
 - patterns
 - entrypoints to regenerate
 
-The install flow shows a summary before it writes anything. If you approve it, AgentForge creates or refreshes the `.agentforge/` layer, takes over existing entrypoints as managed bootloaders, and validates the result. If you do not approve it, it still produces reports and suggestions only under `.agentforge/`.
+The install flow shows a summary before it writes anything. If you approve it, AgentForge creates or refreshes the `.agentforge/` layer, prepares `.agentforge/ai/`, takes over existing entrypoints as managed bootloaders, and validates the result. If you do not approve it, it still produces reports and suggestions only under `.agentforge/`.
 
 **Requirements:** Node.js 18+
 
 ## Activate
 
-After installation, open the project in your engine and activate AgentForge:
+After installation, open the project in your configured AI engine and activate AgentForge:
 
 ```text
 agentforge
@@ -75,7 +77,15 @@ Engines that support slash commands can use:
 /agentforge
 ```
 
-The legacy `reversa` alias is kept for compatibility with existing installs, but the product narrative is now centered on analysis, suggestions, promotion, and compilation.
+Use the handoff command to prepare the next intelligent phase for a specific engine:
+
+```bash
+npx @bcocheto/agentforge handoff --engine codex
+npx @bcocheto/agentforge handoff --engine claude
+npx @bcocheto/agentforge handoff --engine gemini
+```
+
+The legacy `reversa` alias is kept for compatibility with existing installs, but the product narrative is now centered on analysis, suggestions, promotion, handoff, and compilation.
 
 ## Modes
 
@@ -110,11 +120,15 @@ Engine-specific entry files and bootloaders are derived from that structure:
 
 - `AGENTS.md`
 - `CLAUDE.md`
+- `GEMINI.md`
 - `.cursorrules`
 - `.cursor/rules/agentforge.md`
 - `.github/copilot-instructions.md`
 - `.claude/agents/*.md` when Claude Code agent exports are configured
 - `.github/agents/*.md` when GitHub Copilot agent exports are configured
+- `.agentforge/ai/README.md`
+- `.agentforge/ai/playbooks/*.md`
+- `.agentforge/ai/engines/*.md`
 
 `compile` updates the real engine entrypoints in the repository root. `compile --takeover-entrypoints` snapshots existing entrypoints first and then rewrites them as managed bootloaders. `export-package` writes the isolated `_agentforge/` bundle without replacing those entrypoints. `export --package` is an explicit shortcut for that same package export.
 

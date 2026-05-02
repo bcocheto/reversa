@@ -6,6 +6,19 @@ order:
   - harness/context-index.yaml
   - harness/load-order.yaml
   - harness/engine-map.yaml
+  - ai/README.md
+  - ai/playbooks/discovery.md
+  - ai/playbooks/agent-design.md
+  - ai/playbooks/flow-design.md
+  - ai/playbooks/policies.md
+  - ai/playbooks/export.md
+  - ai/playbooks/review.md
+  - ai/playbooks/task-execution.md
+  - ai/engines/codex.md
+  - ai/engines/claude.md
+  - ai/engines/gemini.md
+  - ai/engines/cursor.md
+  - ai/engines/copilot.md
   - context/README.md
   - context/project-overview.md
   - context/architecture.md

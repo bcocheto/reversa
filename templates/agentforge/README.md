@@ -1,20 +1,23 @@
 # AgentForge Workspace
 
 Este diretório é a camada editável do AgentForge dentro do projeto.
-Ele reúne contexto, roteamento, referências, políticas, fluxos, skills e memória em arquivos simples de revisar.
+Ele reúne contexto, roteamento, referências, políticas, fluxos, skills, AI playbooks e memória em arquivos simples de revisar.
 
 ## Como usar
 
 - Edite os arquivos quando o projeto mudar.
 - Prefira manter este diretório legível e sem segredos.
 - Se algo depender de um processo manual, anote aqui ou nos arquivos relacionados.
+- Use `agentforge handoff` para obter o playbook da IA ativa.
 - Use `agentforge next` para determinar a fase atual e a próxima fase real.
-- Use `agentforge advance` para avançar a Phase Engine.
+- Use `agentforge advance` para ver a orientação da próxima fase.
+- Use `agentforge handoff --engine <engine>` para receber notas específicas da engine configurada.
 - Nunca edite `state.json` ou `plan.md` manualmente.
 
 ## Estrutura principal
 
 - `harness/`: regras de leitura, roteamento e carga.
+- `ai/`: handoff, playbooks e notas específicas da engine.
 - `context/`: contexto do projeto, arquitetura e padrões.
 - `references/`: atalhos para comandos, arquivos importantes e docs externas.
 - `policies/`: regras de proteção e aprovações humanas.

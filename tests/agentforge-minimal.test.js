@@ -10,6 +10,7 @@ import { Writer } from '../lib/installer/writer.js';
 import { buildManifest, saveManifest, loadManifest, mergeUpdateManifest } from '../lib/installer/manifest.js';
 import { compileAgentForge } from '../lib/exporter/index.js';
 import { renderManagedEntrypoint } from '../lib/exporter/bootloader.js';
+import { buildHandoffData, renderHandoffReport } from '../lib/commands/handoff.js';
 import { runUninstall } from '../lib/commands/uninstall.js';
 import { shouldDefaultFinalizeAdoption } from '../lib/commands/install.js';
 import { validateAgentForgeStructure } from '../lib/commands/validate.js';
@@ -156,6 +157,28 @@ function assertMinimumHarness(projectRoot) {
   }
 }
 
+function assertAiLayer(projectRoot) {
+  const relPaths = [
+    'ai/README.md',
+    'ai/playbooks/discovery.md',
+    'ai/playbooks/agent-design.md',
+    'ai/playbooks/flow-design.md',
+    'ai/playbooks/policies.md',
+    'ai/playbooks/export.md',
+    'ai/playbooks/review.md',
+    'ai/playbooks/task-execution.md',
+    'ai/engines/codex.md',
+    'ai/engines/claude.md',
+    'ai/engines/gemini.md',
+    'ai/engines/cursor.md',
+    'ai/engines/copilot.md',
+  ];
+
+  for (const relPath of relPaths) {
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, relPath)), true, relPath);
+  }
+}
+
 test('install creates the AgentForge structure, state, Codex entry file, agents, and flows', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-install-'));
 
@@ -166,6 +189,7 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'state.json')), true);
     assert.equal(existsSync(join(projectRoot, 'AGENTS.md')), true);
     assertMinimumHarness(projectRoot);
+    assertAiLayer(projectRoot);
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'orchestrator.yaml')), true);
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'reviewer.yaml')), true);
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'flows', 'feature-development.yaml')), true);
@@ -195,6 +219,29 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
       pending_phases: ['discovery', 'agent-design', 'flow-design', 'policies', 'export', 'review'],
       phase_history: [],
     });
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('handoff reports engine-specific notes and playbooks for active engines', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-handoff-'));
+
+  try {
+    await installFixture(projectRoot, { engines: ['codex', 'claude-code', 'gemini-cli'] });
+
+    const codex = buildHandoffData(projectRoot, { engine: 'codex' });
+    const claude = buildHandoffData(projectRoot, { engine: 'claude' });
+    const gemini = buildHandoffData(projectRoot, { engine: 'gemini' });
+
+    assert.equal(codex.engine_note.path, '.agentforge/ai/engines/codex.md');
+    assert.equal(claude.engine_note.path, '.agentforge/ai/engines/claude.md');
+    assert.equal(gemini.engine_note.path, '.agentforge/ai/engines/gemini.md');
+    assert.match(renderHandoffReport(codex), /Leia a nota da engine: `\.agentforge\/ai\/engines\/codex\.md`\./);
+    assert.match(renderHandoffReport(claude), /Leia a nota da engine: `\.agentforge\/ai\/engines\/claude\.md`\./);
+    assert.match(renderHandoffReport(gemini), /Leia a nota da engine: `\.agentforge\/ai\/engines\/gemini\.md`\./);
+    assert.match(renderHandoffReport(codex), /Playbooks disponíveis/);
+    assert.match(renderHandoffReport(codex), /ai\/playbooks\/discovery\.md/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -729,12 +776,18 @@ test('commands lists the full registry and emits valid json', async () => {
     assert.match(result.stdout, /\bhandoff\b/);
     assert.match(result.stdout, /\bcheckpoint\b/);
 
-    const advanceEntry = COMMAND_REGISTRY.find((entry) => entry.id === 'advance');
-    assert.ok(advanceEntry);
-    assert.deepEqual(advanceEntry.writes, ['.agentforge/reports/advance.md']);
+  const advanceEntry = COMMAND_REGISTRY.find((entry) => entry.id === 'advance');
+  assert.ok(advanceEntry);
+  assert.deepEqual(advanceEntry.writes, ['.agentforge/reports/advance.md']);
+  const handoffEntry = COMMAND_REGISTRY.find((entry) => entry.id === 'handoff');
+  assert.ok(handoffEntry);
+  assert.deepEqual(handoffEntry.writes, ['.agentforge/reports/handoff.md']);
+  const codexPlanEntry = COMMAND_REGISTRY.find((entry) => entry.id === 'codex-plan');
+  assert.ok(codexPlanEntry);
+  assert.equal(codexPlanEntry.status, 'deprecated');
 
-    const jsonResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'commands', '--json'], {
-      cwd: projectRoot,
+  const jsonResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'commands', '--json'], {
+    cwd: projectRoot,
       encoding: 'utf8',
     });
 
