@@ -63,7 +63,8 @@ It then creates:
 - `.github/copilot-instructions.md` for GitHub Copilot when enabled
 
 After install, `agentforge bootstrap` can complete the human-readable project context,
-flow docs, and initial skill guidance for the current repo.
+flow docs, and initial skill guidance for the current repo using real repository signals
+such as `package.json`, `README.md`, `docs/`, `src/`, tests, and workflow files.
 
 AgentForge writes generated artifacts and entry files with merge-aware behavior. If an existing file was modified by the user, it is preserved unless you explicitly force an overwrite or a policy allows that change.
 
