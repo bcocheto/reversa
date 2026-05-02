@@ -57,6 +57,19 @@ Use depois da auditoria quando quiser fazer a primeira segmentação do contexto
 
 ---
 
+### `suggest-skills`
+
+```bash
+npx agentforge suggest-skills
+```
+
+Analisa imports, contexto, package files e a estrutura do repositório para sugerir skills do projeto.
+Escreve `.agentforge/reports/skill-suggestions.md` e sugestões YAML em `.agentforge/skill-suggestions/`.
+
+Use quando quiser uma shortlist determinística de skills para criar depois, não skills finais.
+
+---
+
 ### `status`
 
 ```bash

@@ -45,6 +45,19 @@ Con `--apply`, crea o actualiza archivos canónicos seguros y preserva los que f
 
 ---
 
+### `suggest-skills`
+
+```bash
+npx agentforge suggest-skills
+```
+
+Analiza imports, contexto, package files y la estructura del repositorio para sugerir skills del proyecto.
+Escribe `.agentforge/reports/skill-suggestions.md` y sugerencias YAML en `.agentforge/skill-suggestions/`.
+
+Úsalo cuando quieras una shortlist determinista de skills para crear después, no skills finales.
+
+---
+
 ### `status`
 
 ```bash

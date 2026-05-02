@@ -6,6 +6,7 @@
 - `agentforge adopt`
 - `agentforge audit-context`
 - `agentforge refactor-context`
+- `agentforge suggest-skills`
 - `agentforge status`
 - `agentforge add-agent`
 - `agentforge add-flow`
@@ -21,6 +22,7 @@
 - Verificar o estado: `status`
 - Auditar a organização de contexto: `audit-context`
 - Segregar o contexto importado: `refactor-context`, `refactor-context --apply`
+- Sugerir skills de projeto: `suggest-skills`
 - Criar equipe e fluxos: `add-agent`, `add-flow`
 - Validar a estrutura: `validate`
 - Gerar derivados: `export`
