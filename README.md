@@ -214,8 +214,11 @@ content, run:
 agentforge improve
 ```
 
+`agentforge improve` generates an improvement plan with a simple score and the safest
+recommended changes first.
+
 Use `agentforge improve --apply` only for safe structural additions like missing README
-files and placeholder documentation.
+files, placeholder documentation, and other small generated scaffolds.
 
 That gives you a project-local team definition that Codex, Claude Code, Cursor, and GitHub Copilot can read from the same canonical source of truth.
 
