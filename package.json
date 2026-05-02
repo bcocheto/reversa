@@ -1,6 +1,6 @@
 {
   "name": "agentforge",
-  "version": "1.2.14",
+  "version": "1.2.15",
   "description": "Create, organize, evolve, and compile the agent-ready layer of projects",
   "bin": {
     "agentforge": "bin/agentforge.js",
