@@ -1,6 +1,6 @@
 # CLI
 
-AgentForge has a small CLI for managing the project agent layer. Run it from the project root with `npx agentforge`.
+AgentForge has a small CLI for managing the project agent layer. Run it from the project root with `npx @bcocheto/agentforge`.
 
 ---
 

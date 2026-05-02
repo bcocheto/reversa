@@ -13,7 +13,7 @@ If you don't have Node.js yet, install it at [nodejs.org](https://nodejs.org) an
 In the root of the project you want to prepare:
 
 ```bash
-npx agentforge install
+npx @bcocheto/agentforge install
 ```
 
 The installer creates the canonical `.agentforge/` layer, detects the engines already present, and writes the managed entrypoints for the engines you enabled.
@@ -58,7 +58,7 @@ Depending on the detected engines, `install` may also create compatibility surfa
 If you want to add support for another engine later:
 
 ```bash
-npx agentforge add-engine
+npx @bcocheto/agentforge add-engine
 ```
 
 The installer detects what already exists and adds only what is missing.

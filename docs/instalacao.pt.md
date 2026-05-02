@@ -13,7 +13,7 @@ Se você ainda não tem Node.js, instale em [nodejs.org](https://nodejs.org) e v
 Na raiz do projeto que você quer preparar:
 
 ```bash
-npx agentforge install
+npx @bcocheto/agentforge install
 ```
 
 O instalador cria a camada canônica `.agentforge/`, detecta as engines presentes e escreve os entrypoints gerenciados das engines escolhidas.
@@ -58,7 +58,7 @@ Dependendo das engines detectadas, o `install` também pode criar superfícies d
 Se depois você quiser adicionar suporte a outra engine:
 
 ```bash
-npx agentforge add-engine
+npx @bcocheto/agentforge add-engine
 ```
 
 O instalador detecta o que já existe e adiciona só o que falta.

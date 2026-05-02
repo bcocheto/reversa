@@ -9,10 +9,10 @@ O AgentForge não trata mais o projeto como um dump único de specs. Ele gerenci
 ### 1. Montar um projeto novo
 
 ```bash
-npx agentforge install
-npx agentforge bootstrap
-npx agentforge compile
-npx agentforge validate
+npx @bcocheto/agentforge install
+npx @bcocheto/agentforge bootstrap
+npx @bcocheto/agentforge compile
+npx @bcocheto/agentforge validate
 ```
 
 Use isso quando você está começando de um projeto novo e quer a camada canônica pronta desde o primeiro dia.
@@ -20,14 +20,14 @@ Use isso quando você está começando de um projeto novo e quer a camada canôn
 ### 2. Adotar um projeto existente
 
 ```bash
-npx agentforge install
-npx agentforge adopt
-npx agentforge ingest
-npx agentforge audit-context
-npx agentforge refactor-context --apply
-npx agentforge suggest-skills
-npx agentforge compile
-npx agentforge validate
+npx @bcocheto/agentforge install
+npx @bcocheto/agentforge adopt
+npx @bcocheto/agentforge ingest
+npx @bcocheto/agentforge audit-context
+npx @bcocheto/agentforge refactor-context --apply
+npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge compile
+npx @bcocheto/agentforge validate
 ```
 
 Use isso quando o projeto já existe e você quer organizar a superfície agentic atual com segurança.
@@ -35,11 +35,11 @@ Use isso quando o projeto já existe e você quer organizar a superfície agenti
 ### 3. Evoluir a camada ao longo do tempo
 
 ```bash
-npx agentforge add-agent
-npx agentforge add-flow
-npx agentforge suggest-skills
-npx agentforge create-skill run-tests
-npx agentforge improve
+npx @bcocheto/agentforge add-agent
+npx @bcocheto/agentforge add-flow
+npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge create-skill run-tests
+npx @bcocheto/agentforge improve
 ```
 
 Use isso quando o time precisa refinar a camada sem perder o que já funciona.

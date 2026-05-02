@@ -13,7 +13,7 @@ Si todavía no tienes Node.js, instálalo en [nodejs.org](https://nodejs.org) y 
 En la raíz del proyecto que quieres preparar:
 
 ```bash
-npx agentforge install
+npx @bcocheto/agentforge install
 ```
 
 El instalador crea la capa canónica `.agentforge/`, detecta los motores presentes y escribe los entrypoints gestionados de los motores que elegiste.
@@ -58,7 +58,7 @@ Dependiendo de los motores detectados, `install` también puede crear superficie
 Si luego quieres añadir soporte para otro motor:
 
 ```bash
-npx agentforge add-engine
+npx @bcocheto/agentforge add-engine
 ```
 
 El instalador detecta lo que ya existe y agrega solo lo que falta.

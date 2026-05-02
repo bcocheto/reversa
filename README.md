@@ -30,7 +30,7 @@ AgentForge keeps a SHA-256 manifest so it can detect when a generated file was e
 In the root of the project:
 
 ```bash
-npx agentforge install
+npx @bcocheto/agentforge install
 ```
 
 Install guides you through:
@@ -139,32 +139,32 @@ Engine-specific entry files and bootloaders are derived from that structure:
 ### New project
 
 ```bash
-npx agentforge install
-npx agentforge bootstrap
-npx agentforge compile
-npx agentforge validate
+npx @bcocheto/agentforge install
+npx @bcocheto/agentforge bootstrap
+npx @bcocheto/agentforge compile
+npx @bcocheto/agentforge validate
 ```
 
 ### Existing project
 
 ```bash
-npx agentforge install
-npx agentforge adopt
-npx agentforge audit-context
-npx agentforge refactor-context --apply
-npx agentforge suggest-skills
-npx agentforge compile
-npx agentforge validate
+npx @bcocheto/agentforge install
+npx @bcocheto/agentforge adopt
+npx @bcocheto/agentforge audit-context
+npx @bcocheto/agentforge refactor-context --apply
+npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge compile
+npx @bcocheto/agentforge validate
 ```
 
 ### Continuous work
 
 ```bash
-npx agentforge add-agent
-npx agentforge add-flow
-npx agentforge suggest-skills
-npx agentforge create-skill run-tests
-npx agentforge improve
+npx @bcocheto/agentforge add-agent
+npx @bcocheto/agentforge add-flow
+npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge create-skill run-tests
+npx @bcocheto/agentforge improve
 ```
 
 ## Security
@@ -208,7 +208,7 @@ The file hash record used to detect intact, modified, missing, and newly generat
 ## Commands
 
 ```bash
-npx agentforge install    # Install AgentForge and create the initial team
+npx @bcocheto/agentforge install    # Install AgentForge and create the initial team
 agentforge bootstrap      # Complete or refresh the project base
 agentforge adopt          # Read existing agentic structure and generate an adoption plan
 agentforge improve        # Review the .agentforge/ structure and suggest upgrades
@@ -249,7 +249,7 @@ This renders Mermaid diagrams when the diagram toolchain is available.
 Create a team for a SaaS project:
 
 ```bash
-npx agentforge install
+npx @bcocheto/agentforge install
 ```
 
 Choose a SaaS/Web App project, select the initial team, and keep the default flows.

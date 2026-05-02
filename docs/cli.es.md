@@ -1,6 +1,6 @@
 # CLI
 
-AgentForge tiene un CLI pequeño para gestionar la capa agent-ready del proyecto. Ejecútalo desde la raíz con `npx agentforge`.
+AgentForge tiene un CLI pequeño para gestionar la capa agent-ready del proyecto. Ejecútalo desde la raíz con `npx @bcocheto/agentforge`.
 
 ---
 

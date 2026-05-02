@@ -34,32 +34,32 @@ AgentForge gives a project a canonical `.agentforge/` source of truth, a context
 ### New project
 
 ```bash
-npx agentforge install
-npx agentforge bootstrap
-npx agentforge compile
-npx agentforge validate
+npx @bcocheto/agentforge install
+npx @bcocheto/agentforge bootstrap
+npx @bcocheto/agentforge compile
+npx @bcocheto/agentforge validate
 ```
 
 ### Existing project
 
 ```bash
-npx agentforge install
-npx agentforge adopt
-npx agentforge audit-context
-npx agentforge refactor-context --apply
-npx agentforge suggest-skills
-npx agentforge compile
-npx agentforge validate
+npx @bcocheto/agentforge install
+npx @bcocheto/agentforge adopt
+npx @bcocheto/agentforge audit-context
+npx @bcocheto/agentforge refactor-context --apply
+npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge compile
+npx @bcocheto/agentforge validate
 ```
 
 ### Continuous work
 
 ```bash
-npx agentforge add-agent
-npx agentforge add-flow
-npx agentforge suggest-skills
-npx agentforge create-skill run-tests
-npx agentforge improve
+npx @bcocheto/agentforge add-agent
+npx @bcocheto/agentforge add-flow
+npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge create-skill run-tests
+npx @bcocheto/agentforge improve
 ```
 
 ---
