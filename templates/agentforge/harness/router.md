@@ -19,6 +19,8 @@ Escolher o caminho certo entre bootstrap, adopt e hybrid com base no estado do p
 6. Se a confirmação for vaga, responda com um plano curto em vez de escrever imediatamente.
 7. Para avançar fases, use `agentforge advance` e nunca edite `state.json` ou `plan.md` manualmente.
 8. Se `agentforge` não existir, use `npx @bcocheto/agentforge advance`.
+9. Se `state.workflow` já estiver concluído, não volte a sugerir discovery, agent-design, flow-design, policies, export ou review.
+10. Nesse caso, peça o objetivo da tarefa real e consulte os task packs disponíveis antes de alterar arquivos.
 
 ## Regras de roteamento
 
@@ -33,6 +35,7 @@ Escolher o caminho certo entre bootstrap, adopt e hybrid com base no estado do p
 - Uma decisão clara de modo.
 - O próximo fluxo recomendado.
 - Os arquivos que precisam ser lidos antes de agir.
+- Se o ciclo já estiver concluído, o próximo passo é receber a tarefa real e não reencenar as fases de adoção.
 
 ## Notas
 

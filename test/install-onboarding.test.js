@@ -346,6 +346,8 @@ test('install applies structure on an existing project and keeps the manifest co
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-install-apply-'));
   const cwd = process.cwd();
   const originalPrompt = inquirer.prompt;
+  const originalAgents = '# Legacy agent instructions\nKeep this file intact.\n';
+  const originalClaude = '# Legacy Claude instructions\nKeep this file intact.\n';
 
   try {
     process.chdir(projectRoot);
@@ -353,8 +355,8 @@ test('install applies structure on an existing project and keeps the manifest co
     mkdirSync(join(projectRoot, '.github', 'workflows'), { recursive: true });
     mkdirSync(join(projectRoot, 'src'), { recursive: true });
     mkdirSync(join(projectRoot, 'worker'), { recursive: true });
-    writeFileSync(join(projectRoot, 'AGENTS.md'), '# Legacy agent instructions\nKeep this file intact.\n', 'utf8');
-    writeFileSync(join(projectRoot, 'CLAUDE.md'), '# Legacy Claude instructions\nKeep this file intact.\n', 'utf8');
+    writeFileSync(join(projectRoot, 'AGENTS.md'), originalAgents, 'utf8');
+    writeFileSync(join(projectRoot, 'CLAUDE.md'), originalClaude, 'utf8');
     writeFileSync(join(projectRoot, 'README.md'), [
       '# Apply Demo',
       '',
@@ -415,12 +417,16 @@ test('install applies structure on an existing project and keeps the manifest co
         };
       }
 
-      return { applyStructure: true };
+      if (promptCalls.length === 2) {
+        return { applyStructure: true };
+      }
+
+      return { runFullCycle: false };
     };
 
     const result = await install([]);
     assert.equal(result, 0);
-    assert.equal(promptCalls.length, 2);
+    assert.equal(promptCalls.length, 3);
 
     const manifest = loadManifest(projectRoot);
     for (const relPath of [
@@ -441,8 +447,109 @@ test('install applies structure on an existing project and keeps the manifest co
     assert.ok(state.flows.includes('review'));
     assert.equal(state.flows.every((flowId) => existsSync(join(projectRoot, '.agentforge', 'flows', `${flowId}.yaml`))), true);
 
-    assert.match(readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8'), /<!-- agentforge:start -->/);
-    assert.match(readFileSync(join(projectRoot, 'CLAUDE.md'), 'utf8'), /<!-- agentforge:start -->/);
+    assert.equal(readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8'), originalAgents);
+    assert.equal(readFileSync(join(projectRoot, 'CLAUDE.md'), 'utf8'), originalClaude);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'advance.md')), false);
+
+    const validation = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(validation.status, 0);
+  } finally {
+    inquirer.prompt = originalPrompt;
+    process.chdir(cwd);
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('install can execute the full AgentForge cycle and leaves the workflow concluded', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-install-full-cycle-'));
+  const cwd = process.cwd();
+  const originalPrompt = inquirer.prompt;
+
+  try {
+    process.chdir(projectRoot);
+    mkdirSync(join(projectRoot, 'docs'), { recursive: true });
+    mkdirSync(join(projectRoot, '.github', 'workflows'), { recursive: true });
+    mkdirSync(join(projectRoot, 'src'), { recursive: true });
+    writeFileSync(join(projectRoot, 'README.md'), [
+      '# Full Cycle Demo',
+      '',
+      'A SaaS dashboard for operations teams.',
+    ].join('\n'), 'utf8');
+    writeFileSync(join(projectRoot, 'docs', 'architecture.md'), [
+      '# Architecture',
+      '',
+      '## Objective',
+      '',
+      'Document the system boundaries and workflows.',
+    ].join('\n'), 'utf8');
+    writeFileSync(join(projectRoot, 'package.json'), JSON.stringify({
+      name: 'full-cycle-demo',
+      private: true,
+      scripts: {
+        test: 'node --test',
+      },
+      dependencies: {
+        typescript: '^5.0.0',
+      },
+    }, null, 2), 'utf8');
+    writeFileSync(join(projectRoot, 'src', 'main.ts'), 'export const ready = true;\n', 'utf8');
+
+    const promptCalls = [];
+    inquirer.prompt = async (questions) => {
+      promptCalls.push(questions);
+      if (promptCalls.length === 1) {
+        return {
+          setup_mode: 'adopt',
+          engines: ['codex'],
+          project_name: 'Full Cycle Demo',
+          user_name: 'Ana',
+          git_strategy: 'commit',
+          chat_language: 'pt-br',
+          doc_language: 'pt-br',
+        };
+      }
+
+      if (promptCalls.length === 2) {
+        return { applyStructure: true };
+      }
+
+      return { runFullCycle: true };
+    };
+
+    const result = await install([]);
+    assert.equal(result, 0);
+    assert.equal(promptCalls.length, 3);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, '.agentforge', 'state.json'), 'utf8'));
+    assert.deepEqual(state.workflow.completed_phases, [
+      'discovery',
+      'agent-design',
+      'flow-design',
+      'policies',
+      'export',
+      'review',
+    ]);
+    assert.deepEqual(state.workflow.pending_phases, []);
+    assert.equal(state.workflow.current_phase, 'review');
+    assert.equal(state.pending.length, 0);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'advance.md')), true);
+
+    const agents = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
+    assert.match(agents, /O ciclo AgentForge já está concluído neste projeto\./);
+    assert.match(agents, /Task packs e fluxos operacionais estão prontos para uso\./);
+    assert.doesNotMatch(agents, /Use `agentforge next` para determinar a próxima fase\./);
+
+    const nextResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'next'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(nextResult.status, 0);
+    assert.match(nextResult.stdout, /Cycle status: ready/);
+    assert.match(nextResult.stdout, /Task packs available:/);
+    assert.doesNotMatch(nextResult.stdout, /agent-design/);
 
     const validation = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
       cwd: projectRoot,

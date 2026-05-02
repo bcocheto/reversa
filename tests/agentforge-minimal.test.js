@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
+import { mkdtempSync, rmSync, readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, chmodSync } from 'fs';
 import { spawnSync } from 'child_process';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
@@ -12,6 +12,7 @@ import { compileAgentForge } from '../lib/exporter/index.js';
 import { renderManagedEntrypoint } from '../lib/exporter/bootloader.js';
 import { runUninstall } from '../lib/commands/uninstall.js';
 import { shouldDefaultFinalizeAdoption } from '../lib/commands/install.js';
+import { advancePhase } from '../lib/commands/phase-engine.js';
 import { validateAgentForgeStructure } from '../lib/commands/validate.js';
 import { checkExistingInstallation } from '../lib/installer/validator.js';
 import { detectEngines, ENGINES } from '../lib/installer/detector.js';
@@ -776,6 +777,36 @@ test('agentforge advance --all completes the workflow in order', async () => {
     const validation = validateAgentForgeStructure(projectRoot);
     assert.equal(validation.valid, true);
   } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge advance --all stops at the first export error', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-advance-stop-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const agentsPath = join(projectRoot, 'AGENTS.md');
+    rmSync(agentsPath);
+    mkdirSync(agentsPath);
+    chmodSync(agentsPath, 0o444);
+
+    const result = await advancePhase(projectRoot, { all: true });
+
+    assert.equal(result.ok, false);
+    assert.ok(result.errors.length > 0);
+    assert.equal(result.results.length, 0);
+
+    const history = readFileSync(join(projectRoot, PRODUCT.internalDir, 'workflow', 'history.jsonl'), 'utf8')
+      .trim()
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+
+    assert.equal(history.length, 0);
+  } finally {
+    rmSync(join(projectRoot, 'AGENTS.md'), { recursive: true, force: true });
     rmSync(projectRoot, { recursive: true, force: true });
   }
 });
