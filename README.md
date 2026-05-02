@@ -36,17 +36,20 @@ npx @bcocheto/agentforge install
 
 Install guides you through:
 
-- Setup mode: bootstrap, adopt, or hybrid
-1. Supported engines
-2. Project name
-3. How the agents should address the user
-4. Project type
-5. Main stack
-6. The primary goal for the team
-7. Initial agents
-8. Initial flows
-9. Git artifact strategy
-10. Chat and document languages
+- Setup mode: new project or existing project
+- Supported engines
+- Project name
+- How the agents should address the user
+- Git artifact strategy
+- Chat and document languages
+
+AgentForge infers the rest from the repository:
+
+- project type
+- main stack
+- primary objective
+- initial agents
+- initial flows
 
 It then creates:
 
@@ -70,6 +73,8 @@ It then creates:
 - `CLAUDE.md` for Claude Code when enabled
 - `.cursorrules` and `.cursor/rules/agentforge.md` for Cursor when enabled
 - `.github/copilot-instructions.md` for GitHub Copilot when enabled
+
+When the project already has entrypoints, AgentForge preserves snapshots first and rewrites those files as managed bootloaders at the end of the adoption flow.
 
 After install, `agentforge bootstrap` can complete the human-readable project context,
 flow docs, and initial skill guidance for the current repo using real repository signals
@@ -101,7 +106,8 @@ AgentForge supports three installation modes:
 
 - `bootstrap`: start from a new project and build the initial agent-ready base
 - `adopt`: inspect an existing project and import its agentic surface safely
-- `hybrid`: do both, when a project has some structure already but still needs a canonical base
+
+`hybrid` remains supported internally for legacy state normalization, but it is no longer shown in the installer UI.
 
 ## What gets generated
 
