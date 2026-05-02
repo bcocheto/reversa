@@ -12,7 +12,6 @@ import { compileAgentForge } from '../lib/exporter/index.js';
 import { renderManagedEntrypoint } from '../lib/exporter/bootloader.js';
 import { runUninstall } from '../lib/commands/uninstall.js';
 import { shouldDefaultFinalizeAdoption } from '../lib/commands/install.js';
-import { advancePhase } from '../lib/commands/phase-engine.js';
 import { validateAgentForgeStructure } from '../lib/commands/validate.js';
 import { checkExistingInstallation } from '../lib/installer/validator.js';
 import { detectEngines, ENGINES } from '../lib/installer/detector.js';
@@ -112,12 +111,16 @@ function buildManagedEntrypointContent({
     '',
     '<!-- agentforge:start -->',
     'Quando o usuário digitar `agentforge`, ative o orquestrador AgentForge.',
-    'Leia `.agentforge/harness/router.md`.',
-    'Use `.agentforge/harness/context-index.yaml` para localizar o contexto mínimo necessário.',
-    'Respeite `.agentforge/policies/`.',
-    'Use skills de `.agentforge/skills/` quando apropriado.',
-    'Siga flows de `.agentforge/flows/`.',
-    'Consulte `.agentforge/references/` quando necessário.',
+    'A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual.',
+    'Não assuma Codex como o único runtime; use a IA ativa configurada no ambiente.',
+    'Leia `.agentforge/harness/router.md` e `.agentforge/harness/context-index.yaml`.',
+    'Leia `.agentforge/ai/README.md` se esse arquivo existir.',
+    'Use `agentforge handoff` para obter o plano da próxima fase.',
+    'Use `agentforge context-pack <phase-or-task>` quando esse comando estiver disponível.',
+    'Execute a fase com leitura contextual, síntese e adaptação ao projeto.',
+    'Ao concluir, rode `agentforge checkpoint <phase> --status done` e depois `agentforge validate`.',
+    'Nunca edite `state.json` ou `plan.md` manualmente.',
+    'Considere `.agentforge/memory/` quando relevante.',
   ];
 
   if (includeLegacyReversaBlockInsideManagedBlock) {
@@ -175,9 +178,10 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
     const agentsEntry = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
     assert.match(agentsEntry, /<!-- agentforge:start -->/);
     assert.match(agentsEntry, /<!-- agentforge:end -->/);
-    assert.match(agentsEntry, /Não use web search por padrão\./);
-    assert.match(agentsEntry, /Primeiro leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml`, `\.agentforge\/state\.json` e `\.agentforge\/scope\.md`\./);
-    assert.match(agentsEntry, /Para comandos AgentForge, tente nesta ordem/);
+    assert.match(agentsEntry, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
+    assert.match(agentsEntry, /Não assuma Codex como o único runtime; use a IA ativa configurada no ambiente\./);
+    assert.match(agentsEntry, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.match(agentsEntry, /Ao concluir, rode `agentforge checkpoint <phase> --status done` e depois `agentforge validate`\./);
 
     const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
     assert.equal(state.project, answers.project_name);
@@ -185,9 +189,25 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
     assert.deepEqual(state.initial_agents, answers.initial_agents);
     assert.deepEqual(state.initial_flows, answers.initial_flows);
     assert.deepEqual(state.engines, answers.engines);
+    assert.deepEqual(state.workflow, {
+      current_phase: 'discovery',
+      completed_phases: [],
+      pending_phases: ['discovery', 'agent-design', 'flow-design', 'policies', 'export', 'review'],
+      phase_history: [],
+    });
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
+});
+
+test('install source no longer auto-runs the intelligent cycle', () => {
+  const installSource = readFileSync(new URL('../lib/commands/install.js', import.meta.url), 'utf8');
+
+  assert.doesNotMatch(installSource, /Deseja também executar o ciclo AgentForge completo agora\?/);
+  assert.doesNotMatch(installSource, /advancePhase\(projectRoot,\s*\{\s*all:\s*true/);
+  assert.doesNotMatch(installSource, /Fases AgentForge executadas: discovery, agent-design, flow-design, policies, export, review/);
+  assert.match(installSource, /writeHandoffReport\(/);
+  assert.match(installSource, /persistState:\s*false/);
 });
 
 test('managed bootloaders require local reads, npx fallback, and explicit confirmation', () => {
@@ -200,11 +220,12 @@ test('managed bootloaders require local reads, npx fallback, and explicit confir
   const copilotContent = renderManagedEntrypoint({ entryFile: '.github/copilot-instructions.md' });
 
   for (const content of [agentContent, claudeContent, cursorContent, copilotContent]) {
-    assert.match(content, /Não use web search por padrão\./);
-    assert.match(content, /Primeiro leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml`, `\.agentforge\/state\.json` e `\.agentforge\/scope\.md`\./);
-    assert.match(content, /Para comandos AgentForge, tente nesta ordem: `agentforge <command>`, `npx @bcocheto\/agentforge <command>`, depois `\.agentforge\/references\/commands\.md` apenas como fallback documental\./);
-    assert.match(content, /Se a confirmação for vaga, como "sim" ou "continue", peça confirmação explícita do plano antes de editar amplamente\./);
-    assert.match(content, /Não avance fases do AgentForge apenas porque o usuário disse "sim"; trate isso como confirmação do último plano explícito\./);
+    assert.match(content, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
+    assert.match(content, /Não assuma Codex como o único runtime; use a IA ativa configurada no ambiente\./);
+    assert.match(content, /Leia `\.agentforge\/harness\/router\.md` e `\.agentforge\/harness\/context-index\.yaml`\./);
+    assert.match(content, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.match(content, /Ao concluir, rode `agentforge checkpoint <phase> --status done` e depois `agentforge validate`\./);
+    assert.doesNotMatch(content, /advance --all/);
   }
   assert.match(claudeContent, /Quando o usuário digitar `agentforge` ou usar `\/agentforge`, ative o orquestrador AgentForge\./);
   assert.match(cursorContent, /Quando o usuário usar `agentforge` ou `\/agentforge`, siga estas regras\./);
@@ -278,8 +299,8 @@ test('compile after install updates only the managed bootloader block', async ()
     const agentsPath = join(projectRoot, 'AGENTS.md');
     const original = readFileSync(agentsPath, 'utf8');
     const mutated = original.replace(
-      'Primeiro leia `.agentforge/harness/router.md`, `.agentforge/harness/context-index.yaml`, `.agentforge/state.json` e `.agentforge/scope.md`.',
-      'Primeiro leia `.agentforge/harness/router.md`, `.agentforge/harness/context-index.yaml`, `.agentforge/state.json` e `.agentforge/scope.md`.\nLinha manual interna.',
+      'Leia `.agentforge/harness/router.md` e `.agentforge/harness/context-index.yaml`.',
+      'Leia `.agentforge/harness/router.md` e `.agentforge/harness/context-index.yaml`.\nLinha manual interna.',
     );
     writeFileSync(agentsPath, `${mutated}\nLinha manual externa.\n`, 'utf8');
 
@@ -297,7 +318,7 @@ test('compile after install updates only the managed bootloader block', async ()
     assert.doesNotMatch(content, /Linha manual interna\./);
     assert.equal((content.match(/<!-- agentforge:start -->/g) ?? []).length, 1);
     assert.equal((content.match(/<!-- agentforge:end -->/g) ?? []).length, 1);
-    assert.match(content, /Primeiro leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml`, `\.agentforge\/state\.json` e `\.agentforge\/scope\.md`\./);
+    assert.match(content, /Leia `\.agentforge\/harness\/router\.md` e `\.agentforge\/harness\/context-index\.yaml`\./);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -550,7 +571,10 @@ test('validate passes when AGENTS.md is a short managed bootloader', async () =>
     const agentsPath = join(projectRoot, 'AGENTS.md');
     writeFileSync(
       agentsPath,
-      buildManagedEntrypointContent({ manualLines: 68 }),
+      renderManagedEntrypoint({
+        entryFile: 'AGENTS.md',
+        activationText: 'Quando o usuário digitar `agentforge`, ative o orquestrador AgentForge.',
+      }),
       'utf8',
     );
 
@@ -607,10 +631,10 @@ test('validate allows Reversa references outside the managed AgentForge block', 
     const agentsPath = join(projectRoot, 'AGENTS.md');
     writeFileSync(
       agentsPath,
-      buildManagedEntrypointContent({
-        manualLines: 20,
-        includeLegacyReversaPath: true,
-      }),
+      `${renderManagedEntrypoint({
+        entryFile: 'AGENTS.md',
+        activationText: 'Quando o usuário digitar `agentforge`, ative o orquestrador AgentForge.',
+      })}\nConsulte \`.reversa/legacy.md\` e \`_reversa_sdd/notes.md\`.\n`,
       'utf8',
     );
 
@@ -702,6 +726,12 @@ test('commands lists the full registry and emits valid json', async () => {
     assert.match(result.stdout, /\bsuggest-agents\b/);
     assert.match(result.stdout, /\bcreate-agent\b/);
     assert.match(result.stdout, /\bapply-suggestions\b/);
+    assert.match(result.stdout, /\bhandoff\b/);
+    assert.match(result.stdout, /\bcheckpoint\b/);
+
+    const advanceEntry = COMMAND_REGISTRY.find((entry) => entry.id === 'advance');
+    assert.ok(advanceEntry);
+    assert.deepEqual(advanceEntry.writes, ['.agentforge/reports/advance.md']);
 
     const jsonResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'commands', '--json'], {
       cwd: projectRoot,
@@ -720,8 +750,8 @@ test('commands lists the full registry and emits valid json', async () => {
   }
 });
 
-test('agentforge phases, next, phase-status, and advance expose the phase engine', async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-phase-engine-'));
+test('agentforge phases, next, phase-status, advance, handoff, and checkpoint expose the phase engine', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-advance-all-'));
 
   try {
     await installFixture(projectRoot);
@@ -746,7 +776,9 @@ test('agentforge phases, next, phase-status, and advance expose the phase engine
     assert.match(nextResult.stdout, /Next phase: agent-design/);
     assert.match(nextResult.stdout, /context\/project-overview\.md tem placeholders/);
     assert.match(nextResult.stdout, /context\/architecture\.md tem placeholders/);
-    assert.match(nextResult.stdout, /agentforge advance --phase agent-design/);
+    assert.match(nextResult.stdout, /agentforge handoff/);
+    assert.match(nextResult.stdout, /agentforge checkpoint discovery --status done/);
+    assert.match(nextResult.stdout, /agentforge validate/);
 
     const phaseStatusResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'phase-status'], {
       cwd: projectRoot,
@@ -758,24 +790,31 @@ test('agentforge phases, next, phase-status, and advance expose the phase engine
 
     const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
     const planPath = join(projectRoot, PRODUCT.internalDir, 'plan.md');
+    const trackedPaths = [
+      join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md'),
+      join(projectRoot, PRODUCT.internalDir, 'agents', 'orchestrator.yaml'),
+      join(projectRoot, PRODUCT.internalDir, 'flows', 'feature-development.yaml'),
+      join(projectRoot, PRODUCT.internalDir, 'policies', 'protected-files.yaml'),
+      join(projectRoot, 'AGENTS.md'),
+    ].filter((path) => existsSync(path));
+    const stateBefore = readFileSync(statePath, 'utf8');
     const planBefore = readFileSync(planPath, 'utf8');
+    const trackedBefore = new Map(trackedPaths.map((path) => [path, readFileSync(path, 'utf8')]));
 
     const advanceResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'advance'], {
       cwd: projectRoot,
       encoding: 'utf8',
     });
     assert.equal(advanceResult.status, 0);
-    assert.match(advanceResult.stdout, /discovery -> agent-design \(passed\)/);
+    assert.match(advanceResult.stdout, /sequência planejada/i);
 
-    const advancedState = JSON.parse(readFileSync(statePath, 'utf8'));
-    assert.equal(advancedState.workflow.current_phase, 'agent-design');
-    assert.equal(advancedState.phase, 'agent-design');
-    assert.ok(advancedState.workflow.completed_phases.includes('discovery'));
-    assert.ok(advancedState.workflow.pending_phases.includes('export'));
-
-    const planAfter = readFileSync(planPath, 'utf8');
-    assert.notEqual(planAfter, planBefore);
-    assert.match(planAfter, /Generated from `\.agentforge\/workflow\/phases\.yaml` and `\.agentforge\/state\.json`/);
+    assert.equal(readFileSync(statePath, 'utf8'), stateBefore);
+    assert.equal(readFileSync(planPath, 'utf8'), planBefore);
+    for (const [path, content] of trackedBefore.entries()) {
+      assert.equal(readFileSync(path, 'utf8'), content);
+    }
+    assert.ok(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'advance.md')));
+    assert.match(readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'advance.md'), 'utf8'), /Phases planned/);
 
     const validation = validateAgentForgeStructure(projectRoot);
     assert.equal(validation.valid, true);
@@ -784,11 +823,22 @@ test('agentforge phases, next, phase-status, and advance expose the phase engine
   }
 });
 
-test('agentforge advance --all completes the workflow in order', async () => {
+test('agentforge advance --all only plans the workflow and warns', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-advance-all-'));
 
   try {
     await installFixture(projectRoot);
+
+    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
+    const trackedPaths = [
+      join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md'),
+      join(projectRoot, PRODUCT.internalDir, 'agents', 'orchestrator.yaml'),
+      join(projectRoot, PRODUCT.internalDir, 'flows', 'feature-development.yaml'),
+      join(projectRoot, PRODUCT.internalDir, 'policies', 'protected-files.yaml'),
+      join(projectRoot, 'AGENTS.md'),
+    ].filter((path) => existsSync(path));
+    const stateBefore = readFileSync(statePath, 'utf8');
+    const trackedBefore = new Map(trackedPaths.map((path) => [path, readFileSync(path, 'utf8')]));
 
     const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'advance', '--all'], {
       cwd: projectRoot,
@@ -796,26 +846,15 @@ test('agentforge advance --all completes the workflow in order', async () => {
     });
 
     assert.equal(result.status, 0);
-    assert.match(result.stdout, /discovery -> agent-design \(passed\)/);
-    assert.match(result.stdout, /agent-design -> flow-design \(passed\)/);
-    assert.match(result.stdout, /flow-design -> policies \(passed\)/);
-    assert.match(result.stdout, /policies -> export \(passed\)/);
-    assert.match(result.stdout, /export -> review \(passed\)/);
-    assert.match(result.stdout, /review -> review \(passed\)/);
-
-    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
-    assert.equal(state.workflow.current_phase, 'review');
-    assert.ok(state.workflow.completed_phases.includes('export'));
-    assert.ok(state.workflow.completed_phases.includes('review'));
-
-    const history = readFileSync(join(projectRoot, PRODUCT.internalDir, 'workflow', 'history.jsonl'), 'utf8')
-      .trim()
-      .split(/\r?\n/)
-      .filter(Boolean);
-    assert.ok(history.length >= 6);
-
-    const manifest = loadManifest(projectRoot);
-    assert.ok(manifest[`${PRODUCT.internalDir}/workflow/history.jsonl`], 'history.jsonl should be registered in the manifest');
+    assert.match(result.stdout, /advance --all não executa fases inteligentes/i);
+    assert.match(result.stdout, /sequência planejada/i);
+    assert.match(result.stdout, /agent-design/);
+    assert.match(result.stdout, /review/);
+    assert.equal(readFileSync(statePath, 'utf8'), stateBefore);
+    for (const [path, content] of trackedBefore.entries()) {
+      assert.equal(readFileSync(path, 'utf8'), content);
+    }
+    assert.ok(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'advance.md')));
 
     const validation = validateAgentForgeStructure(projectRoot);
     assert.equal(validation.valid, true);
@@ -824,32 +863,101 @@ test('agentforge advance --all completes the workflow in order', async () => {
   }
 });
 
-test('agentforge advance --all stops at the first export error', async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-advance-stop-'));
+test('agentforge checkpoint updates state, plan, history, and report without smart artifacts', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-checkpoint-'));
 
   try {
     await installFixture(projectRoot);
 
-    const agentsPath = join(projectRoot, 'AGENTS.md');
-    rmSync(agentsPath);
-    mkdirSync(agentsPath);
-    chmodSync(agentsPath, 0o444);
+    const projectOverviewPath = join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md');
+    const architecturePath = join(projectRoot, PRODUCT.internalDir, 'context', 'architecture.md');
+    mkdirSync(join(projectRoot, PRODUCT.internalDir, 'context'), { recursive: true });
+    writeFileSync(projectOverviewPath, [
+      '# Project Overview',
+      '',
+      'Projeto preparado para a fase discovery.',
+      '',
+      '## Scope',
+      '',
+      'Validar contexto, stack e objetivos.',
+    ].join('\n'), 'utf8');
+    writeFileSync(architecturePath, [
+      '# Architecture',
+      '',
+      '## Summary',
+      '',
+      'Arquitetura inicial documentada para checkpoint.',
+    ].join('\n'), 'utf8');
 
-    const result = await advancePhase(projectRoot, { all: true });
+    const agentsPath = join(projectRoot, PRODUCT.internalDir, 'agents', 'orchestrator.yaml');
+    const flowsPath = join(projectRoot, PRODUCT.internalDir, 'flows', 'feature-development.yaml');
+    const policiesPath = join(projectRoot, PRODUCT.internalDir, 'policies', 'protected-files.yaml');
+    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
+    const planPath = join(projectRoot, PRODUCT.internalDir, 'plan.md');
+    const historyPath = join(projectRoot, PRODUCT.internalDir, 'workflow', 'history.jsonl');
+    const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'checkpoint.md');
 
-    assert.equal(result.ok, false);
-    assert.ok(result.errors.length > 0);
-    assert.equal(result.results.length, 0);
+    const before = {
+      state: readFileSync(statePath, 'utf8'),
+      plan: readFileSync(planPath, 'utf8'),
+      history: readFileSync(historyPath, 'utf8'),
+      contextOverview: readFileSync(projectOverviewPath, 'utf8'),
+      architecture: readFileSync(architecturePath, 'utf8'),
+      agents: readFileSync(agentsPath, 'utf8'),
+      flows: readFileSync(flowsPath, 'utf8'),
+      policies: readFileSync(policiesPath, 'utf8'),
+    };
 
-    const history = readFileSync(join(projectRoot, PRODUCT.internalDir, 'workflow', 'history.jsonl'), 'utf8')
-      .trim()
-      .split(/\r?\n/)
-      .filter(Boolean)
-      .map((line) => JSON.parse(line));
+    const dryRun = spawnSync(process.execPath, [
+      AGENTFORGE_BIN,
+      'checkpoint',
+      'discovery',
+      '--status',
+      'done',
+      '--dry-run',
+    ], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
 
-    assert.equal(history.length, 0);
+    assert.equal(dryRun.status, 0);
+    assert.match(dryRun.stdout, /Checkpoint simulado/);
+    assert.equal(readFileSync(statePath, 'utf8'), before.state);
+
+    const result = spawnSync(process.execPath, [
+      AGENTFORGE_BIN,
+      'checkpoint',
+      'discovery',
+      '--status',
+      'done',
+      '--reason',
+      'prepared',
+    ], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /Checkpoint registrado: discovery -> done/);
+
+    const state = JSON.parse(readFileSync(statePath, 'utf8'));
+    assert.equal(state.workflow.current_phase, 'agent-design');
+    assert.ok(state.workflow.completed_phases.includes('discovery'));
+    assert.ok(state.workflow.pending_phases.includes('export'));
+    assert.match(readFileSync(reportPath, 'utf8'), /AgentForge Checkpoint Report/);
+    assert.notEqual(readFileSync(planPath, 'utf8'), before.plan);
+    assert.match(readFileSync(historyPath, 'utf8'), /"from":"discovery"/);
+    assert.match(readFileSync(historyPath, 'utf8'), /"to":"agent-design"/);
+    assert.match(readFileSync(historyPath, 'utf8'), /"command":"checkpoint discovery --status done --reason \\"prepared\\""/);
+    assert.equal(readFileSync(projectOverviewPath, 'utf8'), before.contextOverview);
+    assert.equal(readFileSync(architecturePath, 'utf8'), before.architecture);
+    assert.equal(readFileSync(agentsPath, 'utf8'), before.agents);
+    assert.equal(readFileSync(flowsPath, 'utf8'), before.flows);
+    assert.equal(readFileSync(policiesPath, 'utf8'), before.policies);
+
+    const manifest = loadManifest(projectRoot);
+    assert.ok(manifest[`${PRODUCT.internalDir}/reports/checkpoint.md`]);
   } finally {
-    rmSync(join(projectRoot, 'AGENTS.md'), { recursive: true, force: true });
     rmSync(projectRoot, { recursive: true, force: true });
   }
 });
@@ -890,8 +998,8 @@ test('next detects plan/state divergence and status repair fills missing pending
     assert.match(nextResult.stdout, /Current phase: review/);
     assert.match(nextResult.stdout, /Next phase: none/);
     assert.match(nextResult.stdout, /Pending checks:\n- ok/);
-    assert.match(nextResult.stdout, /agentforge advance/);
-    assert.match(nextResult.stdout, /agentforge advance --all/);
+    assert.match(nextResult.stdout, /agentforge handoff/);
+    assert.match(nextResult.stdout, /agentforge validate/);
 
     const statusResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'status', '--repair'], {
       cwd: projectRoot,

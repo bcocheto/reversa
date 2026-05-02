@@ -411,9 +411,11 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
 
     const agentsEntry = readFileSync(join(projectRoot, "AGENTS.md"), "utf8");
     assert.match(agentsEntry, /<!-- agentforge:start -->/);
-    assert.match(agentsEntry, /Não use web search por padrão\./);
-    assert.match(agentsEntry, /Primeiro leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml`, `\.agentforge\/state\.json` e `\.agentforge\/scope\.md`\./);
-    assert.match(agentsEntry, /Para comandos AgentForge, tente nesta ordem/);
+    assert.match(agentsEntry, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
+    assert.match(agentsEntry, /Não assuma Codex como o único runtime; use a IA ativa configurada no ambiente\./);
+    assert.match(agentsEntry, /Leia `\.agentforge\/harness\/router\.md` e `\.agentforge\/harness\/context-index\.yaml`\./);
+    assert.match(agentsEntry, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.match(agentsEntry, /Ao concluir, rode `agentforge checkpoint <phase> --status done` e depois `agentforge validate`\./);
     assert.match(
       agentsEntry,
       /Considere `\.agentforge\/memory\/` quando relevante\./,
@@ -429,9 +431,10 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
 
     const claudeEntry = readFileSync(join(projectRoot, "CLAUDE.md"), "utf8");
     assert.match(claudeEntry, /<!-- agentforge:start -->/);
-    assert.match(claudeEntry, /Não use web search por padrão\./);
-    assert.match(claudeEntry, /Primeiro leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml`, `\.agentforge\/state\.json` e `\.agentforge\/scope\.md`\./);
-    assert.match(claudeEntry, /Para comandos AgentForge, tente nesta ordem/);
+    assert.match(claudeEntry, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
+    assert.match(claudeEntry, /Não assuma Codex como o único runtime; use a IA ativa configurada no ambiente\./);
+    assert.match(claudeEntry, /Leia `\.agentforge\/harness\/router\.md` e `\.agentforge\/harness\/context-index\.yaml`\./);
+    assert.match(claudeEntry, /Use `agentforge handoff` para obter o plano da próxima fase\./);
     assert.match(
       claudeEntry,
       /Considere `\.agentforge\/memory\/` quando relevante\./,
@@ -447,7 +450,7 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
 
     const cursorEntry = readFileSync(join(projectRoot, ".cursorrules"), "utf8");
     assert.match(cursorEntry, /<!-- agentforge:start -->/);
-    assert.match(cursorEntry, /Não use web search por padrão\./);
+    assert.match(cursorEntry, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
     assert.match(
       cursorEntry,
       /Considere `\.agentforge\/memory\/` quando relevante\./,
@@ -467,7 +470,7 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
     );
     assert.match(cursorRulesEntry, /<!-- agentforge:start -->/);
     assert.match(cursorRulesEntry, /alwaysApply: true/);
-    assert.match(cursorRulesEntry, /Não use web search por padrão\./);
+    assert.match(cursorRulesEntry, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
     assert.match(
       cursorRulesEntry,
       /Considere `\.agentforge\/memory\/` quando relevante\./,
@@ -486,7 +489,7 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
       "utf8",
     );
     assert.match(copilotEntry, /<!-- agentforge:start -->/);
-    assert.match(copilotEntry, /Não use web search por padrão\./);
+    assert.match(copilotEntry, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
     assert.match(
       copilotEntry,
       /Considere `\.agentforge\/memory\/` quando relevante\./,

@@ -421,12 +421,12 @@ test('install applies structure on an existing project and keeps the manifest co
         return { applyStructure: true };
       }
 
-      return { runFullCycle: false };
+      return {};
     };
 
     const result = await install([]);
     assert.equal(result, 0);
-    assert.equal(promptCalls.length, 3);
+    assert.equal(promptCalls.length, 2);
 
     const manifest = loadManifest(projectRoot);
     for (const relPath of [
@@ -442,14 +442,26 @@ test('install applies structure on an existing project and keeps the manifest co
     }
 
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'flows', 'review.yaml')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'handoff.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'advance.md')), false);
 
     const state = JSON.parse(readFileSync(join(projectRoot, '.agentforge', 'state.json'), 'utf8'));
     assert.ok(state.flows.includes('review'));
     assert.equal(state.flows.every((flowId) => existsSync(join(projectRoot, '.agentforge', 'flows', `${flowId}.yaml`))), true);
+    assert.deepEqual(state.workflow.completed_phases, []);
+    assert.deepEqual(state.workflow.pending_phases, ['discovery', 'agent-design', 'flow-design', 'policies', 'export', 'review']);
+    assert.equal(state.workflow.current_phase, 'discovery');
 
-    assert.equal(readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8'), originalAgents);
-    assert.equal(readFileSync(join(projectRoot, 'CLAUDE.md'), 'utf8'), originalClaude);
-    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'advance.md')), false);
+    const agents = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
+    assert.match(agents, /<!-- agentforge:start -->/);
+    assert.match(agents, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
+    assert.match(agents, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.doesNotMatch(agents, /Keep this file intact\./);
+    const claude = readFileSync(join(projectRoot, 'CLAUDE.md'), 'utf8');
+    assert.match(claude, /<!-- agentforge:start -->/);
+    assert.match(claude, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
+    assert.match(claude, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.doesNotMatch(claude, /Keep this file intact\./);
 
     const validation = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
       cwd: projectRoot,
@@ -463,8 +475,8 @@ test('install applies structure on an existing project and keeps the manifest co
   }
 });
 
-test('install can execute the full AgentForge cycle and leaves the workflow concluded', async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-install-full-cycle-'));
+test('install leaves the workflow pending and prepares handoff artifacts', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-install-pending-'));
   const cwd = process.cwd();
   const originalPrompt = inquirer.prompt;
 
@@ -516,15 +528,16 @@ test('install can execute the full AgentForge cycle and leaves the workflow conc
         return { applyStructure: true };
       }
 
-      return { runFullCycle: true };
+      return {};
     };
 
     const result = await install([]);
     assert.equal(result, 0);
-    assert.equal(promptCalls.length, 3);
+    assert.equal(promptCalls.length, 2);
 
     const state = JSON.parse(readFileSync(join(projectRoot, '.agentforge', 'state.json'), 'utf8'));
-    assert.deepEqual(state.workflow.completed_phases, [
+    assert.deepEqual(state.workflow.completed_phases, []);
+    assert.deepEqual(state.workflow.pending_phases, [
       'discovery',
       'agent-design',
       'flow-design',
@@ -532,24 +545,28 @@ test('install can execute the full AgentForge cycle and leaves the workflow conc
       'export',
       'review',
     ]);
-    assert.deepEqual(state.workflow.pending_phases, []);
-    assert.equal(state.workflow.current_phase, 'review');
-    assert.equal(state.pending.length, 0);
-    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'advance.md')), true);
+    assert.equal(state.workflow.current_phase, 'discovery');
+    assert.equal(state.pending.length, 6);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'handoff.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'advance.md')), false);
 
     const agents = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
-    assert.match(agents, /O ciclo AgentForge já está concluído neste projeto\./);
-    assert.match(agents, /Task packs e fluxos operacionais estão prontos para uso\./);
-    assert.doesNotMatch(agents, /Use `agentforge next` para determinar a próxima fase\./);
+    assert.match(agents, /<!-- agentforge:start -->/);
+    assert.match(agents, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
+    assert.match(agents, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.match(agents, /Ao concluir, rode `agentforge checkpoint <phase> --status done` e depois `agentforge validate`\./);
+    assert.doesNotMatch(agents, /O ciclo AgentForge já está concluído neste projeto\./);
 
     const nextResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'next'], {
       cwd: projectRoot,
       encoding: 'utf8',
     });
     assert.equal(nextResult.status, 0);
-    assert.match(nextResult.stdout, /Cycle status: ready/);
-    assert.match(nextResult.stdout, /Task packs available:/);
-    assert.doesNotMatch(nextResult.stdout, /agent-design/);
+    assert.match(nextResult.stdout, /Current phase: discovery/);
+    assert.match(nextResult.stdout, /Next phase: agent-design/);
+    assert.match(nextResult.stdout, /agentforge handoff/);
+    assert.match(nextResult.stdout, /agentforge checkpoint discovery --status done/);
+    assert.match(nextResult.stdout, /agentforge validate/);
 
     const validation = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
       cwd: projectRoot,
