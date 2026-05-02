@@ -10,6 +10,7 @@ import { Writer } from '../lib/installer/writer.js';
 import { buildManifest, saveManifest, loadManifest, mergeUpdateManifest } from '../lib/installer/manifest.js';
 import { compileAgentForge } from '../lib/exporter/index.js';
 import { runUninstall } from '../lib/commands/uninstall.js';
+import { shouldDefaultFinalizeAdoption } from '../lib/commands/install.js';
 import { checkExistingInstallation } from '../lib/installer/validator.js';
 import { detectEngines, ENGINES } from '../lib/installer/detector.js';
 import { AGENT_SKILL_IDS, PRODUCT } from '../lib/product.js';
@@ -165,6 +166,12 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
+});
+
+test('install defaults adoption finalization to true for adopt and hybrid modes', () => {
+  assert.equal(shouldDefaultFinalizeAdoption('bootstrap'), false);
+  assert.equal(shouldDefaultFinalizeAdoption('adopt'), true);
+  assert.equal(shouldDefaultFinalizeAdoption('hybrid'), true);
 });
 
 test('compile after install updates only the managed bootloader block', async () => {
@@ -936,6 +943,9 @@ test('adopt generates a read-only adoption plan', async () => {
     assert.match(report, /agentforge suggest-skills/);
     assert.match(report, /Refactor applied: no/);
     assert.match(report, /Read-only guarantee/);
+    assert.match(report, /No original project files were modified\./);
+    assert.match(report, /Files under `\.agentforge\/` may have been created or updated/);
+    assert.doesNotMatch(report, /Only `\.agentforge\/reports\/adoption-plan\.md` was generated\./);
     assert.match(report, /Imported snapshots/);
     assert.match(report, /AGENTS\.md/);
     assert.match(report, /CLAUDE\.md/);
@@ -1019,6 +1029,11 @@ test('adopt --apply snapshots a legacy AGENTS.md and finalizes entrypoints as bo
         '',
         'Support engineers and operations.',
         '',
+        '## Testing',
+        '',
+        '- `npm test`',
+        '- `vitest run`',
+        '',
       ].join('\n'),
       'utf8',
     );
@@ -1077,9 +1092,12 @@ test('adopt --apply snapshots a legacy AGENTS.md and finalizes entrypoints as bo
     assert.doesNotMatch(projectOverview, /<nome do projeto>/);
 
     const commands = readFileSync(join(projectRoot, PRODUCT.internalDir, 'references', 'commands.md'), 'utf8');
-    assert.match(commands, /`vitest run`/);
-    assert.match(commands, /`eslint \.`/);
-    assert.match(commands, /`tsc --noEmit`/);
+    assert.match(commands, /`npm test`/);
+    assert.match(commands, /`agentforge adopt`/);
+
+    const testingContext = readFileSync(join(projectRoot, PRODUCT.internalDir, 'context', 'testing.md'), 'utf8');
+    assert.match(testingContext, /<!-- Source:/);
+    assert.match(testingContext, /`vitest run`/);
 
     const domainCandidates = [
       join(projectRoot, PRODUCT.internalDir, 'context', 'domain.md'),
@@ -1104,6 +1122,60 @@ test('adopt --apply snapshots a legacy AGENTS.md and finalizes entrypoints as bo
     const rerunAgents = readFileSync(agentsPath, 'utf8');
     assert.equal((rerunAgents.match(/<!-- agentforge:start -->/g) ?? []).length, 1);
     assert.equal((rerunAgents.match(/<!-- agentforge:end -->/g) ?? []).length, 1);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('adopt --apply records apply-failed when validation fails after partial steps', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-apply-failed-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    writeFileSync(
+      join(projectRoot, 'README.md'),
+      [
+        '# AgentForge Adopt Demo',
+        '',
+        '## Objective',
+        '',
+        'Track orders and alert the support team when delivery status changes.',
+        '',
+        '## Testing',
+        '',
+        '- `npm test`',
+        '- `vitest run`',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+
+    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
+    const state = JSON.parse(readFileSync(statePath, 'utf8'));
+    state.generated_agents = [...state.generated_agents, 'ghost-agent'];
+    writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'adopt', '--apply'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 1);
+
+    const nextState = JSON.parse(readFileSync(statePath, 'utf8'));
+    assert.equal(nextState.adoption_status, 'apply-failed');
+    assert.equal(nextState.adoption_failed_step, 'validate');
+    assert.match(nextState.last_adopt_error, /ghost-agent/);
+
+    const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'adoption-apply.md');
+    assert.equal(existsSync(reportPath), true);
+    const report = readFileSync(reportPath, 'utf8');
+    assert.match(report, /# AgentForge Adoption Apply Report/);
+    assert.match(report, /Completed steps/);
+    assert.match(report, /Failed step/);
+    assert.match(report, /validate/);
+    assert.match(report, /Written files/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
