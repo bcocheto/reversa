@@ -11,6 +11,7 @@ import { buildManifest, saveManifest, loadManifest, mergeUpdateManifest } from '
 import { compileAgentForge } from '../lib/exporter/index.js';
 import { runUninstall } from '../lib/commands/uninstall.js';
 import { shouldDefaultFinalizeAdoption } from '../lib/commands/install.js';
+import { validateAgentForgeStructure } from '../lib/commands/validate.js';
 import { checkExistingInstallation } from '../lib/installer/validator.js';
 import { detectEngines, ENGINES } from '../lib/installer/detector.js';
 import { AGENT_SKILL_IDS, PRODUCT } from '../lib/product.js';
@@ -59,9 +60,10 @@ async function installFixture(projectRoot, {
   engines = ['codex'],
   exportTargets = false,
   setupMode = 'bootstrap',
+  answersOverrides = {},
 } = {}) {
   const writer = new Writer(projectRoot);
-  const answers = baseAnswers({ engines, setup_mode: setupMode });
+  const answers = baseAnswers({ engines, setup_mode: setupMode, ...answersOverrides });
 
   writer.createProductDir(answers, '1.0.0');
 
@@ -151,6 +153,10 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'reviewer.yaml')), true);
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'flows', 'feature-development.yaml')), true);
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'flows', 'release.yaml')), true);
+    const manifest = loadManifest(projectRoot);
+    for (const relPath of MINIMUM_HARNESS_MANIFEST_PATHS) {
+      assert.ok(manifest[relPath], `missing manifest entry for ${relPath}`);
+    }
 
     const agentsEntry = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
     assert.match(agentsEntry, /<!-- agentforge:start -->/);
@@ -163,6 +169,58 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
     assert.deepEqual(state.initial_agents, answers.initial_agents);
     assert.deepEqual(state.initial_flows, answers.initial_flows);
     assert.deepEqual(state.engines, answers.engines);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('install keeps review canonical and manifest/state in sync with YAML flows', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-review-flow-'));
+
+  try {
+    await installFixture(projectRoot, {
+      answersOverrides: {
+        initial_flows: ['feature-development', 'review'],
+      },
+    });
+
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'flows', 'review.yaml')), true);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.ok(state.flows.includes('review'));
+    assert.equal(state.flows.every((flowId) => existsSync(join(projectRoot, PRODUCT.internalDir, 'flows', `${flowId}.yaml`))), true);
+
+    const manifest = loadManifest(projectRoot);
+    assert.ok(manifest[`${PRODUCT.internalDir}/flows/review.yaml`]);
+
+    const validation = validateAgentForgeStructure(projectRoot);
+    assert.equal(validation.valid, true);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('validate reports one manifest error per missing harness file', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-manifest-error-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const manifest = loadManifest(projectRoot);
+    for (const relPath of MINIMUM_HARNESS_MANIFEST_PATHS) {
+      delete manifest[relPath];
+    }
+    saveManifest(projectRoot, manifest);
+
+    const validation = validateAgentForgeStructure(projectRoot);
+    const manifestErrors = validation.errors.filter((error) => MINIMUM_HARNESS_MANIFEST_PATHS.includes(error.file));
+
+    assert.equal(manifestErrors.length, MINIMUM_HARNESS_MANIFEST_PATHS.length);
+    for (const error of manifestErrors) {
+      assert.equal(error.message, 'Arquivo obrigatório existe, mas não está registrado no manifest.');
+    }
+    assert.equal(validation.errors.filter((error) => error.message.includes('Arquivo ausente da estrutura mínima do harness')).length, 0);
+    assert.equal(validation.errors.filter((error) => error.message.includes('Manifest não registra arquivo obrigatório')).length, 0);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }

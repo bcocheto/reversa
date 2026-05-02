@@ -291,3 +291,117 @@ test('install runs analysis first and can stop after generating reports and sugg
     rmSync(projectRoot, { recursive: true, force: true });
   }
 });
+
+test('install applies structure on an existing project and keeps the manifest complete', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-install-apply-'));
+  const cwd = process.cwd();
+  const originalPrompt = inquirer.prompt;
+
+  try {
+    process.chdir(projectRoot);
+    mkdirSync(join(projectRoot, 'docs'), { recursive: true });
+    mkdirSync(join(projectRoot, '.github', 'workflows'), { recursive: true });
+    mkdirSync(join(projectRoot, 'src'), { recursive: true });
+    mkdirSync(join(projectRoot, 'worker'), { recursive: true });
+    writeFileSync(join(projectRoot, 'AGENTS.md'), '# Legacy agent instructions\nKeep this file intact.\n', 'utf8');
+    writeFileSync(join(projectRoot, 'CLAUDE.md'), '# Legacy Claude instructions\nKeep this file intact.\n', 'utf8');
+    writeFileSync(join(projectRoot, 'README.md'), [
+      '# Apply Demo',
+      '',
+      'A SaaS dashboard for operations teams.',
+      '',
+      '## Audience',
+      '',
+      'Operators and product teams.',
+    ].join('\n'), 'utf8');
+    writeFileSync(join(projectRoot, 'docs', 'architecture.md'), [
+      '# Architecture',
+      '',
+      '## Objective',
+      '',
+      'Document the system boundaries and workflows.',
+    ].join('\n'), 'utf8');
+    writeFileSync(join(projectRoot, 'package.json'), JSON.stringify({
+      name: 'apply-demo',
+      private: true,
+      scripts: {
+        test: 'node --test',
+        release: 'node scripts/release.js',
+      },
+      dependencies: {
+        '@nestjs/core': '^10.0.0',
+        '@nestjs/common': '^10.0.0',
+        typescript: '^5.0.0',
+        pg: '^8.11.0',
+      },
+    }, null, 2), 'utf8');
+    writeFileSync(join(projectRoot, 'Dockerfile'), 'FROM node:20\n', 'utf8');
+    writeFileSync(join(projectRoot, '.github', 'workflows', 'ci.yml'), 'name: CI\n', 'utf8');
+    writeFileSync(join(projectRoot, 'src', 'main.ts'), [
+      'import { NestFactory } from "@nestjs/core";',
+      'async function bootstrap() {',
+      '  await NestFactory.createApplicationContext({} as any);',
+      '}',
+      'bootstrap();',
+    ].join('\n'), 'utf8');
+    writeFileSync(join(projectRoot, 'worker', 'cron.ts'), [
+      'export function runCronJob() {',
+      '  return "cron";',
+      '}',
+    ].join('\n'), 'utf8');
+
+    const promptCalls = [];
+    inquirer.prompt = async (questions) => {
+      promptCalls.push(questions);
+      if (promptCalls.length === 1) {
+        return {
+          setup_mode: 'adopt',
+          engines: ['codex'],
+          project_name: 'Apply Demo',
+          user_name: 'Ana',
+          git_strategy: 'commit',
+          chat_language: 'pt-br',
+          doc_language: 'pt-br',
+        };
+      }
+
+      return { applyStructure: true };
+    };
+
+    const result = await install([]);
+    assert.equal(result, 0);
+    assert.equal(promptCalls.length, 2);
+
+    const manifest = loadManifest(projectRoot);
+    for (const relPath of [
+      '.agentforge/harness/README.md',
+      '.agentforge/harness/router.md',
+      '.agentforge/harness/context-index.yaml',
+      '.agentforge/harness/task-modes.yaml',
+      '.agentforge/harness/load-order.yaml',
+      '.agentforge/harness/engine-map.yaml',
+      '.agentforge/reports/README.md',
+    ]) {
+      assert.ok(manifest[relPath], `missing manifest entry for ${relPath}`);
+    }
+
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'flows', 'review.yaml')), true);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, '.agentforge', 'state.json'), 'utf8'));
+    assert.ok(state.flows.includes('review'));
+    assert.equal(state.flows.every((flowId) => existsSync(join(projectRoot, '.agentforge', 'flows', `${flowId}.yaml`))), true);
+
+    assert.match(readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8'), /<!-- agentforge:start -->/);
+    assert.match(readFileSync(join(projectRoot, 'CLAUDE.md'), 'utf8'), /<!-- agentforge:start -->/);
+
+    const validation = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(validation.status, 0);
+  } finally {
+    inquirer.prompt = originalPrompt;
+    process.chdir(cwd);
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});

@@ -1,0 +1,28 @@
+id: review
+name: review
+goal: Revisar mudanças com foco em risco, consistência, qualidade e segurança.
+trigger: Quando uma mudança precisa ser validada antes de ser integrada, entregue ou publicada.
+steps:
+  - id: collect-context
+    name: Coletar contexto
+    agent: orchestrator
+    description: Identificar escopo, arquivos alterados, intenção da mudança e contexto necessário.
+  - id: risk-review
+    name: Revisar riscos
+    agent: reviewer
+    description: Avaliar impacto, inconsistências, regressões e riscos de escopo.
+  - id: quality-check
+    name: Checar qualidade
+    agent: qa
+    description: Validar testes, cobertura, comandos e critérios de aceite quando aplicável.
+  - id: security-check
+    name: Checar segurança
+    agent: security
+    description: Avaliar permissões, dados sensíveis, autenticação, secrets e ações destrutivas.
+checkpoints:
+  - Contexto usado identificado
+  - Riscos listados
+  - Validações recomendadas
+  - Aprovação ou ajustes indicados
+done_when:
+  - A revisão separou riscos, bloqueios, sugestões e próximos passos.
