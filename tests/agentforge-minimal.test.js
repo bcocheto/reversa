@@ -1412,6 +1412,81 @@ test('refactor-agentic-surface plans legacy surface migration and applies safe c
   }
 });
 
+test('adopt --apply migrates a legacy skill and refreshes the context index', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-apply-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    writeFileSync(
+      join(projectRoot, 'AGENTS.md'),
+      [
+        '# Legacy Agent Instructions',
+        '',
+        'Use this file only for adoption testing.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+
+    mkdirSync(join(projectRoot, '.agents', 'skills', 'foo'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, '.agents', 'skills', 'foo', 'SKILL.md'),
+      [
+        '# Foo Skill',
+        '',
+        '## When to use',
+        '',
+        'Use this skill when a task needs the foo workflow.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+
+    mkdirSync(join(projectRoot, '.agents', 'context'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, '.agents', 'context', 'domain.md'),
+      [
+        '# Domain Notes',
+        '',
+        'Stable domain guidance that should land in canonical context.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'adopt', '--apply'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'foo', 'SKILL.md')), true);
+    assert.match(readFileSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'foo', 'SKILL.md'), 'utf8'), /Foo Skill/);
+
+    const contextIndex = readFileSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml'), 'utf8');
+    assert.match(contextIndex, /skills\/foo\/SKILL\.md/);
+
+    const contextMap = readFileSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-map.yaml'), 'utf8');
+    assert.match(contextMap, /context\/domain\.md/);
+
+    const manifest = loadManifest(projectRoot);
+    assert.ok(manifest['.agentforge/skills/foo/SKILL.md']);
+    assert.ok(manifest['.agentforge/harness/context-index.yaml']);
+    assert.ok(manifest['.agentforge/harness/context-map.yaml']);
+    assert.ok(Object.keys(manifest).some((relPath) => relPath.startsWith('.agentforge/imports/snapshots/AGENTS.md/')));
+
+    const adoptionApplyReport = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'adoption-apply.md'), 'utf8');
+    assert.match(adoptionApplyReport, /skills\/foo\/SKILL\.md/);
+    assert.match(adoptionApplyReport, /AGENTS\.md/);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(state.adoption_status, 'applied');
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('compile warns when the minimum harness is absent', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-compile-missing-harness-'));
 
