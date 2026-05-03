@@ -11,6 +11,7 @@ import { buildManifest, saveManifest, loadManifest, mergeUpdateManifest } from '
 import { compileAgentForge } from '../lib/exporter/index.js';
 import { renderManagedEntrypoint } from '../lib/exporter/bootloader.js';
 import { buildHandoffData, renderHandoffReport, resolveHandoffWritePolicy } from '../lib/commands/handoff.js';
+import { resolveAgentForgeActivationPlan } from '../lib/commands/activation-plan.js';
 import { runUninstall } from '../lib/commands/uninstall.js';
 import { buildInstallOnboardingCopy, shouldDefaultFinalizeAdoption } from '../lib/commands/install.js';
 import { runAdoptApply } from '../lib/commands/adopt.js';
@@ -286,6 +287,147 @@ test('handoff write policy adapts to phase and adoption mode', () => {
   assert.equal(adoptionPolicy.prohibited.includes('AGENTS.md'), false);
   assert.ok(adoptionPolicy.prohibited.includes('.agentforge/state.json'));
   assert.ok(adoptionPolicy.prohibited.includes('.agentforge/plan.md'));
+});
+
+test('activation plan prioritizes adoption states before the phase engine', async () => {
+  const adoptionRoot = mkdtempSync(join(tmpdir(), 'agentforge-activation-adopt-'));
+
+  try {
+    await installFixture(adoptionRoot, { setupMode: 'adopt' });
+
+    const statePath = join(adoptionRoot, PRODUCT.internalDir, 'state.json');
+    const plannedState = JSON.parse(readFileSync(statePath, 'utf8'));
+    const plannedPlan = resolveAgentForgeActivationPlan(adoptionRoot, {
+      ...plannedState,
+      adoption_status: 'planned',
+      adoption: {
+        ...(plannedState.adoption ?? {}),
+        apply_status: 'pending',
+      },
+    });
+
+    assert.equal(plannedPlan.mode, 'adoption-pending');
+    assert.equal(plannedPlan.should_continue_workflow, false);
+    assert.equal(plannedPlan.current_phase, 'adoption-pending');
+    assert.equal(plannedPlan.next_action, 'apply-adoption');
+    assert.equal(plannedPlan.recommended_command, 'agentforge adopt --apply');
+    assert.deepEqual(plannedPlan.required_commands, ['agentforge adopt --apply']);
+    assert.doesNotMatch(plannedPlan.required_commands.join('\n'), /discovery|agent-design/);
+
+    const verificationState = {
+      ...plannedState,
+      adoption_status: 'applied',
+      adoption: {
+        ...(plannedState.adoption ?? {}),
+        status: 'applied',
+        apply_status: 'applied',
+      },
+    };
+    const verificationPlan = resolveAgentForgeActivationPlan(adoptionRoot, verificationState);
+
+    assert.equal(verificationPlan.mode, 'adoption-verification');
+    assert.equal(verificationPlan.should_continue_workflow, false);
+    assert.equal(verificationPlan.current_phase, 'adoption-verification');
+    assert.equal(verificationPlan.next_action, 'verify-adoption');
+    assert.equal(verificationPlan.recommended_command, 'agentforge context-map --write');
+    assert.deepEqual(verificationPlan.required_commands, ['agentforge context-map --write', 'agentforge validate']);
+    assert.doesNotMatch(verificationPlan.required_commands.join('\n'), /agent-design/);
+
+    const verifiedPlan = resolveAgentForgeActivationPlan(adoptionRoot, {
+      ...verificationState,
+      adoption: {
+        ...verificationState.adoption,
+        verification_status: 'verified',
+      },
+    });
+
+    assert.equal(verifiedPlan.mode, 'adoption-complete');
+    assert.equal(verifiedPlan.should_continue_workflow, false);
+    assert.equal(verifiedPlan.current_phase, 'adoption-complete');
+    assert.equal(verifiedPlan.next_action, 'ask-for-real-task');
+    assert.equal(verifiedPlan.recommended_command, 'none');
+    assert.deepEqual(verifiedPlan.required_commands, []);
+  } finally {
+    rmSync(adoptionRoot, { recursive: true, force: true });
+  }
+
+  const bootstrapRoot = mkdtempSync(join(tmpdir(), 'agentforge-activation-bootstrap-'));
+
+  try {
+    await installFixture(bootstrapRoot, { setupMode: 'bootstrap' });
+
+    const bootstrapState = JSON.parse(readFileSync(join(bootstrapRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    const bootstrapPlan = resolveAgentForgeActivationPlan(bootstrapRoot, bootstrapState);
+
+    assert.equal(bootstrapPlan.mode, 'phase-engine');
+    assert.equal(bootstrapPlan.should_continue_workflow, true);
+    assert.equal(bootstrapPlan.current_phase, 'discovery');
+    assert.equal(bootstrapPlan.next_phase, 'agent-design');
+    assert.ok(bootstrapPlan.required_commands.includes('agentforge handoff'));
+  } finally {
+    rmSync(bootstrapRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge next, handoff, and status honor adopted activation plans', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-activation-cli-'));
+
+  try {
+    await installFixture(projectRoot, { setupMode: 'adopt' });
+
+    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
+    const state = JSON.parse(readFileSync(statePath, 'utf8'));
+    state.adoption_status = 'applied';
+    state.adoption = {
+      ...(state.adoption ?? {}),
+      status: 'applied',
+      apply_status: 'applied',
+    };
+    writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+
+    const nextResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'next'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(nextResult.status, 0);
+    assert.match(nextResult.stdout, /Activation mode: adoption-verification/);
+    assert.match(nextResult.stdout, /Current phase: adoption-verification/);
+    assert.match(nextResult.stdout, /Next phase: none/);
+    assert.match(nextResult.stdout, /agentforge context-map --write/);
+    assert.match(nextResult.stdout, /agentforge validate/);
+    assert.doesNotMatch(nextResult.stdout, /checkpoint discovery/);
+    assert.doesNotMatch(nextResult.stdout, /agent-design/);
+
+    const handoffResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'handoff'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(handoffResult.status, 0);
+    assert.match(handoffResult.stdout, /Próxima fase: adoption-verification/);
+    assert.match(handoffResult.stdout, /Comando recomendado: agentforge context-map --write/);
+    assert.doesNotMatch(handoffResult.stdout, /agent-design/);
+    assert.doesNotMatch(handoffResult.stdout, /checkpoint discovery/);
+
+    state.adoption.verification_status = 'verified';
+    writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+
+    const statusResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'status', '--json'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(statusResult.status, 0);
+    const payload = JSON.parse(statusResult.stdout);
+    assert.equal(payload.activation_mode, 'adoption-complete');
+    assert.equal(payload.current_phase, 'adoption-complete');
+    assert.equal(payload.next_phase, null);
+    assert.equal(payload.recommended_command, 'none');
+    assert.equal(payload.next_action, 'ask-for-real-task');
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
 });
 
 test('install source no longer auto-runs the intelligent cycle', () => {

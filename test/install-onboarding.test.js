@@ -858,11 +858,13 @@ test('install leaves the workflow pending and prepares handoff artifacts', async
       encoding: 'utf8',
     });
     assert.equal(nextResult.status, 0);
-    assert.match(nextResult.stdout, /Current phase: discovery/);
-    assert.match(nextResult.stdout, /Next phase: agent-design/);
-    assert.match(nextResult.stdout, /agentforge handoff/);
-    assert.match(nextResult.stdout, /agentforge checkpoint discovery --status done/);
+    assert.match(nextResult.stdout, /Activation mode: adoption-verification/);
+    assert.match(nextResult.stdout, /Current phase: adoption-verification/);
+    assert.match(nextResult.stdout, /Next phase: none/);
+    assert.match(nextResult.stdout, /agentforge context-map --write/);
     assert.match(nextResult.stdout, /agentforge validate/);
+    assert.doesNotMatch(nextResult.stdout, /agent-design/);
+    assert.doesNotMatch(nextResult.stdout, /checkpoint discovery/);
 
     const validation = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
       cwd: projectRoot,
