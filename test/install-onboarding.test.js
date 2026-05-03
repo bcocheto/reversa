@@ -295,6 +295,57 @@ test('handoff --task without mode asks for task-mode inference before editing', 
   }
 });
 
+test('handoff json exposes phase-specific and adoption write policy', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-handoff-write-policy-'));
+
+  try {
+    const installResult = await runInstallWithAnswers(projectRoot, makeBaseAnswers({
+      engines: ['codex'],
+      setup_mode: 'adopt',
+    }));
+    assert.equal(installResult.status, 0);
+
+    const runHandoffJson = (args) => {
+      const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'handoff', '--json', ...args], {
+        cwd: projectRoot,
+        encoding: 'utf8',
+      });
+      assert.equal(result.status, 0, result.stderr);
+      return JSON.parse(result.stdout);
+    };
+
+    const agentDesign = runHandoffJson(['--phase', 'agent-design']);
+    assert.ok(agentDesign.files_allowed_to_write.includes('.agentforge/agents/**'));
+    assert.equal(agentDesign.files_prohibited.includes('.agentforge/agents/**'), false);
+
+    const exportPhase = runHandoffJson(['--phase', 'export']);
+    assert.ok(exportPhase.files_allowed_to_write.includes('AGENTS.md'));
+    assert.equal(exportPhase.files_prohibited.includes('AGENTS.md'), false);
+
+    const adoptMode = runHandoffJson(['--mode', 'adopt']);
+    for (const entrypoint of ['AGENTS.md', 'CLAUDE.md']) {
+      assert.ok(adoptMode.files_allowed_to_write.includes(entrypoint), entrypoint);
+      assert.equal(adoptMode.files_prohibited.includes(entrypoint), false, entrypoint);
+    }
+    for (const surface of [
+      '.agents/**',
+      '.agentforge/context/**',
+      '.agentforge/skills/**',
+      '.agentforge/flows/**',
+      '.agentforge/policies/**',
+      '.agentforge/references/**',
+      '.agentforge/harness/context-index.yaml',
+      '.agentforge/harness/context-map.yaml',
+    ]) {
+      assert.ok(adoptMode.files_allowed_to_write.includes(surface), surface);
+    }
+    assert.ok(adoptMode.files_prohibited.includes('.agentforge/state.json'));
+    assert.ok(adoptMode.files_prohibited.includes('.agentforge/plan.md'));
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('install output is engine-aware for Codex, Claude, and Gemini', async () => {
   const scenarios = [
     {

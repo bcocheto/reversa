@@ -10,7 +10,7 @@ import { Writer } from '../lib/installer/writer.js';
 import { buildManifest, saveManifest, loadManifest, mergeUpdateManifest } from '../lib/installer/manifest.js';
 import { compileAgentForge } from '../lib/exporter/index.js';
 import { renderManagedEntrypoint } from '../lib/exporter/bootloader.js';
-import { buildHandoffData, renderHandoffReport } from '../lib/commands/handoff.js';
+import { buildHandoffData, renderHandoffReport, resolveHandoffWritePolicy } from '../lib/commands/handoff.js';
 import { runUninstall } from '../lib/commands/uninstall.js';
 import { buildInstallOnboardingCopy, shouldDefaultFinalizeAdoption } from '../lib/commands/install.js';
 import { validateAgentForgeStructure } from '../lib/commands/validate.js';
@@ -261,6 +261,30 @@ test('handoff reports engine-specific notes and playbooks for active engines', a
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
+});
+
+test('handoff write policy adapts to phase and adoption mode', () => {
+  const agentDesign = resolveHandoffWritePolicy({ phase: 'agent-design' });
+  const exportPolicy = resolveHandoffWritePolicy({ phase: 'export' });
+  const adoptionPolicy = resolveHandoffWritePolicy({ mode: 'adopt' });
+
+  assert.ok(agentDesign.allowed.includes('.agentforge/agents/**'));
+  assert.equal(agentDesign.prohibited.includes('.agentforge/agents/**'), false);
+  assert.ok(exportPolicy.allowed.includes('AGENTS.md'));
+  assert.equal(exportPolicy.prohibited.includes('AGENTS.md'), false);
+  assert.ok(adoptionPolicy.allowed.includes('AGENTS.md'));
+  assert.ok(adoptionPolicy.allowed.includes('CLAUDE.md'));
+  assert.ok(adoptionPolicy.allowed.includes('.agents/**'));
+  assert.ok(adoptionPolicy.allowed.includes('.agentforge/context/**'));
+  assert.ok(adoptionPolicy.allowed.includes('.agentforge/skills/**'));
+  assert.ok(adoptionPolicy.allowed.includes('.agentforge/flows/**'));
+  assert.ok(adoptionPolicy.allowed.includes('.agentforge/policies/**'));
+  assert.ok(adoptionPolicy.allowed.includes('.agentforge/references/**'));
+  assert.ok(adoptionPolicy.allowed.includes('.agentforge/harness/context-index.yaml'));
+  assert.ok(adoptionPolicy.allowed.includes('.agentforge/harness/context-map.yaml'));
+  assert.equal(adoptionPolicy.prohibited.includes('AGENTS.md'), false);
+  assert.ok(adoptionPolicy.prohibited.includes('.agentforge/state.json'));
+  assert.ok(adoptionPolicy.prohibited.includes('.agentforge/plan.md'));
 });
 
 test('install source no longer auto-runs the intelligent cycle', () => {
