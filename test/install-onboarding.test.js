@@ -42,6 +42,32 @@ function makeBaseAnswers(overrides = {}) {
   };
 }
 
+function writeFeatureContextIndex(projectRoot) {
+  mkdirSync(join(projectRoot, PRODUCT.internalDir, 'harness'), { recursive: true });
+  writeFileSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml'), [
+    'always_load:',
+    '  - harness/router.md',
+    '  - harness/context-index.yaml',
+    '  - harness/context-map.yaml',
+    '  - ai/README.md',
+    'task_contexts:',
+    '  feature:',
+    '    context:',
+    '      - context/project-overview.md',
+    '      - context/architecture.md',
+    '      - context/coding-standards.md',
+    '    skills:',
+    '      - skills/create-implementation-plan/SKILL.md',
+    '      - skills/run-tests/SKILL.md',
+    '    flows:',
+    '      - flows/feature-development.md',
+    '    policies:',
+    '      - policies/protected-files.md',
+    '      - policies/human-approval.md',
+    '',
+  ].join('\n'), 'utf8');
+}
+
 async function runInstallWithAnswers(projectRoot, answers) {
   const cwd = process.cwd();
   const originalPrompt = inquirer.prompt;
@@ -205,6 +231,65 @@ test('handoff context-curation points to context-curator and the curation flow',
     assert.match(handoffResult.stdout, /context-curation\.md/);
     assert.match(handoffResult.stdout, /Atualize `\.agentforge\/harness\/context-map\.yaml`/);
     assert.match(handoffResult.stdout, /agentforge validate/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('handoff --mode feature points to context-pack and resolved project context', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-handoff-feature-mode-'));
+
+  try {
+    const installResult = await runInstallWithAnswers(projectRoot, makeBaseAnswers({
+      engines: ['codex'],
+      setup_mode: 'bootstrap',
+    }));
+    assert.equal(installResult.status, 0);
+    writeFeatureContextIndex(projectRoot);
+
+    const handoffResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'handoff', '--engine', 'codex', '--mode', 'feature'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(handoffResult.status, 0);
+    assert.match(handoffResult.stdout, /agentforge context-pack feature --write/);
+
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'handoff.md'), 'utf8');
+    assert.match(report, /\.agentforge\/reports\/context-pack-feature\.md/);
+    assert.match(report, /\.agentforge\/context\/project-overview\.md/);
+    assert.match(report, /\.agentforge\/skills\/run-tests\/SKILL\.md/);
+    assert.match(report, /\.agentforge\/flows\/feature-development\.md/);
+    assert.match(report, /camada de roteamento/);
+    assert.match(report, /aplicada nos arquivos reais do projeto/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('handoff --task without mode asks for task-mode inference before editing', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-handoff-task-inference-'));
+
+  try {
+    const installResult = await runInstallWithAnswers(projectRoot, makeBaseAnswers({
+      engines: ['codex'],
+      setup_mode: 'bootstrap',
+    }));
+    assert.equal(installResult.status, 0);
+
+    const handoffResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'handoff', '--task', 'corrigir bug no login'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(handoffResult.status, 0);
+    assert.match(handoffResult.stdout, /agentforge context-pack --task "corrigir bug no login" --write/);
+
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'handoff.md'), 'utf8');
+    assert.match(report, /Inferência pendente/);
+    assert.match(report, /corrigir bug no login/);
+    assert.match(report, /Escolha o task mode mais provável antes de editar arquivos reais\./);
+    assert.match(report, /Não altere arquivos reais até escolher o task mode mais provável\./);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
