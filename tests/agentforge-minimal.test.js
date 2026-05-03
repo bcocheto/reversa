@@ -12,7 +12,7 @@ import { compileAgentForge } from '../lib/exporter/index.js';
 import { renderManagedEntrypoint } from '../lib/exporter/bootloader.js';
 import { buildHandoffData, renderHandoffReport } from '../lib/commands/handoff.js';
 import { runUninstall } from '../lib/commands/uninstall.js';
-import { shouldDefaultFinalizeAdoption } from '../lib/commands/install.js';
+import { buildInstallOnboardingCopy, shouldDefaultFinalizeAdoption } from '../lib/commands/install.js';
 import { validateAgentForgeStructure } from '../lib/commands/validate.js';
 import { checkExistingInstallation } from '../lib/installer/validator.js';
 import { detectEngines, ENGINES } from '../lib/installer/detector.js';
@@ -353,6 +353,36 @@ test('install defaults adoption finalization to true for adopt and hybrid modes'
   assert.equal(shouldDefaultFinalizeAdoption('bootstrap'), false);
   assert.equal(shouldDefaultFinalizeAdoption('adopt'), true);
   assert.equal(shouldDefaultFinalizeAdoption('hybrid'), true);
+});
+
+test('install onboarding copy distinguishes planned and applied adoption', () => {
+  const planned = buildInstallOnboardingCopy({
+    setupMode: 'adopt',
+    adoptionApplied: false,
+    adoptionPlanPath: '.agentforge/reports/adoption-plan.md',
+  });
+  const applied = buildInstallOnboardingCopy({
+    setupMode: 'hybrid',
+    adoptionApplied: true,
+    adoptionApplyPath: '.agentforge/reports/adoption-apply.md',
+    deferredEntrypoints: ['AGENTS.md'],
+  });
+  const bootstrap = buildInstallOnboardingCopy({
+    setupMode: 'bootstrap',
+  });
+
+  assert.match(planned.label, /ainda precisa ser aplicada/i);
+  assert.match(planned.adoptionLine, /planejada/);
+  assert.match(planned.adoptionLine, /adoption-plan\.md/);
+  assert.match(planned.nextSteps.join('\n'), /agentforge adopt --apply/);
+
+  assert.match(applied.label, /adoção agentic foi executada/i);
+  assert.match(applied.adoptionLine, /aplicada/);
+  assert.match(applied.adoptionLine, /adoption-apply\.md/);
+  assert.match(applied.deferredLine, /Entrypoints resolvidos/);
+
+  assert.equal(bootstrap.adoptionLine, null);
+  assert.equal(bootstrap.deferredLine, null);
 });
 
 test('compile after install updates only the managed bootloader block', async () => {
