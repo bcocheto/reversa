@@ -15,6 +15,7 @@ import { resolveAgentForgeActivationPlan } from '../lib/commands/activation-plan
 import { runUninstall } from '../lib/commands/uninstall.js';
 import { buildInstallOnboardingCopy, shouldDefaultFinalizeAdoption } from '../lib/commands/install.js';
 import { runAdoptApply } from '../lib/commands/adopt.js';
+import { finalizeAdoptionWorkflow } from '../lib/commands/phase-engine.js';
 import { validateAgentForgeStructure } from '../lib/commands/validate.js';
 import { checkExistingInstallation } from '../lib/installer/validator.js';
 import { detectEngines, ENGINES } from '../lib/installer/detector.js';
@@ -1584,6 +1585,12 @@ test('adopt --apply tracks entrypoints in the manifest and compile can finalize 
     assert.ok(adoptResult.entrypoints.includes('AGENTS.md'));
     assert.ok(adoptResult.entrypoints.includes('CLAUDE.md'));
 
+    const stateAfterApply = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    finalizeAdoptionWorkflow(projectRoot, stateAfterApply, {
+      validationResult: adoptResult.validationResult,
+      adoptionApplyPath: adoptResult.reportPath,
+    });
+
     const manifest = loadManifest(projectRoot);
     assert.ok(manifest['AGENTS.md']);
     assert.ok(manifest['CLAUDE.md']);
@@ -1607,6 +1614,18 @@ test('adopt --apply tracks entrypoints in the manifest and compile can finalize 
     assert.match(applyReport, /AGENTS\.md/);
     assert.match(applyReport, /CLAUDE\.md/);
     assert.match(applyReport, /Final takeover of existing entrypoints/);
+
+    const finalState = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(finalState.adoption_status, 'applied');
+    assert.equal(finalState.adoption?.verification_status, 'verified');
+    assert.equal(finalState.workflow.current_phase, 'review');
+    assert.deepEqual(finalState.workflow.completed_phases, [
+      'agent-design',
+      'flow-design',
+      'policies',
+      'export',
+    ]);
+    assert.deepEqual(finalState.workflow.pending_phases, ['review']);
 
     const mutateManagedEntrypoint = (relPath, internalLine, externalLine) => {
       const entryPath = join(projectRoot, relPath);

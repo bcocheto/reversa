@@ -741,9 +741,16 @@ test('install applies structure on an existing project and keeps the manifest co
     assert.ok(state.flows.includes('review'));
     assert.ok(state.flows.includes('context-curation'));
     assert.equal(state.flows.every((flowId) => existsSync(join(projectRoot, '.agentforge', 'flows', `${flowId}.yaml`))), true);
-    assert.deepEqual(state.workflow.completed_phases, []);
-    assert.deepEqual(state.workflow.pending_phases, ['discovery', 'agent-design', 'flow-design', 'policies', 'export', 'review']);
-    assert.equal(state.workflow.current_phase, 'discovery');
+    assert.equal(state.adoption_status, 'applied');
+    assert.equal(state.adoption?.verification_status, 'verified');
+    assert.equal(state.workflow.current_phase, 'review');
+    assert.deepEqual(state.workflow.completed_phases, [
+      'agent-design',
+      'flow-design',
+      'policies',
+      'export',
+    ]);
+    assert.deepEqual(state.workflow.pending_phases, ['review']);
 
     const agents = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
     assert.match(agents, /<!-- agentforge:start -->/);
@@ -831,19 +838,21 @@ test('install leaves the workflow pending and prepares handoff artifacts', async
     assert.equal(promptCalls.length, 2);
 
     const state = JSON.parse(readFileSync(join(projectRoot, '.agentforge', 'state.json'), 'utf8'));
-    assert.deepEqual(state.workflow.completed_phases, []);
-    assert.deepEqual(state.workflow.pending_phases, [
-      'discovery',
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'handoff.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'advance.md')), false);
+    assert.equal(state.adoption_status, 'applied');
+    assert.equal(state.adoption?.status, 'applied');
+    assert.equal(state.adoption?.apply_status, 'applied');
+    assert.equal(state.adoption?.verification_status, 'verified');
+    assert.ok(state.adoption?.verified_at);
+    assert.equal(state.workflow.current_phase, 'review');
+    assert.deepEqual(state.workflow.completed_phases, [
       'agent-design',
       'flow-design',
       'policies',
       'export',
-      'review',
     ]);
-    assert.equal(state.workflow.current_phase, 'discovery');
-    assert.equal(state.pending.length, 6);
-    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'handoff.md')), true);
-    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'advance.md')), false);
+    assert.deepEqual(state.workflow.pending_phases, ['review']);
 
     const agents = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
     assert.match(agents, /<!-- agentforge:start -->/);
@@ -858,13 +867,12 @@ test('install leaves the workflow pending and prepares handoff artifacts', async
       encoding: 'utf8',
     });
     assert.equal(nextResult.status, 0);
-    assert.match(nextResult.stdout, /Activation mode: adoption-verification/);
-    assert.match(nextResult.stdout, /Current phase: adoption-verification/);
+    assert.match(nextResult.stdout, /Activation mode: adoption-complete/);
+    assert.match(nextResult.stdout, /Current phase: adoption-complete/);
     assert.match(nextResult.stdout, /Next phase: none/);
-    assert.match(nextResult.stdout, /agentforge context-map --write/);
-    assert.match(nextResult.stdout, /agentforge validate/);
-    assert.doesNotMatch(nextResult.stdout, /agent-design/);
+    assert.match(nextResult.stdout, /ask-for-real-task/);
     assert.doesNotMatch(nextResult.stdout, /checkpoint discovery/);
+    assert.doesNotMatch(nextResult.stdout, /agent-design/);
 
     const validation = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
       cwd: projectRoot,
