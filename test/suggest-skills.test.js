@@ -5,7 +5,6 @@ import { spawnSync } from 'child_process';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { tmpdir } from 'os';
-import YAML from 'yaml';
 
 import { Writer } from '../lib/installer/writer.js';
 import { buildManifest, saveManifest, loadManifest } from '../lib/installer/manifest.js';
@@ -74,7 +73,7 @@ function createPackageJson(projectRoot) {
   );
 }
 
-test('suggest-skills generates run-tests, run-lint, and database-migration suggestions', async () => {
+test('suggest-skills writes an AI request and evidence bundle by default', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-suggest-skills-basic-'));
 
   try {
@@ -85,60 +84,50 @@ test('suggest-skills generates run-tests, run-lint, and database-migration sugge
 
     const result = runSuggest(projectRoot);
     assert.equal(result.status, 0);
+    assert.match(result.stdout, /Request written to/);
+    assert.match(result.stdout, /active AI should answer/);
 
+    const requestPath = join(projectRoot, PRODUCT.internalDir, 'ai', 'requests', 'suggest-skills.md');
+    const jsonPath = join(projectRoot, PRODUCT.internalDir, 'ai', 'evidence', 'project-evidence.json');
+    const briefPath = join(projectRoot, PRODUCT.internalDir, 'ai', 'evidence', 'project-brief.md');
+    const evidenceReportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'ai-evidence.md');
     const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'skill-suggestions.md');
+
+    assert.equal(existsSync(requestPath), true);
+    assert.equal(existsSync(jsonPath), true);
+    assert.equal(existsSync(briefPath), true);
+    assert.equal(existsSync(evidenceReportPath), true);
     assert.equal(existsSync(reportPath), true);
+    const request = readFileSync(requestPath, 'utf8');
+    assert.match(request, /# Skill Suggestion Request/);
+    assert.match(request, /skills:/);
+    assert.match(request, /source_evidence:/);
+    assert.match(request, /safety_limits:/);
     const report = readFileSync(reportPath, 'utf8');
     assert.match(report, /AgentForge Skill Suggestions/);
-    assert.match(report, /run-tests/);
-    assert.match(report, /run-lint/);
-    assert.match(report, /database-migration/);
+    assert.match(report, /Mode: AI-first/);
+    assert.match(report, /No heuristic YAML suggestions were generated in this mode/);
 
     const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
-    assert.equal(typeof state.last_skill_suggestions_at, 'string');
-    assert.ok(Array.isArray(state.suggested_skills));
-    assert.ok(state.suggested_skills.some((item) => item.id === 'run-tests'));
-    assert.ok(state.suggested_skills.some((item) => item.id === 'run-lint'));
-    assert.ok(state.suggested_skills.some((item) => item.id === 'database-migration'));
+    assert.equal(typeof state.last_skill_suggestion_request_at, 'string');
+    assert.equal(state.skill_suggestion_request.mode, 'ai-first');
+    assert.equal(state.skill_suggestion_request.request_file, '.agentforge/ai/requests/suggest-skills.md');
+    assert.equal(state.skill_suggestion_request.status, 'pending_ai_response');
+    assert.equal(typeof state.last_skill_suggestions_at, 'undefined');
 
     const manifest = loadManifest(projectRoot);
+    assert.ok(manifest['.agentforge/ai/requests/suggest-skills.md']);
+    assert.ok(manifest['.agentforge/ai/evidence/project-evidence.json']);
+    assert.ok(manifest['.agentforge/ai/evidence/project-brief.md']);
+    assert.ok(manifest['.agentforge/reports/ai-evidence.md']);
     assert.ok(manifest['.agentforge/reports/skill-suggestions.md']);
-    assert.ok(manifest['.agentforge/suggestions/skills/run-tests.yaml']);
-    assert.ok(manifest['.agentforge/suggestions/skills/run-lint.yaml']);
-    assert.ok(manifest['.agentforge/suggestions/skills/database-migration.yaml']);
     assert.ok(manifest['.agentforge/state.json']);
-    assert.equal(manifest['.agentforge/skill-suggestions/run-tests.yaml'], undefined);
-    assert.equal(manifest['.agentforge/skill-suggestions/run-lint.yaml'], undefined);
-    assert.equal(manifest['.agentforge/skill-suggestions/database-migration.yaml'], undefined);
-
-    for (const relPath of [
-      '.agentforge/suggestions/skills/run-tests.yaml',
-      '.agentforge/suggestions/skills/run-lint.yaml',
-      '.agentforge/suggestions/skills/database-migration.yaml',
-    ]) {
-      const filePath = join(projectRoot, relPath);
-      assert.equal(existsSync(filePath), true);
-      const parsed = YAML.parse(readFileSync(filePath, 'utf8'));
-      assert.equal(typeof parsed.id, 'string');
-      assert.equal(typeof parsed.name, 'string');
-      assert.equal(typeof parsed.description, 'string');
-      assert.equal(typeof parsed.reason, 'string');
-      assert.ok(['high', 'medium', 'low'].includes(parsed.confidence));
-      assert.ok(Array.isArray(parsed.triggers));
-      assert.ok(Array.isArray(parsed.recommended_context));
-      assert.ok(Array.isArray(parsed.recommended_steps));
-      assert.ok(Array.isArray(parsed.safety_limits));
-      assert.ok(Array.isArray(parsed.engine_exports));
-      assert.ok(Array.isArray(parsed.source_evidence));
-    }
-
-    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'run-lint', 'SKILL.md')), false);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
 });
 
-test('suggest-skills preserves a manually edited suggestion file without --force', async () => {
+test('suggest-skills --heuristic keeps the legacy YAML flow', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-suggest-skills-preserve-'));
 
   try {
@@ -146,14 +135,25 @@ test('suggest-skills preserves a manually edited suggestion file without --force
     createPackageJson(projectRoot);
     mkdirSync(join(projectRoot, 'migrations'), { recursive: true });
 
-    const first = runSuggest(projectRoot);
-    assert.equal(first.status, 0);
+    const result = runSuggest(projectRoot, ['--heuristic']);
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /Sugestões geradas em/);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'ai', 'requests', 'suggest-skills.md')), false);
+
+    const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'skill-suggestions.md');
+    assert.equal(existsSync(reportPath), true);
+    const report = readFileSync(reportPath, 'utf8');
+    assert.match(report, /Mode: legacy heuristic/);
+    assert.match(report, /run-tests/);
+    assert.match(report, /run-lint/);
+    assert.match(report, /database-migration/);
 
     const suggestionPath = join(projectRoot, PRODUCT.internalDir, 'suggestions', 'skills', 'run-tests.yaml');
+    assert.equal(existsSync(suggestionPath), true);
     const manualContent = `${readFileSync(suggestionPath, 'utf8')}# manual note\n`;
     writeFileSync(suggestionPath, manualContent, 'utf8');
 
-    const second = runSuggest(projectRoot);
+    const second = runSuggest(projectRoot, ['--heuristic']);
     assert.equal(second.status, 0);
 
     assert.equal(readFileSync(suggestionPath, 'utf8'), manualContent);
