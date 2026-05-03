@@ -208,7 +208,7 @@ function writeProjectSurface(projectRoot) {
   writeFileSync(join(projectRoot, 'tests', 'app.test.ts'), 'import test from "node:test"; test("ok", () => {});\n', 'utf8');
 }
 
-test('agentforge suggest-agents generates agent recommendations and reports', async () => {
+test('agentforge suggest-agents writes an AI request and evidence bundle by default', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-suggest-agents-'));
 
   try {
@@ -216,7 +216,11 @@ test('agentforge suggest-agents generates agent recommendations and reports', as
     writeProjectSurface(projectRoot);
 
     const agentsBefore = listFilesRecursive(join(projectRoot, PRODUCT.internalDir, 'agents')).map((file) => file.replace(projectRoot, ''));
-    const agentsSnapshot = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
+    const requestPath = join(projectRoot, PRODUCT.internalDir, 'ai', 'requests', 'suggest-agents.md');
+    const jsonPath = join(projectRoot, PRODUCT.internalDir, 'ai', 'evidence', 'project-evidence.json');
+    const briefPath = join(projectRoot, PRODUCT.internalDir, 'ai', 'evidence', 'project-brief.md');
+    const evidenceReportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'ai-evidence.md');
+    const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'agent-suggestions.md');
 
     const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'suggest-agents'], {
       cwd: projectRoot,
@@ -225,19 +229,63 @@ test('agentforge suggest-agents generates agent recommendations and reports', as
     });
 
     assert.equal(result.status, 0);
-    assert.match(result.stdout, /agent-suggestions\.md/);
+    assert.match(result.stdout, /Request written to/);
+    assert.match(result.stdout, /active AI should answer/);
 
-    assert.equal(readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8'), agentsSnapshot);
     assert.deepEqual(listFilesRecursive(join(projectRoot, PRODUCT.internalDir, 'agents')).map((file) => file.replace(projectRoot, '')), agentsBefore);
 
-    const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'agent-suggestions.md');
+    assert.equal(existsSync(requestPath), true);
+    assert.equal(existsSync(jsonPath), true);
+    assert.equal(existsSync(briefPath), true);
+    assert.equal(existsSync(evidenceReportPath), true);
     assert.equal(existsSync(reportPath), true);
+
+    const request = readFileSync(requestPath, 'utf8');
+    assert.match(request, /# Agent Suggestion Request/);
+    assert.match(request, /agents:/);
+    assert.match(request, /source_evidence:/);
+    assert.match(request, /confidence: low\|medium\|high/);
+
     const report = readFileSync(reportPath, 'utf8');
     assert.match(report, /AgentForge Agent Suggestions/);
-    assert.match(report, /documentation-curator/);
-    assert.match(report, /automation-planner/);
-    assert.match(report, /integration-specialist/);
-    assert.match(report, /operations-coordinator/);
+    assert.match(report, /Mode: AI-first/);
+    assert.match(report, /active AI return YAML suggestions/);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(typeof state.last_agent_suggestion_request_at, 'string');
+    assert.equal(state.agent_suggestion_request.mode, 'ai-first');
+    assert.equal(state.agent_suggestion_request.request_file, '.agentforge/ai/requests/suggest-agents.md');
+    assert.equal(state.agent_suggestion_request.status, 'pending_ai_response');
+    assert.equal(typeof state.last_agent_suggestions_at, 'undefined');
+
+    const manifest = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, '_config', 'files-manifest.json'), 'utf8'));
+    assert.ok(manifest['.agentforge/ai/requests/suggest-agents.md']);
+    assert.ok(manifest['.agentforge/ai/evidence/project-evidence.json']);
+    assert.ok(manifest['.agentforge/ai/evidence/project-brief.md']);
+    assert.ok(manifest['.agentforge/reports/ai-evidence.md']);
+    assert.ok(manifest['.agentforge/reports/agent-suggestions.md']);
+    assert.ok(manifest['.agentforge/state.json']);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge suggest-agents --heuristic keeps the legacy YAML flow', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-suggest-agents-heuristic-'));
+
+  try {
+    await installFixture(projectRoot);
+    writeProjectSurface(projectRoot);
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'suggest-agents', '--heuristic'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+      timeout: 20000,
+    });
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /agentes sugeridos em/i);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'ai', 'requests', 'suggest-agents.md')), false);
 
     for (const relPath of [
       '.agentforge/suggestions/agents/documentation-curator.yaml',
