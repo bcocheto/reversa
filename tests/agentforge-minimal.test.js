@@ -493,6 +493,33 @@ test('agentforge next, handoff, and status honor adopted activation plans', asyn
     state.adoption.verification_status = 'verified';
     writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
 
+    const completeHandoffData = buildHandoffData(projectRoot);
+    assert.equal(completeHandoffData.activation_plan.mode, 'adoption-complete');
+    assert.equal(completeHandoffData.current_phase, null);
+    assert.equal(completeHandoffData.next_phase, null);
+    assert.equal(completeHandoffData.workflow_complete, true);
+    assert.equal(completeHandoffData.recommended_command, 'none');
+    assert.equal(completeHandoffData.next_step, 'ask-for-real-task');
+
+    const completeHandoffReport = renderHandoffReport(completeHandoffData);
+    assert.match(completeHandoffReport, /A adoção agentic já foi aplicada e verificada\./);
+    assert.match(completeHandoffReport, /Não execute discovery\/agent-design automaticamente\./);
+    assert.match(completeHandoffReport, /Aguarde a próxima tarefa real do projeto\./);
+    assert.doesNotMatch(completeHandoffReport, /checkpoint discovery/);
+    assert.doesNotMatch(completeHandoffReport, /create-agent <id> --force/);
+
+    const completeHandoffResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'handoff'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(completeHandoffResult.status, 0);
+    assert.match(completeHandoffResult.stdout, /Próxima fase: nenhuma fase estrutural pendente/);
+    assert.match(completeHandoffResult.stdout, /Aguarde a próxima tarefa real do projeto\./);
+    assert.match(completeHandoffResult.stdout, /Comando recomendado: none/);
+    assert.doesNotMatch(completeHandoffResult.stdout, /checkpoint discovery/);
+    assert.doesNotMatch(completeHandoffResult.stdout, /agent-design/);
+
     const statusResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'status', '--json'], {
       cwd: projectRoot,
       encoding: 'utf8',
