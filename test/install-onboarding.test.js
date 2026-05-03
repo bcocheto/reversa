@@ -15,6 +15,7 @@ import { compileAgentForge } from '../lib/exporter/index.js';
 import { buildManifest, loadManifest, saveManifest } from '../lib/installer/manifest.js';
 import { PRODUCT } from '../lib/product.js';
 import install from '../lib/commands/install.js';
+import { resolveHandoffWritePolicy } from '../lib/commands/handoff.js';
 
 const AGENTFORGE_BIN = fileURLToPath(new URL('../bin/agentforge.js', import.meta.url));
 
@@ -314,19 +315,19 @@ test('handoff json exposes phase-specific and adoption write policy', async () =
       return JSON.parse(result.stdout);
     };
 
-    const agentDesign = runHandoffJson(['--phase', 'agent-design']);
-    assert.ok(agentDesign.files_allowed_to_write.includes('.agentforge/agents/**'));
-    assert.equal(agentDesign.files_prohibited.includes('.agentforge/agents/**'), false);
+    const agentDesign = resolveHandoffWritePolicy({ phase: 'agent-design' });
+    assert.equal(agentDesign.direct_write_allowed.includes('.agentforge/agents/**'), false);
+    assert.ok(agentDesign.command_write_allowed.includes('.agentforge/agents/**'));
+    assert.ok(agentDesign.never_edit_manually.includes('.agentforge/state.json'));
+    assert.ok(agentDesign.never_edit_manually.includes('.agentforge/plan.md'));
+    assert.ok(agentDesign.never_edit_manually.includes('.agentforge/_config/**'));
 
-    const exportPhase = runHandoffJson(['--phase', 'export']);
-    assert.ok(exportPhase.files_allowed_to_write.includes('AGENTS.md'));
-    assert.equal(exportPhase.files_prohibited.includes('AGENTS.md'), false);
+    const exportPhase = resolveHandoffWritePolicy({ phase: 'export' });
+    assert.equal(exportPhase.direct_write_allowed.includes('AGENTS.md'), false);
+    assert.ok(exportPhase.command_write_allowed.includes('AGENTS.md'));
+    assert.ok(exportPhase.command_write_allowed.includes('CLAUDE.md'));
 
-    const adoptMode = runHandoffJson(['--mode', 'adopt']);
-    for (const entrypoint of ['AGENTS.md', 'CLAUDE.md']) {
-      assert.ok(adoptMode.files_allowed_to_write.includes(entrypoint), entrypoint);
-      assert.equal(adoptMode.files_prohibited.includes(entrypoint), false, entrypoint);
-    }
+    const adoptMode = runHandoffJson(projectRoot, ['--mode', 'adopt']);
     for (const surface of [
       '.agents/**',
       '.agentforge/context/**',
@@ -337,10 +338,15 @@ test('handoff json exposes phase-specific and adoption write policy', async () =
       '.agentforge/harness/context-index.yaml',
       '.agentforge/harness/context-map.yaml',
     ]) {
-      assert.ok(adoptMode.files_allowed_to_write.includes(surface), surface);
+      assert.ok(adoptMode.command_write_allowed.includes(surface), surface);
     }
-    assert.ok(adoptMode.files_prohibited.includes('.agentforge/state.json'));
-    assert.ok(adoptMode.files_prohibited.includes('.agentforge/plan.md'));
+    for (const entrypoint of ['AGENTS.md', 'CLAUDE.md']) {
+      assert.equal(adoptMode.direct_write_allowed.includes(entrypoint), false, entrypoint);
+      assert.equal(adoptMode.command_write_allowed.includes(entrypoint), false, entrypoint);
+    }
+    assert.ok(adoptMode.never_edit_manually.includes('.agentforge/state.json'));
+    assert.ok(adoptMode.never_edit_manually.includes('.agentforge/plan.md'));
+    assert.ok(adoptMode.never_edit_manually.includes('.agentforge/_config/**'));
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }

@@ -256,6 +256,11 @@ test('handoff reports engine-specific notes and playbooks for active engines', a
     assert.match(renderHandoffReport(agentDesign), /Leia o playbook da fase: `\.agentforge\/ai\/playbooks\/agent-design\.md`\./);
     assert.match(renderHandoffReport(exportPhase), /Leia o playbook da fase: `\.agentforge\/ai\/playbooks\/export\.md`\./);
     assert.ok(exportPhase.commands.some((command) => command.includes('compile --takeover-entrypoints --include-existing-entrypoints')));
+    const agentDesignPlaybook = readFileSync(new URL('../templates/agentforge/ai/playbooks/agent-design.md', import.meta.url), 'utf8');
+    assert.match(agentDesignPlaybook, /Não criar YAML de agente manualmente; use `agentforge create-agent <id>`/);
+    assert.match(agentDesignPlaybook, /`agentforge apply-suggestions --agents`/);
+    const exportPlaybook = readFileSync(new URL('../templates/agentforge/ai/playbooks/export.md', import.meta.url), 'utf8');
+    assert.match(exportPlaybook, /Não editar entrypoints manualmente/);
     assert.match(renderHandoffReport(codex), /Leia a nota da engine: `\.agentforge\/ai\/engines\/codex\.md`\./);
     assert.match(renderHandoffReport(claude), /Leia a nota da engine: `\.agentforge\/ai\/engines\/claude\.md`\./);
     assert.match(renderHandoffReport(gemini), /Leia a nota da engine: `\.agentforge\/ai\/engines\/gemini\.md`\./);
@@ -271,23 +276,32 @@ test('handoff write policy adapts to phase and adoption mode', () => {
   const exportPolicy = resolveHandoffWritePolicy({ phase: 'export' });
   const adoptionPolicy = resolveHandoffWritePolicy({ mode: 'adopt' });
 
-  assert.ok(agentDesign.allowed.includes('.agentforge/agents/**'));
-  assert.equal(agentDesign.prohibited.includes('.agentforge/agents/**'), false);
-  assert.ok(exportPolicy.allowed.includes('AGENTS.md'));
-  assert.equal(exportPolicy.prohibited.includes('AGENTS.md'), false);
-  assert.ok(adoptionPolicy.allowed.includes('AGENTS.md'));
-  assert.ok(adoptionPolicy.allowed.includes('CLAUDE.md'));
-  assert.ok(adoptionPolicy.allowed.includes('.agents/**'));
-  assert.ok(adoptionPolicy.allowed.includes('.agentforge/context/**'));
-  assert.ok(adoptionPolicy.allowed.includes('.agentforge/skills/**'));
-  assert.ok(adoptionPolicy.allowed.includes('.agentforge/flows/**'));
-  assert.ok(adoptionPolicy.allowed.includes('.agentforge/policies/**'));
-  assert.ok(adoptionPolicy.allowed.includes('.agentforge/references/**'));
-  assert.ok(adoptionPolicy.allowed.includes('.agentforge/harness/context-index.yaml'));
-  assert.ok(adoptionPolicy.allowed.includes('.agentforge/harness/context-map.yaml'));
-  assert.equal(adoptionPolicy.prohibited.includes('AGENTS.md'), false);
-  assert.ok(adoptionPolicy.prohibited.includes('.agentforge/state.json'));
-  assert.ok(adoptionPolicy.prohibited.includes('.agentforge/plan.md'));
+  assert.equal(agentDesign.direct_write_allowed.includes('.agentforge/agents/**'), false);
+  assert.ok(agentDesign.command_write_allowed.includes('.agentforge/agents/**'));
+  assert.ok(agentDesign.command_write_allowed.includes('.agentforge/suggestions/agents/**'));
+  assert.ok(agentDesign.never_edit_manually.includes('.agentforge/state.json'));
+  assert.ok(agentDesign.never_edit_manually.includes('.agentforge/plan.md'));
+  assert.ok(agentDesign.never_edit_manually.includes('.agentforge/_config/**'));
+
+  assert.equal(exportPolicy.direct_write_allowed.includes('AGENTS.md'), false);
+  assert.ok(exportPolicy.command_write_allowed.includes('AGENTS.md'));
+  assert.ok(exportPolicy.command_write_allowed.includes('CLAUDE.md'));
+  assert.ok(exportPolicy.command_write_allowed.includes('.cursor/rules/agentforge.md'));
+  assert.ok(exportPolicy.command_write_allowed.includes('.github/copilot-instructions.md'));
+
+  assert.equal(adoptionPolicy.direct_write_allowed.includes('AGENTS.md'), false);
+  assert.equal(adoptionPolicy.direct_write_allowed.includes('CLAUDE.md'), false);
+  assert.ok(adoptionPolicy.command_write_allowed.includes('.agents/**'));
+  assert.ok(adoptionPolicy.command_write_allowed.includes('.agentforge/context/**'));
+  assert.ok(adoptionPolicy.command_write_allowed.includes('.agentforge/skills/**'));
+  assert.ok(adoptionPolicy.command_write_allowed.includes('.agentforge/flows/**'));
+  assert.ok(adoptionPolicy.command_write_allowed.includes('.agentforge/policies/**'));
+  assert.ok(adoptionPolicy.command_write_allowed.includes('.agentforge/references/**'));
+  assert.ok(adoptionPolicy.command_write_allowed.includes('.agentforge/harness/context-index.yaml'));
+  assert.ok(adoptionPolicy.command_write_allowed.includes('.agentforge/harness/context-map.yaml'));
+  assert.ok(adoptionPolicy.never_edit_manually.includes('.agentforge/state.json'));
+  assert.ok(adoptionPolicy.never_edit_manually.includes('.agentforge/plan.md'));
+  assert.ok(adoptionPolicy.never_edit_manually.includes('.agentforge/_config/**'));
 });
 
 test('activation plan prioritizes adoption states before the phase engine', async () => {

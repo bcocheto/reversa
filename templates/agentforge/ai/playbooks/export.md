@@ -18,6 +18,7 @@ Preparar e compilar os bootloaders sem transformar os entrypoints em dumps de co
 2. Verificar `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, Cursor e Copilot.
 3. Garantir que os bootloaders continuem curtos.
 4. Confirmar que os entrypoints não viraram dumps.
+5. Não editar entrypoints manualmente; a alteração canônica acontece via `agentforge compile --takeover-entrypoints --include-existing-entrypoints`.
 
 ## Pode executar
 
@@ -35,4 +36,3 @@ Preparar e compilar os bootloaders sem transformar os entrypoints em dumps de co
 
 - `agentforge checkpoint export --status done`
 - `agentforge validate`
-
