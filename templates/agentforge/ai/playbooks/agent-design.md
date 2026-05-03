@@ -12,12 +12,16 @@ Decidir quais agentes fazem sentido para o projeto real e quais não devem exist
 
 ## O que fazer
 
-1. Escolher agentes e subagentes relevantes.
-2. Especializar os agentes para o projeto.
-3. Incluir agentes fora de engenharia quando houver evidência.
-4. Evitar agentes sem responsabilidade clara.
-5. Registrar as decisões tomadas.
-6. Não criar YAML de agente manualmente; use `agentforge create-agent <id>` para um agente específico ou `agentforge apply-suggestions --agents` para promover sugestões.
+1. Listar as sugestões disponíveis em `suggestions/agents/`.
+2. Comparar as sugestões com os arquivos existentes em `agents/`.
+3. Para cada agente justificável ausente, executar `agentforge create-agent <id> --force`.
+4. Se `create-agent` falhar, parar imediatamente e relatar o erro.
+5. Se não houver sugestão válida, registrar no relatório que nada foi promovido.
+6. Especializar os agentes para o projeto sem criar YAML manualmente.
+7. Incluir agentes fora de engenharia quando houver evidência.
+8. Evitar agentes sem responsabilidade clara.
+9. Registrar as decisões tomadas.
+10. não crie agentes manualmente; use `agentforge create-agent <id>` ou `agentforge apply-suggestions --agents`.
 
 ## Pode escrever
 
@@ -41,4 +45,6 @@ Decidir quais agentes fazem sentido para o projeto real e quais não devem exist
 ## Finalizar
 
 - `agentforge checkpoint agent-design --status done`
+- `agentforge create-agent <id> --force`
+- `agentforge apply-suggestions --agents`
 - `agentforge validate`

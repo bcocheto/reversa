@@ -288,10 +288,14 @@ test('handoff reports engine-specific notes and playbooks for active engines', a
     assert.match(renderHandoffReport(exportPhase), /Leia o playbook da fase: `\.agentforge\/ai\/playbooks\/export\.md`\./);
     assert.ok(exportPhase.commands.some((command) => command.includes('compile --takeover-entrypoints --include-existing-entrypoints')));
     const agentDesignPlaybook = readFileSync(new URL('../templates/agentforge/ai/playbooks/agent-design.md', import.meta.url), 'utf8');
-    assert.match(agentDesignPlaybook, /Não criar YAML de agente manualmente; use `agentforge create-agent <id>`/);
+    assert.match(agentDesignPlaybook, /não crie agentes manualmente/);
+    assert.match(agentDesignPlaybook, /`agentforge create-agent <id>`/);
     assert.match(agentDesignPlaybook, /`agentforge apply-suggestions --agents`/);
     const exportPlaybook = readFileSync(new URL('../templates/agentforge/ai/playbooks/export.md', import.meta.url), 'utf8');
     assert.match(exportPlaybook, /Não editar entrypoints manualmente/);
+    assert.ok(agentDesign.commands.some((command) => command.includes('create-agent <id> --force')));
+    assert.ok(agentDesign.commands.some((command) => command.includes('apply-suggestions --agents')));
+    assert.ok(agentDesign.commands.some((command) => command.includes('validate')));
     assert.match(renderHandoffReport(codex), /Leia a nota da engine: `\.agentforge\/ai\/engines\/codex\.md`\./);
     assert.match(renderHandoffReport(claude), /Leia a nota da engine: `\.agentforge\/ai\/engines\/claude\.md`\./);
     assert.match(renderHandoffReport(gemini), /Leia a nota da engine: `\.agentforge\/ai\/engines\/gemini\.md`\./);
