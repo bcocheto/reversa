@@ -629,6 +629,13 @@ test('install runs analysis first and can stop after generating reports and sugg
     assert.match(request, /Agentic Blueprint Request/);
     assert.match(request, /\.agentforge\/ai\/outbox\/agentic-blueprint\.yaml/);
     assert.match(request, /não são recomendação final/);
+    assert.match(request, /Julgue semanticamente/);
+    assert.match(request, /Não copie heurísticas do CLI/);
+    assert.match(request, /agents:/);
+    assert.match(request, /skills:/);
+    assert.match(request, /context_documents:/);
+    assert.match(request, /entrypoints:/);
+    assert.match(request, /source_evidence:/);
 
     assert.match(output, /Sinais para decisão da IA:/);
     assert.match(output, /Capacidades detectadas:/);

@@ -11,6 +11,7 @@ import {
   renderFlowSuggestionRequest,
   renderPolicySuggestionRequest,
   renderContextSynthesisRequest,
+  renderAgenticBlueprintRequest,
 } from '../lib/ai/request-renderer.js';
 
 function buildBundleFixture() {
@@ -110,4 +111,25 @@ test('request renderer emits formal skill, flow, policy, and context prompts', (
   assert.match(context, /sections:/);
   assert.match(context, /title:/);
   assertCommonRequest(context, 'context_documents');
+});
+
+test('request renderer emits a deterministic agentic blueprint prompt', () => {
+  const bundle = buildBundleFixture();
+  const first = renderAgenticBlueprintRequest(bundle);
+  const second = renderAgenticBlueprintRequest(bundle);
+
+  assert.equal(first, second);
+  assert.match(first, /# Agentic Blueprint Request/);
+  assert.match(first, /agents:/);
+  assert.match(first, /skills:/);
+  assert.match(first, /context_documents:/);
+  assert.match(first, /entrypoints:/);
+  assert.match(first, /source_evidence:/);
+  assert.match(first, /Julgue semanticamente/);
+  assert.match(first, /Não copie heurísticas do CLI/);
+  assert.match(first, /Não crie agente sem evidência/);
+  assert.match(first, /Não crie o agente genérico "reviewer" sem papel específico/);
+  assert.match(first, /Não materialize arquivos manualmente/);
+  assert.match(first, /Não altere state\/manifest/);
+  assert.match(first, /Retorne somente YAML válido/);
 });
