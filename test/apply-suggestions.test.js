@@ -123,6 +123,7 @@ function writeSuggestions(projectRoot) {
     reason: 'O projeto tem automação e processos de entrega.',
     confidence: 'high',
     target_path: '.agentforge/policies/release-policy.yaml',
+    task_contexts: ['review'],
     safety_limits: ['Não automatizar ações de release sem confirmação humana.'],
     status: 'recommended',
   }).trim()}\n`, 'utf8');
@@ -189,6 +190,9 @@ test('agentforge apply-suggestions applies selected artifacts after confirmation
     const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'apply-suggestions.md'), 'utf8');
     assert.match(report, /Confirmed: yes/);
     assert.match(report, /Applied/);
+    assert.match(report, /Harness updates/);
+    assert.match(report, /agents\.automation-planner/);
+    assert.match(report, /task_contexts\.review\.policies/);
 
     const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
     assert.equal(typeof state.last_apply_suggestions_at, 'string');
@@ -197,10 +201,18 @@ test('agentforge apply-suggestions applies selected artifacts after confirmation
     assert.ok(state.flows.includes('review'));
     assert.ok(Array.isArray(state.applied_suggestions.agents));
     assert.ok(Array.isArray(state.applied_suggestions.skills));
+    assert.ok(state.created_files.includes('.agentforge/harness/context-index.yaml'));
 
     const contextIndex = YAML.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml'), 'utf8'));
+    assert.ok(Array.isArray(contextIndex.agents));
     assert.ok(Array.isArray(contextIndex.skills));
+    assert.ok(Array.isArray(contextIndex.flows));
+    assert.ok(contextIndex.agents.some((item) => item.id === 'automation-planner'));
     assert.ok(contextIndex.skills.some((item) => item.id === 'ci-diagnosis'));
+    assert.ok(contextIndex.flows.some((item) => item.id === 'review'));
+    assert.ok(contextIndex.task_contexts.review.skills.includes('skills/ci-diagnosis/SKILL.md'));
+    assert.ok(contextIndex.task_contexts.review.flows.includes('flows/review.yaml'));
+    assert.ok(contextIndex.task_contexts.review.policies.includes('policies/release-policy.yaml'));
 
     const manifest = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, '_config', 'files-manifest.json'), 'utf8'));
     assert.ok(manifest['.agentforge/reports/apply-suggestions.md']);
@@ -209,6 +221,33 @@ test('agentforge apply-suggestions applies selected artifacts after confirmation
     assert.ok(manifest['.agentforge/flows/review.yaml']);
     assert.ok(manifest['.agentforge/policies/release-policy.yaml']);
     assert.ok(manifest['.agentforge/harness/context-index.yaml']);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge apply-suggestions preserves a modified context index without --force', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-apply-context-index-modified-'));
+
+  try {
+    await installFixture(projectRoot);
+    writeSuggestions(projectRoot);
+
+    const contextIndexPath = join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml');
+    const originalContextIndex = readFileSync(contextIndexPath, 'utf8');
+    writeFileSync(contextIndexPath, `${originalContextIndex}manual_guard: keep\n`, 'utf8');
+
+    const result = runApply(projectRoot, ['--all'], 'y\n');
+    assert.equal(result.status, 0);
+
+    const contextIndex = readFileSync(contextIndexPath, 'utf8');
+    assert.match(contextIndex, /manual_guard: keep/);
+
+    const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'apply-suggestions.md'), 'utf8');
+    assert.match(report, /Harness updates/);
+    assert.match(report, /blocked/);
+    assert.match(report, /Patch recommendation/);
+    assert.match(report, /context-index-modified/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
