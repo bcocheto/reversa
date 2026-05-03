@@ -1,7 +1,7 @@
 # AgentForge
 <small>by bcocheto</small>
 
-AgentForge is AI-engine driven. The CLI prepares the harness and handoff, while your configured AI engine executes the intelligent workflow.
+AgentForge is AI-engine driven. The CLI prepares the harness, evidence, requests, imports, and handoff. Your configured AI engine does the semantic judgment and then acts on the real project files.
 It works for new projects and existing projects, and it keeps evolving the same canonical layer over time.
 
 ## The problem
@@ -17,11 +17,15 @@ It works for new projects and existing projects, and it keeps evolving the same 
 ## The solution
 
 - `.agentforge/` is the canonical source of truth for the project agent layer.
-- `.agentforge/ai/` stores engine-agnostic playbooks plus engine-specific notes.
+- `.agentforge/` is not the task itself; it is the harness used to decide how to work on the project.
+- `.agentforge/ai/` stores evidence bundles, AI requests, and engine-specific notes.
 - `harness/context-index.yaml` manages what context loads, when, and why.
-- `analyze` scans the project and builds a consolidated view of stack, architecture, patterns, risks, and signals.
+- `analyze` scans the project and builds a consolidated view of stack, architecture, patterns, risks, signals, and initial context synthesis.
+- `ai-evidence` builds a reusable evidence bundle for the active AI without making heuristic suggestions.
+- `context-pack` resolves the task mode and returns the ordered context pack to load or review.
 - `research-patterns` evaluates a local pattern catalog against the detected project evidence.
-- `suggest-agents`, `suggest-skills`, and the flow/policy/context suggestions from `analyze` turn signals into recommendations.
+- `suggest-agents`, `suggest-skills`, and the flow/policy/context suggestions from `analyze` now generate AI requests by default; `--heuristic` keeps the legacy local fallback explicit.
+- `import-ai-suggestions` imports YAML or JSON produced by the active AI into canonical reviewable suggestions.
 - `apply-suggestions` promotes recommendations in a controlled way.
 - `compile` regenerates clean engine bootloaders from the canonical layer.
 - `handoff` prepares the next intelligent phase for the active AI engine.
@@ -106,6 +110,7 @@ The canonical team lives under `.agentforge/`:
 ├── config.toml
 ├── plan.md
 ├── scope.md
+├── ai/
 ├── agents/
 ├── subagents/
 ├── flows/
@@ -129,6 +134,18 @@ Engine-specific entry files and bootloaders are derived from that structure:
 - `.agentforge/ai/README.md`
 - `.agentforge/ai/playbooks/*.md`
 - `.agentforge/ai/engines/*.md`
+
+AI evidence, requests, and imported suggestions live under:
+
+- `.agentforge/ai/evidence/*.json`
+- `.agentforge/ai/evidence/*.md`
+- `.agentforge/ai/requests/*.md`
+- `.agentforge/reports/context-pack-*.md`
+- `.agentforge/suggestions/agents/*.yaml`
+- `.agentforge/suggestions/skills/*.yaml`
+- `.agentforge/suggestions/flows/*.yaml`
+- `.agentforge/suggestions/policies/*.yaml`
+- `.agentforge/suggestions/context/*.yaml`
 
 `compile` updates the real engine entrypoints in the repository root. `compile --takeover-entrypoints` snapshots existing entrypoints first and then rewrites them as managed bootloaders. `export-package` writes the isolated `_agentforge/` bundle without replacing those entrypoints. `export --package` is an explicit shortcut for that same package export.
 
@@ -159,8 +176,8 @@ It writes:
 
 Suggestions are the bridge between analysis and final artifacts.
 
-- `suggest-agents` recommends team roles beyond engineering, including planning, automation, operations, data, knowledge, domain, security, compliance, support, integration, and quality.
-- `suggest-skills` recommends reusable skills from the project surface.
+- `suggest-agents` and `suggest-skills` generate AI requests by default. They do not pretend local heuristics are the final judgment.
+- Use `--heuristic` or `--legacy-heuristic` only when you explicitly want the legacy local fallback.
 - Flow and policy suggestions come from `analyze` and are promoted with `apply-suggestions`.
 
 ### Agents
@@ -200,7 +217,7 @@ Examples:
 
 ### Skills
 
-Skills are reusable procedures, such as running tests, reviewing changes, diagnosing CI, updating docs, or handling migrations.
+Skills are reusable procedures, such as running tests, reviewing changes, diagnosing CI, updating docs, or handling migrations. Canonical skill suggestions are stored under `.agentforge/suggestions/skills/`.
 
 ### Flows
 
@@ -217,6 +234,11 @@ Policies define safe-by-default behavior, protected files, and human approval ga
 ```bash
 npx @bcocheto/agentforge install
 npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge ai-evidence
+npx @bcocheto/agentforge context-pack feature --write
+npx @bcocheto/agentforge suggest-agents
+npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge import-ai-suggestions --kind agents --file .agentforge/ai/outbox/agents.yaml
 npx @bcocheto/agentforge apply-suggestions
 npx @bcocheto/agentforge compile
 npx @bcocheto/agentforge validate
@@ -227,7 +249,11 @@ npx @bcocheto/agentforge validate
 ```bash
 npx @bcocheto/agentforge install
 npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge ai-evidence
+npx @bcocheto/agentforge context-pack bugfix --write
 npx @bcocheto/agentforge adopt --apply
+npx @bcocheto/agentforge import-ai-suggestions --kind skills --file .agentforge/ai/outbox/skills.yaml
+npx @bcocheto/agentforge apply-suggestions
 npx @bcocheto/agentforge compile
 npx @bcocheto/agentforge validate
 ```
@@ -275,7 +301,7 @@ Project roles, including core, engineering, product, planning, automation, opera
 
 ### Skills
 
-Reusable procedures promoted from suggestions into `.agentforge/skills/`.
+Reusable procedures promoted from suggestions into `.agentforge/suggestions/skills/`.
 
 ### Flows
 
@@ -321,8 +347,12 @@ npx @bcocheto/agentforge commands
 npx @bcocheto/agentforge commands --json
 npx @bcocheto/agentforge commands --category agents
 npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge ai-evidence
+npx @bcocheto/agentforge context-pack feature
+npx @bcocheto/agentforge import-ai-suggestions --kind agents --file .agentforge/ai/outbox/agents.yaml
 npx @bcocheto/agentforge research-patterns
 npx @bcocheto/agentforge suggest-agents
+npx @bcocheto/agentforge suggest-agents --heuristic
 npx @bcocheto/agentforge create-agent automation-planner
 npx @bcocheto/agentforge apply-suggestions
 npx @bcocheto/agentforge ingest
@@ -331,7 +361,10 @@ npx @bcocheto/agentforge bootstrap
 npx @bcocheto/agentforge audit-context
 npx @bcocheto/agentforge refactor-context
 npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge suggest-skills --heuristic
+npx @bcocheto/agentforge import-ai-suggestions --kind skills --file .agentforge/ai/outbox/skills.yaml
 npx @bcocheto/agentforge create-skill run-tests
+npx @bcocheto/agentforge handoff --engine codex --mode feature
 npx @bcocheto/agentforge add-agent
 npx @bcocheto/agentforge add-flow
 npx @bcocheto/agentforge add-engine
@@ -361,19 +394,28 @@ Create a team for a new project:
 ```bash
 npx @bcocheto/agentforge install
 npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge ai-evidence
+npx @bcocheto/agentforge context-pack feature --write
+npx @bcocheto/agentforge suggest-agents
+npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge import-ai-suggestions --kind agents --file .agentforge/ai/outbox/agents.yaml
 npx @bcocheto/agentforge apply-suggestions
 npx @bcocheto/agentforge compile
 npx @bcocheto/agentforge validate
 ```
 
-AgentForge analyzes the project, suggests the initial team and supporting structure, and then compiles the bootloaders for your engines.
+AgentForge analyzes the project, gathers evidence, asks the active AI to make the semantic judgment, imports the reviewed suggestions, and then compiles the bootloaders for your engines.
 
 For an existing project:
 
 ```bash
 npx @bcocheto/agentforge install
 npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge ai-evidence
+npx @bcocheto/agentforge context-pack bugfix --write
 npx @bcocheto/agentforge adopt --apply
+npx @bcocheto/agentforge import-ai-suggestions --kind skills --file .agentforge/ai/outbox/skills.yaml
+npx @bcocheto/agentforge apply-suggestions
 npx @bcocheto/agentforge validate
 ```
 
@@ -381,15 +423,34 @@ Then evolve continuously:
 
 ```bash
 npx @bcocheto/agentforge analyze
+npx @bcocheto/agentforge ai-evidence
+npx @bcocheto/agentforge context-pack feature --write
 npx @bcocheto/agentforge suggest-agents
+npx @bcocheto/agentforge suggest-agents --heuristic
 npx @bcocheto/agentforge create-agent automation-planner
 npx @bcocheto/agentforge suggest-skills
+npx @bcocheto/agentforge suggest-skills --heuristic
 npx @bcocheto/agentforge create-skill run-tests
+npx @bcocheto/agentforge import-ai-suggestions --kind flows --file .agentforge/ai/outbox/flows.yaml
+npx @bcocheto/agentforge import-ai-suggestions --kind policies --file .agentforge/ai/outbox/policies.yaml
 npx @bcocheto/agentforge improve
 npx @bcocheto/agentforge compile
 ```
 
-`agentforge improve` still generates a reviewable improvement plan for the canonical layer, while `analyze`, `research-patterns`, `suggest-agents`, and `suggest-skills` focus on understanding and expanding the project agent surface.
+`agentforge improve` still generates a reviewable improvement plan for the canonical layer, while `analyze`, `ai-evidence`, `context-pack`, `research-patterns`, `suggest-agents`, and `suggest-skills` focus on understanding and expanding the project agent surface.
+
+### Codex loop
+
+```bash
+npx @bcocheto/agentforge handoff --engine codex --mode feature
+npx @bcocheto/agentforge context-pack feature --write
+npx @bcocheto/agentforge ai-evidence
+npx @bcocheto/agentforge import-ai-suggestions --kind context --file .agentforge/ai/outbox/context.yaml
+npx @bcocheto/agentforge apply-suggestions
+npx @bcocheto/agentforge compile
+```
+
+In this loop, AgentForge prepares the harness, Codex makes the semantic decision, `import-ai-suggestions` turns that output into canonical suggestions, and `apply-suggestions`/`compile` carry the reviewed changes into the real project entrypoints and artifacts.
 
 ## Roadmap
 
