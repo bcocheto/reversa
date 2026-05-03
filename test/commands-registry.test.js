@@ -91,3 +91,14 @@ test('agentforge help principal uses registry data', () => {
   assert.match(helpResult.stdout, new RegExp(escapeRegex(commands.description)));
   assert.match(helpResult.stdout, /commands\s+/);
 });
+
+test('agentforge adopt help advertises prepare and apply modes', () => {
+  const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'adopt', '--help'], {
+    encoding: 'utf8',
+  });
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /adopt \[--prepare\] \[--apply\]/);
+  assert.match(result.stdout, /Com --prepare, o comando roda ingest/);
+  assert.match(result.stdout, /request de blueprint/);
+});
