@@ -89,6 +89,73 @@ flows:
     path: flows/release.md
     purpose: Promover uma entrega segura e rastreavel.
 task_contexts:
+  discovery:
+    context:
+      - context/project-overview.md
+      - context/architecture.md
+      - context/conventions.md
+    references:
+      - references/commands.md
+      - references/important-files.md
+    reports:
+      - reports/
+  agent-design:
+    agents:
+      - agents/
+    suggestions:
+      - suggestions/agents/
+    memory:
+      - memory/
+    reports:
+      - reports/
+  flow-design:
+    flows:
+      - flows/
+    always_load:
+      - harness/context-index.yaml
+    memory:
+      - memory/
+    reports:
+      - reports/
+  policies:
+    policies:
+      - policies/
+    always_load:
+      - harness/context-index.yaml
+    reports:
+      - reports/
+  export:
+    entrypoints:
+      - AGENTS.md
+      - CLAUDE.md
+      - .cursor/rules/agentforge.md
+      - .github/copilot-instructions.md
+    reports:
+      - reports/
+  review:
+    reports:
+      - reports/
+  adopt:
+    entrypoints:
+      - AGENTS.md
+      - CLAUDE.md
+    legacy:
+      - .agents/
+    context:
+      - .agentforge/context/
+    skills:
+      - .agentforge/skills/
+    flows:
+      - .agentforge/flows/
+    policies:
+      - .agentforge/policies/
+    references:
+      - .agentforge/references/
+    always_load:
+      - harness/context-index.yaml
+      - harness/context-map.yaml
+    reports:
+      - reports/
   feature:
     context:
       - context/project-overview.md
@@ -120,16 +187,6 @@ task_contexts:
       - skills/create-implementation-plan/SKILL.md
     flows:
       - flows/refactor.md
-    policies:
-      - policies/protected-files.md
-  review:
-    context:
-      - context/coding-standards.md
-      - context/testing.md
-    skills:
-      - skills/review-changes/SKILL.md
-    flows:
-      - flows/review.md
     policies:
       - policies/protected-files.md
   context-curation:

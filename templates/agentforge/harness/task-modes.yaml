@@ -1,4 +1,46 @@
 version: 1
+discovery:
+  label: Discovery
+  purpose: Explorar o problema, levantar contexto e identificar superfícies relevantes.
+  use_when:
+    - A tarefa ainda está ampla ou pouco definida.
+    - É preciso reunir contexto antes de projetar a mudança.
+agent-design:
+  label: Agent Design
+  purpose: Definir ou ajustar agentes, sugestões e memória associada.
+  use_when:
+    - O trabalho altera agentes ou superfícies de sugestão.
+    - É necessário preparar agentes para uma nova capacidade.
+flow-design:
+  label: Flow Design
+  purpose: Definir ou ajustar fluxos de execução e o mapa de contexto correspondente.
+  use_when:
+    - O trabalho altera fluxos de trabalho.
+    - É necessário sincronizar o context-map com os fluxos.
+policies:
+  label: Policies
+  purpose: Definir regras de segurança, escrita e aprovação.
+  use_when:
+    - O trabalho altera políticas ou restrições.
+    - É necessário revisar superfícies protegidas.
+export:
+  label: Export
+  purpose: Gerar ou atualizar entrypoints e artefatos de exportação.
+  use_when:
+    - O trabalho precisa publicar superfícies canônicas.
+    - É necessário atualizar entrypoints do produto.
+review:
+  label: Review
+  purpose: Inspecionar mudanças e reduzir risco antes de integrar.
+  use_when:
+    - O foco é avaliar, não implementar.
+    - O trabalho precisa de checagem de regressão e clareza.
+adopt:
+  label: Adopt
+  purpose: Planejar ou aplicar a adoção agentic do repositório.
+  use_when:
+    - O projeto existente precisa migrar para AgentForge.
+    - É necessário preservar legado e migrar para superfícies canônicas.
 feature:
   label: Feature
   purpose: Entregar uma nova capacidade ou expansão de comportamento.
@@ -17,12 +59,6 @@ refactor:
   use_when:
     - O código está difícil de manter.
     - A mudança deve preservar o contrato atual.
-review:
-  label: Review
-  purpose: Inspecionar mudanças e reduzir risco antes de integrar.
-  use_when:
-    - O foco é avaliar, não implementar.
-    - O trabalho precisa de checagem de regressão e clareza.
 context-curation:
   label: Context Curation
   purpose: Organizar e localizar contexto durável por tema, arquivo e linha.

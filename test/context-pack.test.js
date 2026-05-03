@@ -12,6 +12,7 @@ import { ENGINES } from '../lib/installer/detector.js';
 import { AGENT_SKILL_IDS, PRODUCT } from '../lib/product.js';
 
 const AGENTFORGE_BIN = fileURLToPath(new URL('../bin/agentforge.js', import.meta.url));
+const CONTEXT_INDEX_TEMPLATE = fileURLToPath(new URL('../templates/agentforge/harness/context-index.yaml', import.meta.url));
 
 function installAnswers() {
   return {
@@ -45,6 +46,13 @@ async function installFixture(projectRoot) {
   await writer.installEntryFile(codex, { force: true });
   writer.saveCreatedFiles();
   saveManifest(projectRoot, buildManifest(projectRoot, writer.manifestPaths));
+
+  mkdirSync(join(projectRoot, PRODUCT.internalDir, 'harness'), { recursive: true });
+  writeFileSync(
+    join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml'),
+    readFileSync(CONTEXT_INDEX_TEMPLATE, 'utf8'),
+    'utf8',
+  );
 }
 
 function writeProjectSurface(projectRoot) {
@@ -90,6 +98,46 @@ function writeProjectSurface(projectRoot) {
 
   mkdirSync(join(projectRoot, PRODUCT.internalDir, 'ai'), { recursive: true });
   writeFileSync(join(projectRoot, PRODUCT.internalDir, 'ai', 'README.md'), '# AI Readme\n\nAI content.\n', 'utf8');
+}
+
+function writeContextPackTaskSurfaces(projectRoot) {
+  mkdirSync(join(projectRoot, PRODUCT.internalDir, 'agents'), { recursive: true });
+  writeFileSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'architect.yaml'), '# Architect\n\nAgent content.\n', 'utf8');
+  writeFileSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'reviewer.yaml'), '# Reviewer\n\nAgent content.\n', 'utf8');
+
+  mkdirSync(join(projectRoot, PRODUCT.internalDir, 'suggestions', 'agents'), { recursive: true });
+  writeFileSync(join(projectRoot, PRODUCT.internalDir, 'suggestions', 'agents', 'architect.yaml'), '# Suggested Architect\n\nSuggestion content.\n', 'utf8');
+
+  mkdirSync(join(projectRoot, PRODUCT.internalDir, 'memory'), { recursive: true });
+  writeFileSync(join(projectRoot, PRODUCT.internalDir, 'memory', 'decisions.md'), '# Decisions\n\nDecision content.\n', 'utf8');
+
+  mkdirSync(join(projectRoot, PRODUCT.internalDir, 'reports'), { recursive: true });
+  writeFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'flow-notes.md'), '# Flow Notes\n\nReport content.\n', 'utf8');
+
+  mkdirSync(join(projectRoot, PRODUCT.internalDir, 'flows'), { recursive: true });
+  writeFileSync(join(projectRoot, PRODUCT.internalDir, 'flows', 'feature-development.md'), '# Feature Development\n\nFlow content.\n', 'utf8');
+
+  writeFileSync(join(projectRoot, 'AGENTS.md'), [
+    '# Legacy AGENTS',
+    '',
+    'Keep this file intact.',
+  ].join('\n'), 'utf8');
+  writeFileSync(join(projectRoot, 'CLAUDE.md'), [
+    '# Legacy CLAUDE',
+    '',
+    'Keep this file intact.',
+  ].join('\n'), 'utf8');
+  mkdirSync(join(projectRoot, '.agents', 'skills', 'legacy'), { recursive: true });
+  writeFileSync(join(projectRoot, '.agents', 'skills', 'legacy', 'SKILL.md'), '# Legacy Skill\n\nSkill content.\n', 'utf8');
+
+  mkdirSync(join(projectRoot, PRODUCT.internalDir, 'context'), { recursive: true });
+  writeFileSync(join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md'), '# Project Overview\n\nOverview content.\n', 'utf8');
+  mkdirSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'run-tests'), { recursive: true });
+  writeFileSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'run-tests', 'SKILL.md'), '# Run Tests\n\nSkill content.\n', 'utf8');
+  mkdirSync(join(projectRoot, PRODUCT.internalDir, 'policies'), { recursive: true });
+  writeFileSync(join(projectRoot, PRODUCT.internalDir, 'policies', 'protected-files.md'), '# Protected Files\n\nPolicy content.\n', 'utf8');
+  mkdirSync(join(projectRoot, PRODUCT.internalDir, 'references'), { recursive: true });
+  writeFileSync(join(projectRoot, PRODUCT.internalDir, 'references', 'commands.md'), '# Commands\n\nReference content.\n', 'utf8');
 }
 
 function runContextPack(projectRoot, args = []) {
@@ -150,6 +198,91 @@ test('agentforge context-pack --task returns a generic JSON pack', async () => {
     assert.ok(pack.files_to_read.length > 0);
     assert.ok(pack.warnings.length >= 0);
     assert.equal(pack.task_description, 'migrar documentação para um fluxo revisável');
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge context-pack agent-design --write resolves agent surfaces without generic fallback', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-context-pack-agent-design-'));
+
+  try {
+    await installFixture(projectRoot);
+    writeContextPackTaskSurfaces(projectRoot);
+
+    const result = runContextPack(projectRoot, ['agent-design', '--write']);
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.match(result.stdout, /Mode: agent-design/);
+    assert.match(result.stdout, /Generic: no/);
+    assert.doesNotMatch(result.stdout, /Selection: manual/);
+
+    const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'context-pack-agent-design.md');
+    const report = readFileSync(reportPath, 'utf8');
+    assert.match(report, /## Agents/);
+    assert.match(report, /\.agentforge\/agents\/architect\.yaml/);
+    assert.match(report, /## Suggestions/);
+    assert.match(report, /\.agentforge\/suggestions\/agents\/architect\.yaml/);
+    assert.match(report, /## Memory/);
+    assert.match(report, /\.agentforge\/memory\/decisions\.md/);
+    assert.doesNotMatch(report, /Selection: manual/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge context-pack flow-design --write resolves flow surfaces without generic fallback', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-context-pack-flow-design-'));
+
+  try {
+    await installFixture(projectRoot);
+    writeContextPackTaskSurfaces(projectRoot);
+
+    const result = runContextPack(projectRoot, ['flow-design', '--write']);
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.match(result.stdout, /Mode: flow-design/);
+    assert.match(result.stdout, /Generic: no/);
+    assert.doesNotMatch(result.stdout, /Selection: manual/);
+
+    const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'context-pack-flow-design.md');
+    const report = readFileSync(reportPath, 'utf8');
+    assert.match(report, /## Flows/);
+    assert.match(report, /\.agentforge\/flows\/feature-development\.md/);
+    assert.match(report, /## Reports/);
+    assert.match(report, /\.agentforge\/reports\/flow-notes\.md/);
+    assert.match(report, /## Memory/);
+    assert.match(report, /\.agentforge\/memory\/decisions\.md/);
+    assert.doesNotMatch(report, /Selection: manual/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge context-pack adopt --write resolves legacy and canonical adoption surfaces', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-context-pack-adopt-'));
+
+  try {
+    await installFixture(projectRoot);
+    writeContextPackTaskSurfaces(projectRoot);
+
+    const result = runContextPack(projectRoot, ['adopt', '--write']);
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.match(result.stdout, /Mode: adopt/);
+    assert.match(result.stdout, /Generic: no/);
+    assert.doesNotMatch(result.stdout, /Selection: manual/);
+
+    const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'context-pack-adopt.md');
+    const report = readFileSync(reportPath, 'utf8');
+    assert.match(report, /## Entrypoints/);
+    assert.match(report, /AGENTS\.md/);
+    assert.match(report, /## Legacy/);
+    assert.match(report, /\.agents\/skills\/legacy\/SKILL\.md/);
+    assert.match(report, /## Context/);
+    assert.match(report, /\.agentforge\/context\/project-overview\.md/);
+    assert.match(report, /## Skills/);
+    assert.match(report, /\.agentforge\/skills\/run-tests\/SKILL\.md/);
+    assert.match(report, /## Policies/);
+    assert.match(report, /\.agentforge\/policies\/protected-files\.md/);
+    assert.doesNotMatch(report, /Selection: manual/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
