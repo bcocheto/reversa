@@ -13,6 +13,7 @@ import { renderManagedEntrypoint } from '../lib/exporter/bootloader.js';
 import { buildHandoffData, renderHandoffReport, resolveHandoffWritePolicy } from '../lib/commands/handoff.js';
 import { runUninstall } from '../lib/commands/uninstall.js';
 import { buildInstallOnboardingCopy, shouldDefaultFinalizeAdoption } from '../lib/commands/install.js';
+import { runAdoptApply } from '../lib/commands/adopt.js';
 import { validateAgentForgeStructure } from '../lib/commands/validate.js';
 import { checkExistingInstallation } from '../lib/installer/validator.js';
 import { detectEngines, ENGINES } from '../lib/installer/detector.js';
@@ -1338,7 +1339,7 @@ test('ingest and refactor legacy .agents references into canonical files', async
   }
 });
 
-test('refactor-agentic-surface plans legacy surface migration and applies safe canonical writes', async () => {
+test('adopt --apply tracks entrypoints in the manifest and compile can finalize takeover', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-agentic-surface-'));
 
   try {
@@ -1367,12 +1368,12 @@ test('refactor-agentic-surface plans legacy surface migration and applies safe c
     writeFileSync(
       join(projectRoot, 'CLAUDE.md'),
       [
-        '# Claude Notes',
+        '# Legacy Claude Notes',
         '',
         '## Workflow',
         '',
         '1. Inspect the context.',
-        '2. Refactor the legacy surface.',
+        '2. Preserve the agentic surface.',
         '3. Review the results.',
         '',
       ].join('\n'),
@@ -1417,6 +1418,17 @@ test('refactor-agentic-surface plans legacy surface migration and applies safe c
       ].join('\n'),
       'utf8',
     );
+    mkdirSync(join(projectRoot, '.agents', 'context'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, '.agents', 'context', 'domain.md'),
+      [
+        '# Domain Notes',
+        '',
+        'Stable domain guidance that should land in canonical context.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
 
     const manualOverviewPath = join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md');
     writeFileSync(
@@ -1425,22 +1437,18 @@ test('refactor-agentic-surface plans legacy surface migration and applies safe c
       'utf8',
     );
 
-    const planResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'refactor-agentic-surface', '--plan'], {
-      cwd: projectRoot,
-      encoding: 'utf8',
-    });
+    const adoptResult = await runAdoptApply(projectRoot);
+    assert.equal(adoptResult.ok, true);
+    assert.ok(adoptResult.entrypoints.includes('AGENTS.md'));
+    assert.ok(adoptResult.entrypoints.includes('CLAUDE.md'));
 
-    assert.equal(planResult.status, 0);
-    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'agentic-surface-refactor-plan.md')), true);
-    assert.equal(readdirSync(join(projectRoot, PRODUCT.internalDir, 'suggestions', 'skills')).length > 0, true);
-    assert.match(readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'agentic-surface-refactor-plan.md'), 'utf8'), /Agentic Surface Refactor Plan/);
+    const manifest = loadManifest(projectRoot);
+    assert.ok(manifest['AGENTS.md']);
+    assert.ok(manifest['CLAUDE.md']);
+    assert.ok(manifest['.agentforge/skills/foo/SKILL.md']);
+    assert.ok(manifest['.agentforge/harness/context-index.yaml']);
+    assert.ok(manifest['.agentforge/harness/context-map.yaml']);
 
-    const applyResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'refactor-agentic-surface', '--apply'], {
-      cwd: projectRoot,
-      encoding: 'utf8',
-    });
-
-    assert.equal(applyResult.status, 0);
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'foo', 'SKILL.md')), true);
     assert.match(readFileSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'foo', 'SKILL.md'), 'utf8'), /## Quando usar/);
 
@@ -1448,15 +1456,37 @@ test('refactor-agentic-surface plans legacy surface migration and applies safe c
     assert.match(contextIndex, /skills\/foo\/SKILL\.md/);
 
     const contextMap = readFileSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-map.yaml'), 'utf8');
-    assert.match(contextMap, /AGENTS\.md/);
+    assert.match(contextMap, /context\/domain\.md/);
 
     const finalOverview = readFileSync(manualOverviewPath, 'utf8');
     assert.match(finalOverview, /Manual keep\./);
 
-    const applyReport = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'agentic-surface-refactor.md'), 'utf8');
-    assert.match(applyReport, /Agentic Surface Refactor/);
-    assert.match(applyReport, /Migrated/);
-    assert.match(applyReport, /Preserved/);
+    const applyReport = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'adoption-apply.md'), 'utf8');
+    assert.match(applyReport, /AGENTS\.md/);
+    assert.match(applyReport, /CLAUDE\.md/);
+    assert.match(applyReport, /Final takeover of existing entrypoints/);
+
+    const mutateManagedEntrypoint = (relPath, internalLine, externalLine) => {
+      const entryPath = join(projectRoot, relPath);
+      const original = readFileSync(entryPath, 'utf8');
+      const mutated = original.replace(
+        '<!-- agentforge:end -->',
+        `Linha manual interna: ${internalLine}\n<!-- agentforge:end -->`,
+      );
+      writeFileSync(entryPath, `${mutated}\n${externalLine}\n`, 'utf8');
+    };
+    mutateManagedEntrypoint('AGENTS.md', 'AGENTS', 'Linha manual externa: AGENTS.');
+    mutateManagedEntrypoint('CLAUDE.md', 'CLAUDE', 'Linha manual externa: CLAUDE.');
+
+    const compileResult = await compileAgentForge(projectRoot, {
+      takeoverEntrypoints: true,
+      includeExistingEntrypoints: true,
+      mergeStrategyResolver: async () => 'merge',
+    });
+
+    assert.equal(compileResult.errors.length, 0);
+    assert.ok(compileResult.written.some((entry) => String(entry).endsWith('AGENTS.md')));
+    assert.ok(compileResult.written.some((entry) => String(entry).endsWith('CLAUDE.md')));
 
     const snapshotRoot = join(projectRoot, PRODUCT.internalDir, 'imports', 'snapshots', 'AGENTS.md');
     assert.equal(existsSync(snapshotRoot), true);

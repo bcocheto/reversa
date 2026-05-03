@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
-import { COMMAND_REGISTRY } from '../lib/commands/registry.js';
+import { COMMAND_REGISTRY, COMMAND_CATEGORIES } from '../lib/commands/registry.js';
 
 const AGENTFORGE_BIN = fileURLToPath(new URL('../bin/agentforge.js', import.meta.url));
 
@@ -36,6 +36,7 @@ test('agentforge commands --json returns valid JSON', () => {
   assert.ok(payload.commands.some((entry) => entry.id === 'compile'));
   assert.ok(payload.commands.some((entry) => entry.id === 'validate'));
   assert.ok(payload.commands.some((entry) => entry.id === 'context-map'));
+  assert.ok(!payload.commands.some((entry) => entry.id === 'refactor-agentic-surface'));
 });
 
 test('agentforge commands --category skills lists suggest-skills and create-skill', () => {
@@ -67,6 +68,11 @@ test('agentforge commands --category ai lists ai-evidence and import-ai-suggesti
   assert.equal(result.status, 0);
   assert.match(result.stdout, /import-ai-suggestions/);
   assert.match(result.stdout, /ai-evidence/);
+});
+
+test('command registry exposes ai and omits the legacy refactor surface command', () => {
+  assert.ok(COMMAND_CATEGORIES.includes('ai'));
+  assert.equal(COMMAND_REGISTRY.some((entry) => entry.id === 'refactor-agentic-surface'), false);
 });
 
 test('agentforge help principal uses registry data', () => {

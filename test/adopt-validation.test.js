@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import { tmpdir } from 'os';
 
 import { Writer } from '../lib/installer/writer.js';
-import { buildManifest, saveManifest } from '../lib/installer/manifest.js';
+import { buildManifest, saveManifest, loadManifest } from '../lib/installer/manifest.js';
 import { ENGINES } from '../lib/installer/detector.js';
 import { AGENT_SKILL_IDS, PRODUCT } from '../lib/product.js';
 
@@ -52,6 +52,12 @@ function writeLegacySurface(projectRoot) {
     '# Legacy AGENTS',
     '',
     'This entrypoint still contains legacy instructions.',
+  ].join('\n'), 'utf8');
+
+  writeFileSync(join(projectRoot, 'CLAUDE.md'), [
+    '# Legacy Claude',
+    '',
+    'This entrypoint also still contains legacy instructions.',
   ].join('\n'), 'utf8');
 
   mkdirSync(join(projectRoot, '.agents', 'skills', 'legacy-audit'), { recursive: true });
@@ -102,6 +108,10 @@ test('validate passes after adopt --apply migrates the legacy surface', async ()
 
     const validateResult = runCli(projectRoot, ['validate']);
     assert.equal(validateResult.status, 0);
+
+    const manifest = loadManifest(projectRoot);
+    assert.ok(manifest['AGENTS.md']);
+    assert.ok(manifest['CLAUDE.md']);
 
     const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
     assert.match(report, /Adoption checks/);
