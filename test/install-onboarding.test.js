@@ -487,11 +487,16 @@ test('install runs analysis first and can stop after generating reports and sugg
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-install-preview-'));
   const cwd = process.cwd();
   const originalPrompt = inquirer.prompt;
+  const originalLog = console.log;
+  const lines = [];
 
   const originalAgents = '# Legacy agent instructions\nKeep this file intact.\n';
 
   try {
     process.chdir(projectRoot);
+    console.log = (...args) => {
+      lines.push(args.map((value) => String(value)).join(' '));
+    };
     mkdirSync(join(projectRoot, 'docs'), { recursive: true });
     mkdirSync(join(projectRoot, '.github', 'workflows'), { recursive: true });
     mkdirSync(join(projectRoot, 'src'), { recursive: true });
@@ -564,6 +569,7 @@ test('install runs analysis first and can stop after generating reports and sugg
 
     const result = await install([]);
     assert.equal(result, 0);
+    const output = lines.join('\n');
     assert.equal(promptCalls.length, 2);
     assert.equal(readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8'), originalAgents);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'agents')), false);
@@ -572,6 +578,9 @@ test('install runs analysis first and can stop after generating reports and sugg
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'suggestions', 'agents', 'product-owner.yaml')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'suggestions', 'agents', 'architect.yaml')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'suggestions', 'agents', 'devops.yaml')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'ai', 'evidence', 'project-evidence.json')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'agentic-dossier.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'ai', 'requests', 'agentic-blueprint.md')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'context', 'project-overview.md')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'context', 'architecture.md')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'context', 'testing.md')), true);
@@ -611,10 +620,32 @@ test('install runs analysis first and can stop after generating reports and sugg
     assert.match(readme, /Preview Demo/);
     assert.doesNotMatch(readme, /A preencher|TBD/);
 
+    const dossier = readFileSync(join(projectRoot, '.agentforge', 'reports', 'agentic-dossier.md'), 'utf8');
+    assert.match(dossier, /Evidências coletadas\./);
+    assert.match(dossier, /Blueprint da IA ainda necessário\./);
+    assert.match(dossier, /agentic-blueprint\.yaml/);
+
+    const request = readFileSync(join(projectRoot, '.agentforge', 'ai', 'requests', 'agentic-blueprint.md'), 'utf8');
+    assert.match(request, /Agentic Blueprint Request/);
+    assert.match(request, /\.agentforge\/ai\/outbox\/agentic-blueprint\.yaml/);
+    assert.match(request, /não são recomendação final/);
+
+    assert.match(output, /Sinais para decisão da IA:/);
+    assert.match(output, /Capacidades detectadas:/);
+    assert.match(output, /Fluxos candidatos detectados:/);
+    assert.match(output, /não são recomendação final/);
+    assert.match(output, /Evidências coletadas\./);
+    assert.match(output, /Blueprint da IA ainda necessário\./);
+    assert.match(output, /agentic-blueprint\.yaml/);
+    assert.doesNotMatch(output, /Agentes sugeridos|Skills sugeridas|Flows sugeridos/);
+
     const manifest = loadManifest(projectRoot);
     assert.ok(manifest['legacy-note.md']);
     assert.ok(manifest['.agentforge/reports/project-analysis.md']);
     assert.ok(manifest['.agentforge/reports/analysis-plan.md']);
+    assert.ok(manifest['.agentforge/ai/evidence/project-evidence.json']);
+    assert.ok(manifest['.agentforge/reports/agentic-dossier.md']);
+    assert.ok(manifest['.agentforge/ai/requests/agentic-blueprint.md']);
     assert.ok(manifest['.agentforge/context/project-overview.md']);
     assert.ok(manifest['.agentforge/context/architecture.md']);
     assert.ok(manifest['.agentforge/context/testing.md']);
@@ -628,12 +659,19 @@ test('install runs analysis first and can stop after generating reports and sugg
     assert.ok(state.suggested_agents.some((entry) => entry.id === 'product-owner'));
     assert.ok(state.suggested_agents.some((entry) => entry.id === 'architect'));
     assert.ok(state.suggested_agents.some((entry) => entry.id === 'devops'));
+    assert.equal(state.ai_blueprint.json, '.agentforge/ai/evidence/project-evidence.json');
+    assert.equal(state.ai_blueprint.dossier, '.agentforge/reports/agentic-dossier.md');
+    assert.equal(state.ai_blueprint.request, '.agentforge/ai/requests/agentic-blueprint.md');
+    assert.ok(state.created_files.includes('.agentforge/ai/evidence/project-evidence.json'));
+    assert.ok(state.created_files.includes('.agentforge/reports/agentic-dossier.md'));
+    assert.ok(state.created_files.includes('.agentforge/ai/requests/agentic-blueprint.md'));
     assert.equal(state.last_analysis_at.length > 0, true);
     assert.equal(typeof state.last_context_synthesis_at, 'string');
     assert.ok(Array.isArray(state.synthesized_context_files));
     assert.ok(state.synthesized_context_files.includes('.agentforge/context/project-overview.md'));
   } finally {
     inquirer.prompt = originalPrompt;
+    console.log = originalLog;
     process.chdir(cwd);
     rmSync(projectRoot, { recursive: true, force: true });
   }

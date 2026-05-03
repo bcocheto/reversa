@@ -645,12 +645,14 @@ test('install onboarding copy distinguishes planned and applied adoption', () =>
     setupMode: 'bootstrap',
   });
 
-  assert.match(planned.label, /ainda precisa ser aplicada/i);
+  assert.match(planned.label, /Evidências coletadas\./);
+  assert.match(planned.label, /Blueprint da IA ainda necessário\./);
   assert.match(planned.adoptionLine, /planejada/);
   assert.match(planned.adoptionLine, /adoption-plan\.md/);
-  assert.match(planned.nextSteps.join('\n'), /agentforge adopt --apply/);
+  assert.match(planned.nextSteps.join('\n'), /agentic-blueprint\.yaml/);
 
-  assert.match(applied.label, /adoção agentic foi executada/i);
+  assert.match(applied.label, /Evidências coletadas\./);
+  assert.match(applied.label, /Blueprint da IA ainda necessário\./);
   assert.match(applied.adoptionLine, /aplicada/);
   assert.match(applied.adoptionLine, /adoption-apply\.md/);
   assert.match(applied.deferredLine, /Entrypoints resolvidos/);
