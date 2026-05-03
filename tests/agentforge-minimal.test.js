@@ -88,6 +88,37 @@ async function installFixture(projectRoot, {
   return answers;
 }
 
+function writeAgentSuggestion(projectRoot, suggestionId) {
+  const suggestionDir = join(projectRoot, PRODUCT.internalDir, 'suggestions', 'agents');
+  mkdirSync(suggestionDir, { recursive: true });
+  writeFileSync(
+    join(suggestionDir, `${suggestionId}.yaml`),
+    [
+      `id: ${suggestionId}`,
+      'name: Data Master',
+      'category: data',
+      'description: Organiza contexto e decisões de dados para o projeto.',
+      'reason: O repositório tem sinais claros de banco, migrações e contratos de dados.',
+      'responsibilities:',
+      '  - Mapear a superfície de dados principal.',
+      '  - Separar responsabilidades de leitura e escrita.',
+      '  - Registrar riscos de migração e compatibilidade.',
+      'limits:',
+      '  - Não executar migrações destrutivas automaticamente.',
+      '  - Não esconder impactos de contrato ou rollback.',
+      '',
+    ].join('\n'),
+    'utf8',
+  );
+}
+
+function runCreateAgent(projectRoot, agentId, args = []) {
+  return spawnSync(process.execPath, [AGENTFORGE_BIN, 'create-agent', agentId, ...args], {
+    cwd: projectRoot,
+    encoding: 'utf8',
+  });
+}
+
 async function createInstalledProjectWithClaude(projectRoot) {
   const writer = new Writer(projectRoot);
   writer.createProductDir(baseAnswers({ engines: ['codex', 'claude-code'] }), '1.0.0');
@@ -1284,13 +1315,15 @@ test('next detects plan/state divergence and status repair fills missing pending
     assert.match(nextResult.stdout, /agentforge handoff/);
     assert.match(nextResult.stdout, /agentforge validate/);
 
-    const statusResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'status', '--repair'], {
+    const repairJsonResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'status', '--repair', '--json'], {
       cwd: projectRoot,
       encoding: 'utf8',
     });
 
-    assert.equal(statusResult.status, 0);
-    assert.match(statusResult.stdout, /Repair applied to state\.json\./);
+    assert.equal(repairJsonResult.status, 0);
+    const repairPayload = JSON.parse(repairJsonResult.stdout);
+    assert.ok(repairPayload.repaired_fields.length > 0);
+    assert.equal(repairPayload.unrepaired_fields.length, 0);
     const repairedState = JSON.parse(readFileSync(statePath, 'utf8'));
     assert.ok(repairedState.pending.includes('export'));
 
@@ -1302,6 +1335,81 @@ test('next detects plan/state divergence and status repair fills missing pending
     const statusPayload = JSON.parse(statusJsonResult.stdout);
     assert.equal(statusPayload.next_phase, null);
     assert.equal(statusPayload.repair_applied, false);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('status repair synchronizes generated_agents when the agent file is canonical', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-status-repair-generated-agents-'));
+
+  try {
+    await installFixture(projectRoot);
+    writeAgentSuggestion(projectRoot, 'data-master');
+
+    const createResult = runCreateAgent(projectRoot, 'data-master');
+    assert.equal(createResult.status, 0);
+
+    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
+    const state = JSON.parse(readFileSync(statePath, 'utf8'));
+    state.generated_agents = state.generated_agents.filter((agentId) => agentId !== 'data-master');
+    writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+
+    const repairResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'status', '--repair', '--json'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(repairResult.status, 0);
+
+    const payload = JSON.parse(repairResult.stdout);
+    assert.ok(payload.repaired_fields.includes('generated_agents'));
+    assert.equal(payload.unrepaired_fields.length, 0);
+    assert.equal(payload.recommended_commands.length, 0);
+
+    const repairedState = JSON.parse(readFileSync(statePath, 'utf8'));
+    assert.ok(repairedState.generated_agents.includes('data-master'));
+
+    const checkpointResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'checkpoint', 'discovery', '--status', 'blocked', '--reason', 'valid agent repair verified'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(checkpointResult.status, 0);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('status repair does not silently fix an invalid agent file', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-status-repair-invalid-agent-'));
+
+  try {
+    await installFixture(projectRoot);
+
+    const agentsDir = join(projectRoot, PRODUCT.internalDir, 'agents');
+    mkdirSync(agentsDir, { recursive: true });
+    writeFileSync(join(agentsDir, 'data-master.yaml'), 'id: data-master\nname: [broken\n', 'utf8');
+
+    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
+    const state = JSON.parse(readFileSync(statePath, 'utf8'));
+    state.generated_agents = [...state.generated_agents, 'ghost-agent'];
+    writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+
+    const repairResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'status', '--repair', '--json'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(repairResult.status, 1);
+    const payload = JSON.parse(repairResult.stdout);
+    assert.ok(!payload.repaired_fields.includes('generated_agents'));
+    assert.ok(payload.unrepaired_fields.some((entry) => entry.includes('generated_agents')));
+    assert.ok(payload.recommended_commands.some((entry) => entry.includes('create-agent data-master --force')));
+
+    const repairedState = JSON.parse(readFileSync(statePath, 'utf8'));
+    assert.ok(repairedState.generated_agents.includes('ghost-agent'));
+    assert.ok(!repairedState.generated_agents.includes('data-master'));
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
