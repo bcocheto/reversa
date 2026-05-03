@@ -1284,6 +1284,134 @@ test('ingest and refactor legacy .agents references into canonical files', async
   }
 });
 
+test('refactor-agentic-surface plans legacy surface migration and applies safe canonical writes', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-agentic-surface-'));
+
+  try {
+    await installFixture(projectRoot, { setupMode: 'adopt' });
+
+    writeFileSync(
+      join(projectRoot, 'AGENTS.md'),
+      [
+        '# Legacy Agent Instructions',
+        '',
+        '## Overview',
+        '',
+        'Billing app for small teams.',
+        '',
+        '## Commands',
+        '',
+        '- Use `npx eslint .` before shipping.',
+        '',
+        '## Safety',
+        '',
+        '- Do not modify protected files without approval.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+    writeFileSync(
+      join(projectRoot, 'CLAUDE.md'),
+      [
+        '# Claude Notes',
+        '',
+        '## Workflow',
+        '',
+        '1. Inspect the context.',
+        '2. Refactor the legacy surface.',
+        '3. Review the results.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+
+    mkdirSync(join(projectRoot, '.agents', 'skills', 'foo'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, '.agents', 'skills', 'foo', 'SKILL.md'),
+      [
+        '---',
+        'name: foo',
+        'license: MIT',
+        '---',
+        '',
+        '# Foo',
+        '',
+        '## Quando usar',
+        '',
+        'Quando precisar de uma skill de teste.',
+        '',
+        '## Procedimento',
+        '',
+        '1. Fazer algo.',
+        '',
+        '## Checklist',
+        '',
+        '- item',
+        '',
+        '## Saída esperada',
+        '',
+        '- resultado',
+        '',
+        '## Limites de segurança',
+        '',
+        '- nenhum',
+        '',
+        '## Evidências de origem',
+        '',
+        '- origem',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+
+    const manualOverviewPath = join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md');
+    writeFileSync(
+      manualOverviewPath,
+      `${readFileSync(manualOverviewPath, 'utf8').trimEnd()}\n\nManual keep.\n`,
+      'utf8',
+    );
+
+    const planResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'refactor-agentic-surface', '--plan'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(planResult.status, 0);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'agentic-surface-refactor-plan.md')), true);
+    assert.equal(readdirSync(join(projectRoot, PRODUCT.internalDir, 'suggestions', 'skills')).length > 0, true);
+    assert.match(readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'agentic-surface-refactor-plan.md'), 'utf8'), /Agentic Surface Refactor Plan/);
+
+    const applyResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'refactor-agentic-surface', '--apply'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(applyResult.status, 0);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'foo', 'SKILL.md')), true);
+    assert.match(readFileSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'foo', 'SKILL.md'), 'utf8'), /## Quando usar/);
+
+    const contextIndex = readFileSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-index.yaml'), 'utf8');
+    assert.match(contextIndex, /skills\/foo\/SKILL\.md/);
+
+    const contextMap = readFileSync(join(projectRoot, PRODUCT.internalDir, 'harness', 'context-map.yaml'), 'utf8');
+    assert.match(contextMap, /AGENTS\.md/);
+
+    const finalOverview = readFileSync(manualOverviewPath, 'utf8');
+    assert.match(finalOverview, /Manual keep\./);
+
+    const applyReport = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'agentic-surface-refactor.md'), 'utf8');
+    assert.match(applyReport, /Agentic Surface Refactor/);
+    assert.match(applyReport, /Migrated/);
+    assert.match(applyReport, /Preserved/);
+
+    const snapshotRoot = join(projectRoot, PRODUCT.internalDir, 'imports', 'snapshots', 'AGENTS.md');
+    assert.equal(existsSync(snapshotRoot), true);
+    assert.ok(readdirSync(snapshotRoot).some((name) => name.endsWith('.json')));
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('compile warns when the minimum harness is absent', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-compile-missing-harness-'));
 
@@ -1500,7 +1628,7 @@ test('improve --apply creates only safe documentation placeholders', async () =>
   }
 });
 
-test('adopt generates a read-only adoption plan', async () => {
+test('adopt generates a read-only adoption plan for agentic surface files', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-'));
 
   try {
@@ -1508,7 +1636,94 @@ test('adopt generates a read-only adoption plan', async () => {
 
     const agentsPath = join(projectRoot, 'AGENTS.md');
     const claudePath = join(projectRoot, 'CLAUDE.md');
-    writeFileSync(claudePath, '# Claude Code\nUse this file only for tests.\n', 'utf8');
+    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
+    const manifestPath = join(projectRoot, PRODUCT.internalDir, '_config', 'files-manifest.json');
+
+    writeFileSync(
+      agentsPath,
+      [
+        '# Legacy Agent Instructions',
+        '',
+        '## Overview',
+        '',
+        'Billing app for small teams.',
+        '',
+        '## Safety',
+        '',
+        '- Do not modify protected files without approval.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+    writeFileSync(
+      claudePath,
+      [
+        '# Claude Notes',
+        '',
+        '## Workflow',
+        '',
+        '1. Inspect the context.',
+        '2. Refactor the legacy surface.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+    mkdirSync(join(projectRoot, '.agents', 'skills', 'foo'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, '.agents', 'skills', 'foo', 'SKILL.md'),
+      [
+        '---',
+        'name: foo',
+        'license: MIT',
+        '---',
+        '',
+        '# Foo',
+        '',
+        '## Quando usar',
+        '',
+        'Quando precisar de uma skill de teste.',
+        '',
+        '## Procedimento',
+        '',
+        '1. Fazer algo.',
+        '',
+        '## Checklist',
+        '',
+        '- item',
+        '',
+        '## Saída esperada',
+        '',
+        '- resultado',
+        '',
+        '## Limites de segurança',
+        '',
+        '- nenhum',
+        '',
+        '## Evidências de origem',
+        '',
+        '- origem',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+    mkdirSync(join(projectRoot, '.claude', 'agents'), { recursive: true });
+    writeFileSync(join(projectRoot, '.claude', 'agents', 'legacy.md'), '# Claude Agent\nUse this file only for tests.\n', 'utf8');
+    mkdirSync(join(projectRoot, '.github', 'agents'), { recursive: true });
+    writeFileSync(join(projectRoot, '.github', 'agents', 'bot.md'), '# GitHub Agent\nUse this file only for tests.\n', 'utf8');
+    mkdirSync(join(projectRoot, PRODUCT.internalDir, 'imports', 'snapshots', 'legacy'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, PRODUCT.internalDir, 'imports', 'snapshots', 'legacy', 'snapshot.json'),
+      `${JSON.stringify({
+        source_path: '.agents/legacy/notes.md',
+        source_type: 'legacy-agentic-doc',
+        source_hash: 'abc123',
+        content: 'Legacy memory snapshot.',
+      }, null, 2)}\n`,
+      'utf8',
+    );
+
+    const stateBefore = readFileSync(statePath, 'utf8');
+    const manifestBefore = readFileSync(manifestPath, 'utf8');
     const agentsBefore = readFileSync(agentsPath, 'utf8');
     const claudeBefore = readFileSync(claudePath, 'utf8');
 
@@ -1521,43 +1736,43 @@ test('adopt generates a read-only adoption plan', async () => {
 
     const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'adoption-plan.md');
     assert.equal(existsSync(reportPath), true);
-
-    const report = readFileSync(reportPath, 'utf8');
-    assert.match(report, /AgentForge Adoption Plan/);
-    assert.match(report, /## 1\. Ingest/);
-    assert.match(report, /## 2\. Audit context/);
-    assert.match(report, /## 3\. Refactor context \(dry run\)/);
-    assert.match(report, /agentforge audit-context/);
-    assert.match(report, /agentforge refactor-context/);
-    assert.match(report, /agentforge refactor-context --apply/);
-    assert.match(report, /agentforge suggest-skills/);
-    assert.match(report, /Refactor applied: no/);
-    assert.match(report, /Read-only guarantee/);
-    assert.match(report, /No original project files were modified\./);
-    assert.match(report, /Files under `\.agentforge\/` may have been created or updated/);
-    assert.doesNotMatch(report, /Only `\.agentforge\/reports\/adoption-plan\.md` was generated\./);
-    assert.match(report, /Imported snapshots/);
-    assert.match(report, /AGENTS\.md/);
-    assert.match(report, /CLAUDE\.md/);
-
+    assert.equal(readFileSync(statePath, 'utf8'), stateBefore);
+    assert.equal(readFileSync(manifestPath, 'utf8'), manifestBefore);
     assert.equal(readFileSync(agentsPath, 'utf8'), agentsBefore);
     assert.equal(readFileSync(claudePath, 'utf8'), claudeBefore);
 
-    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
-    assert.equal(typeof state.last_adopt_at, 'string');
-    assert.equal(state.adoption_status, 'plan-generated');
-    assert.ok(Array.isArray(state.imported_sources));
-    assert.ok(state.imported_sources.length >= 2);
+    const report = readFileSync(reportPath, 'utf8');
+    assert.match(report, /AgentForge Adoption Plan/);
+    assert.match(report, /Total agentic surface files:/);
+    assert.match(report, /Classification/);
+    assert.match(report, /AGENTS\.md/);
+    assert.match(report, /CLAUDE\.md/);
+    assert.match(report, /\.agents\/skills\/foo\/SKILL\.md/);
+    assert.match(report, /\.claude\/agents\/legacy\.md/);
+    assert.match(report, /\.github\/agents\/bot\.md/);
+    assert.match(report, /\.agentforge\/imports\/snapshots\/legacy\/snapshot\.json/);
+    assert.match(report, /entrypoint/);
+    assert.match(report, /skill/);
+    assert.match(report, /agent/);
+    assert.match(report, /memory/);
+    assert.match(report, /What will be migrated/);
+    assert.match(report, /What will be preserved/);
+    assert.match(report, /What will be ignored/);
+    assert.match(report, /What requires human review/);
+    assert.match(report, /No files outside `\.agentforge\/reports\/` and `\.agentforge\/suggestions\/` were modified\./);
 
-    const manifest = loadManifest(projectRoot);
-    assert.ok(manifest['.agentforge/reports/adoption-plan.md']);
-    assert.ok(manifest['.agentforge/reports/ingest.md']);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'suggestions', 'skills', 'adoption-agentic-surface.yaml')), true);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'suggestions', 'context', 'adoption-agentic-surface.yaml')), true);
+
+    const suggestions = readFileSync(join(projectRoot, PRODUCT.internalDir, 'suggestions', 'skills', 'adoption-agentic-surface.yaml'), 'utf8');
+    assert.match(suggestions, /foo/);
+    assert.match(suggestions, /skill/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
 });
 
-test('adopt generates a plan even when no agentic files are present', async () => {
+test('adopt remains read-only when no agentic files are present', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-empty-'));
 
   try {
@@ -1565,210 +1780,23 @@ test('adopt generates a plan even when no agentic files are present', async () =
     rmSync(join(projectRoot, 'AGENTS.md'), { force: true });
     rmSync(join(projectRoot, 'CLAUDE.md'), { force: true });
 
+    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
+    const manifestPath = join(projectRoot, PRODUCT.internalDir, '_config', 'files-manifest.json');
+    const stateBefore = readFileSync(statePath, 'utf8');
+    const manifestBefore = readFileSync(manifestPath, 'utf8');
+
     const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'adopt'], {
       cwd: projectRoot,
       encoding: 'utf8',
     });
 
     assert.equal(result.status, 0);
+    assert.equal(readFileSync(statePath, 'utf8'), stateBefore);
+    assert.equal(readFileSync(manifestPath, 'utf8'), manifestBefore);
 
     const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'adoption-plan.md'), 'utf8');
-    assert.match(report, /AgentForge Adoption Plan/);
-    assert.match(report, /No known entry files were found/);
-
-    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
-    assert.equal(state.adoption_status, 'plan-generated');
-    assert.equal(state.imported_sources.length, 0);
-  } finally {
-    rmSync(projectRoot, { recursive: true, force: true });
-  }
-});
-
-test('adopt --apply snapshots a legacy AGENTS.md and finalizes entrypoints as bootloaders', async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-apply-'));
-
-  try {
-    await installFixture(projectRoot);
-
-    writeFileSync(
-      join(projectRoot, 'package.json'),
-      `${JSON.stringify({
-        name: 'agentforge-adopt-demo',
-        private: true,
-        scripts: {
-          test: 'vitest run',
-          lint: 'eslint .',
-          typecheck: 'tsc --noEmit',
-        },
-        devDependencies: {
-          typescript: '^5.5.0',
-        },
-      }, null, 2)}\n`,
-      'utf8',
-    );
-    writeFileSync(
-      join(projectRoot, 'README.md'),
-      [
-        '# AgentForge Adopt Demo',
-        '',
-        '## Objective',
-        '',
-        'Track orders and alert the support team when delivery status changes.',
-        '',
-        '## Audience',
-        '',
-        'Support engineers and operations.',
-        '',
-        '## Testing',
-        '',
-        '- `npm test`',
-        '- `vitest run`',
-        '',
-      ].join('\n'),
-      'utf8',
-    );
-    mkdirSync(join(projectRoot, 'src'), { recursive: true });
-    writeFileSync(join(projectRoot, 'src', 'index.ts'), 'export const ping = () => "pong";\n', 'utf8');
-
-    const agentsPath = join(projectRoot, 'AGENTS.md');
-    const legacySections = Array.from({ length: 60 }, (_, index) => [
-      `## Project Overview ${index + 1}`,
-      `UNIQUE_ADOPT_MARKER_${index + 1}`,
-      `## Architecture ${index + 1}`,
-      `Architecture detail ${index + 1}`,
-      `## Testing ${index + 1}`,
-    ].join('\n')).join('\n');
-    writeFileSync(
-      agentsPath,
-      [
-        '# Legacy Agent Notes',
-        '',
-        'Regra de domínio: pedidos pagos não podem ser cancelados.',
-        '',
-        legacySections,
-      ].join('\n'),
-      'utf8',
-    );
-
-    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'adopt', '--apply'], {
-      cwd: projectRoot,
-      encoding: 'utf8',
-    });
-
-    assert.equal(result.status, 0);
-
-    const finalAgents = readFileSync(agentsPath, 'utf8');
-    assert.match(finalAgents, /<!-- agentforge:start -->/);
-    assert.match(finalAgents, /<!-- agentforge:end -->/);
-    assert.ok(finalAgents.trimEnd().split(/\r?\n/).length <= 150);
-    assert.doesNotMatch(finalAgents, /<nome do projeto>|A preencher/);
-
-    const snapshotRoot = join(projectRoot, PRODUCT.internalDir, 'imports', 'snapshots', 'AGENTS.md');
-    assert.equal(existsSync(snapshotRoot), true);
-    assert.ok(readdirSync(snapshotRoot).some((name) => name.endsWith('.json')));
-
-    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
-    assert.equal(state.adoption_status, 'applied');
-    assert.equal(typeof state.last_adopt_at, 'string');
-    assert.ok(state.completed.includes('export'));
-    assert.ok(state.checkpoints.export);
-    assert.ok(state.refactor_context);
-    assert.ok(state.refactor_context.classified_count > 0 || state.refactor_context.unclassified_count > 0);
-    assert.equal(existsSync(join(projectRoot, PRODUCT.outputDir)), false);
-
-    const projectOverview = readFileSync(join(projectRoot, PRODUCT.internalDir, 'context', 'project-overview.md'), 'utf8');
-    assert.match(projectOverview, /AgentForge Adopt Demo|AgentForge Demo/);
-    assert.match(projectOverview, /Track orders and alert the support team/);
-    assert.doesNotMatch(projectOverview, /<nome do projeto>/);
-
-    const commands = readFileSync(join(projectRoot, PRODUCT.internalDir, 'references', 'commands.md'), 'utf8');
-    assert.match(commands, /`commands`/);
-    assert.match(commands, /`research-patterns`/);
-    assert.match(commands, /`status`/);
-    assert.match(commands, /`next`/);
-    assert.match(commands, /npx @bcocheto\/agentforge commands/);
-
-    const testingContext = readFileSync(join(projectRoot, PRODUCT.internalDir, 'context', 'testing.md'), 'utf8');
-    assert.match(testingContext, /<!-- Source:/);
-    assert.match(testingContext, /`vitest run`/);
-
-    const domainCandidates = [
-      join(projectRoot, PRODUCT.internalDir, 'context', 'domain.md'),
-      join(projectRoot, PRODUCT.internalDir, 'context', 'unclassified.md'),
-    ];
-    assert.ok(
-      domainCandidates.some((filePath) => existsSync(filePath) && /pedidos pagos não podem ser cancelados/i.test(readFileSync(filePath, 'utf8'))),
-      'expected the legacy domain rule to be imported into the canonical context layer',
-    );
-
-    const validateResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
-      cwd: projectRoot,
-      encoding: 'utf8',
-    });
-    assert.equal(validateResult.status, 0);
-
-    const secondCompile = spawnSync(process.execPath, [AGENTFORGE_BIN, 'compile'], {
-      cwd: projectRoot,
-      encoding: 'utf8',
-    });
-    assert.equal(secondCompile.status, 0);
-    const rerunAgents = readFileSync(agentsPath, 'utf8');
-    assert.equal((rerunAgents.match(/<!-- agentforge:start -->/g) ?? []).length, 1);
-    assert.equal((rerunAgents.match(/<!-- agentforge:end -->/g) ?? []).length, 1);
-  } finally {
-    rmSync(projectRoot, { recursive: true, force: true });
-  }
-});
-
-test('adopt --apply records apply-failed when validation fails after partial steps', async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-apply-failed-'));
-
-  try {
-    await installFixture(projectRoot);
-
-    writeFileSync(
-      join(projectRoot, 'README.md'),
-      [
-        '# AgentForge Adopt Demo',
-        '',
-        '## Objective',
-        '',
-        'Track orders and alert the support team when delivery status changes.',
-        '',
-        '## Testing',
-        '',
-        '- `npm test`',
-        '- `vitest run`',
-        '',
-      ].join('\n'),
-      'utf8',
-    );
-
-    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
-    const state = JSON.parse(readFileSync(statePath, 'utf8'));
-    state.generated_agents = [...state.generated_agents, 'ghost-agent'];
-    writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
-
-    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'adopt', '--apply'], {
-      cwd: projectRoot,
-      encoding: 'utf8',
-    });
-
-    assert.equal(result.status, 1);
-
-    const nextState = JSON.parse(readFileSync(statePath, 'utf8'));
-    assert.equal(nextState.adoption_status, 'apply-failed');
-    assert.equal(nextState.adoption_failed_step, 'validate');
-    assert.match(nextState.last_adopt_error, /ghost-agent|Range inválido em "context\/architecture\.md"/);
-
-    const reportPath = join(projectRoot, PRODUCT.internalDir, 'reports', 'adoption-apply.md');
-    assert.equal(existsSync(reportPath), true);
-    const report = readFileSync(reportPath, 'utf8');
-    assert.match(report, /# AgentForge Adoption Apply Report/);
-    assert.match(report, /Completed steps/);
-    assert.match(report, /Failed step/);
-    assert.match(report, /validate/);
-    assert.match(report, /Written files/);
+    assert.match(report, /Total agentic surface files: 0/);
+    assert.match(report, /No migration candidates were identified\./);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
