@@ -50,6 +50,15 @@ test('agentforge commands --category skills lists suggest-skills and create-skil
   assert.doesNotMatch(result.stdout, /install/);
 });
 
+test('agentforge commands --category ai lists ai-evidence', () => {
+  const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'commands', '--category', 'ai'], {
+    encoding: 'utf8',
+  });
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /ai-evidence/);
+});
+
 test('agentforge help principal uses registry data', () => {
   const helpResult = spawnSync(process.execPath, [AGENTFORGE_BIN, '--help'], {
     encoding: 'utf8',
