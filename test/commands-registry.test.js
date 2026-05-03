@@ -50,6 +50,15 @@ test('agentforge commands --category skills lists suggest-skills and create-skil
   assert.doesNotMatch(result.stdout, /install/);
 });
 
+test('agentforge commands --category context lists context-pack', () => {
+  const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'commands', '--category', 'context'], {
+    encoding: 'utf8',
+  });
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /context-pack/);
+});
+
 test('agentforge commands --category ai lists ai-evidence and import-ai-suggestions', () => {
   const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'commands', '--category', 'ai'], {
     encoding: 'utf8',
