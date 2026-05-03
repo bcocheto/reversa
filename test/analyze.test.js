@@ -204,3 +204,68 @@ test('agentforge analyze generates consolidated reports, suggestions, and state 
     rmSync(projectRoot, { recursive: true, force: true });
   }
 });
+
+test('agentforge analyze --write-context prepares curation inputs without overwriting human context', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-analyze-write-context-'));
+
+  try {
+    await installFixture(projectRoot);
+    writeProjectSurface(projectRoot);
+
+    const contextDir = join(projectRoot, PRODUCT.internalDir, 'context');
+    mkdirSync(contextDir, { recursive: true });
+    const overviewPath = join(contextDir, 'project-overview.md');
+    writeFileSync(overviewPath, '# Project Overview\n\nConteúdo humano original.\n', 'utf8');
+    saveManifest(projectRoot, buildManifest(projectRoot, [join(PRODUCT.internalDir, 'context', 'project-overview.md')]));
+    writeFileSync(overviewPath, '# Project Overview\n\nConteúdo humano editado.\n', 'utf8');
+
+    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'analyze', '--write-context'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+      timeout: 20000,
+    });
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /Contexto inicial escrito/);
+    assert.match(result.stdout, /ai\/evidence\/project-evidence\.json/);
+    assert.match(result.stdout, /ai\/requests\/synthesize-context\.md/);
+
+    assert.equal(readFileSync(overviewPath, 'utf8'), '# Project Overview\n\nConteúdo humano editado.\n');
+
+    const evidenceJson = join(projectRoot, PRODUCT.internalDir, 'ai', 'evidence', 'project-evidence.json');
+    const evidenceBrief = join(projectRoot, PRODUCT.internalDir, 'ai', 'evidence', 'project-brief.md');
+    const synthesisRequest = join(projectRoot, PRODUCT.internalDir, 'ai', 'requests', 'synthesize-context.md');
+    const synthesisReport = join(projectRoot, PRODUCT.internalDir, 'reports', 'context-synthesis.md');
+
+    assert.equal(existsSync(evidenceJson), true);
+    assert.equal(existsSync(evidenceBrief), true);
+    assert.equal(existsSync(synthesisRequest), true);
+    assert.equal(existsSync(synthesisReport), true);
+
+    assert.match(readFileSync(evidenceBrief, 'utf8'), /# AI Evidence Brief/);
+    assert.match(readFileSync(synthesisRequest, 'utf8'), /# Context Synthesis Request/);
+    assert.match(readFileSync(synthesisRequest, 'utf8'), /source_evidence/);
+    assert.match(readFileSync(synthesisReport, 'utf8'), /síntese inicial/i);
+    assert.match(readFileSync(synthesisReport, 'utf8'), /A confirmar/);
+    assert.match(readFileSync(synthesisReport, 'utf8'), /Expected AI outputs/i);
+
+    const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
+    assert.equal(typeof state.last_context_synthesis_at, 'string');
+    assert.equal(typeof state.last_ai_context_request_at, 'string');
+    assert.equal(state.ai_context_request.request_file, '.agentforge/ai/requests/synthesize-context.md');
+    assert.equal(state.ai_context_request.evidence_file, '.agentforge/ai/evidence/project-evidence.json');
+    assert.equal(state.ai_context_request.brief_file, '.agentforge/ai/evidence/project-brief.md');
+    assert.ok(state.created_files.includes('.agentforge/ai/evidence/project-evidence.json'));
+    assert.ok(state.created_files.includes('.agentforge/ai/evidence/project-brief.md'));
+    assert.ok(state.created_files.includes('.agentforge/ai/requests/synthesize-context.md'));
+    assert.ok(state.created_files.includes('.agentforge/reports/context-synthesis.md'));
+
+    const manifest = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, '_config', 'files-manifest.json'), 'utf8'));
+    assert.ok(manifest['.agentforge/ai/evidence/project-evidence.json']);
+    assert.ok(manifest['.agentforge/ai/evidence/project-brief.md']);
+    assert.ok(manifest['.agentforge/ai/requests/synthesize-context.md']);
+    assert.ok(manifest['.agentforge/reports/context-synthesis.md']);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
