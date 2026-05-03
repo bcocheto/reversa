@@ -112,15 +112,19 @@ function buildManagedEntrypointContent({
     '',
     '<!-- agentforge:start -->',
     'Quando o usuário digitar `agentforge`, ative o orquestrador AgentForge.',
-    'A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual.',
+    'A IA ativa deve decidir o próximo passo com julgamento contextual antes de editar arquivos reais.',
+    'A pasta `.agentforge/` não é a tarefa; ela é o harness para decidir como trabalhar no projeto.',
+    'Leia `.agentforge/harness/router.md`, `.agentforge/harness/context-index.yaml` e `.agentforge/harness/context-map.yaml`.',
+    'Selecione o task mode mais provável para a solicitação do usuário.',
+    'Gere ou leia `agentforge context-pack <mode> --write` e use o pacote para orientar a ação.',
+    'Aplique o flow, skill e policy relevantes ao contexto detectado.',
+    'Só então leia e edite os arquivos reais do projeto conforme o objetivo do usuário.',
     'Não assuma Codex como o único runtime; use a IA ativa configurada no ambiente.',
-    'Leia `.agentforge/harness/router.md` e `.agentforge/harness/context-index.yaml`.',
-    'Leia `.agentforge/ai/README.md` se esse arquivo existir.',
-    'Use `agentforge handoff` para obter o plano da próxima fase.',
-    'Use `agentforge context-pack <phase-or-task>` quando esse comando estiver disponível.',
-    'Execute a fase com leitura contextual, síntese e adaptação ao projeto.',
+    'Se a tarefa for de contexto, documentação, refatoração de instruções, glossário, localização ou segregação de conhecimento, acione o agente `context-curator`.',
+    'Use `agentforge handoff` para obter o plano da próxima fase quando o workflow ainda estiver em andamento.',
     'Ao concluir, rode `agentforge checkpoint <phase> --status done` e depois `agentforge validate`.',
     'Nunca edite `state.json` ou `plan.md` manualmente.',
+    'Use `.agentforge/policies/`, `.agentforge/skills/`, `.agentforge/flows/` e `.agentforge/references/` conforme necessário.',
     'Considere `.agentforge/memory/` quando relevante.',
   ];
 
@@ -202,9 +206,11 @@ test('install creates the AgentForge structure, state, Codex entry file, agents,
     const agentsEntry = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
     assert.match(agentsEntry, /<!-- agentforge:start -->/);
     assert.match(agentsEntry, /<!-- agentforge:end -->/);
-    assert.match(agentsEntry, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
+    assert.match(agentsEntry, /A pasta `\.agentforge\/` não é a tarefa; ela é o harness para decidir como trabalhar no projeto\./);
+    assert.match(agentsEntry, /Leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml` e `\.agentforge\/harness\/context-map\.yaml`\./);
+    assert.match(agentsEntry, /Gere ou leia `agentforge context-pack <mode> --write` e use o pacote para orientar a ação\./);
     assert.match(agentsEntry, /Não assuma Codex como o único runtime; use a IA ativa configurada no ambiente\./);
-    assert.match(agentsEntry, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.match(agentsEntry, /Use `agentforge handoff` para obter o plano da próxima fase quando o workflow ainda estiver em andamento\./);
     assert.match(agentsEntry, /Ao concluir, rode `agentforge checkpoint <phase> --status done` e depois `agentforge validate`\./);
 
     const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
@@ -277,10 +283,12 @@ test('managed bootloaders require local reads, npx fallback, and explicit confir
   const copilotContent = renderManagedEntrypoint({ entryFile: '.github/copilot-instructions.md' });
 
   for (const content of [agentContent, claudeContent, cursorContent, copilotContent]) {
-    assert.match(content, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
+    assert.match(content, /A IA ativa deve decidir o próximo passo com julgamento contextual antes de editar arquivos reais\./);
+    assert.match(content, /A pasta `\.agentforge\/` não é a tarefa; ela é o harness para decidir como trabalhar no projeto\./);
+    assert.match(content, /Leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml` e `\.agentforge\/harness\/context-map\.yaml`\./);
+    assert.match(content, /Gere ou leia `agentforge context-pack <mode> --write` e use o pacote para orientar a ação\./);
     assert.match(content, /Não assuma Codex como o único runtime; use a IA ativa configurada no ambiente\./);
-    assert.match(content, /Leia `\.agentforge\/harness\/router\.md` e `\.agentforge\/harness\/context-index\.yaml`\./);
-    assert.match(content, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.match(content, /Use `agentforge handoff` para obter o plano da próxima fase quando o workflow ainda estiver em andamento\./);
     assert.match(content, /Ao concluir, rode `agentforge checkpoint <phase> --status done` e depois `agentforge validate`\./);
     assert.doesNotMatch(content, /advance --all/);
   }
@@ -356,8 +364,8 @@ test('compile after install updates only the managed bootloader block', async ()
     const agentsPath = join(projectRoot, 'AGENTS.md');
     const original = readFileSync(agentsPath, 'utf8');
     const mutated = original.replace(
-      'Leia `.agentforge/harness/router.md` e `.agentforge/harness/context-index.yaml`.',
-      'Leia `.agentforge/harness/router.md` e `.agentforge/harness/context-index.yaml`.\nLinha manual interna.',
+      'Leia `.agentforge/harness/router.md`, `.agentforge/harness/context-index.yaml` e `.agentforge/harness/context-map.yaml`.',
+      'Leia `.agentforge/harness/router.md`, `.agentforge/harness/context-index.yaml` e `.agentforge/harness/context-map.yaml`.\nLinha manual interna.',
     );
     writeFileSync(agentsPath, `${mutated}\nLinha manual externa.\n`, 'utf8');
 
@@ -368,14 +376,14 @@ test('compile after install updates only the managed bootloader block', async ()
     });
 
     assert.equal(result.errors.length, 0);
-    assert.ok(result.written.includes('AGENTS.md'));
+    assert.ok(result.written.some((entry) => String(entry).endsWith('AGENTS.md')));
 
     const content = readFileSync(agentsPath, 'utf8');
     assert.match(content, /Linha manual externa\./);
     assert.doesNotMatch(content, /Linha manual interna\./);
     assert.equal((content.match(/<!-- agentforge:start -->/g) ?? []).length, 1);
     assert.equal((content.match(/<!-- agentforge:end -->/g) ?? []).length, 1);
-    assert.match(content, /Leia `\.agentforge\/harness\/router\.md` e `\.agentforge\/harness\/context-index\.yaml`\./);
+    assert.match(content, /Leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml` e `\.agentforge\/harness\/context-map\.yaml`\./);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }

@@ -4,23 +4,20 @@ Este arquivo descreve como o AgentForge decide o próximo passo.
 
 ## Objetivo
 
-Escolher o caminho certo entre bootstrap, adopt e hybrid com base no estado do projeto e na intenção do usuário.
+Escolher o caminho certo com base no estado do projeto, na intenção do usuário e no contexto já indexado.
 
-## Activation protocol
+## Protocol
 
-1. Detecte o estado atual em `.agentforge/state.json`.
-2. Detecte a próxima fase com `agentforge next` se o comando existir.
-3. Se `agentforge next` não estiver disponível, compare `.agentforge/state.json` com `.agentforge/plan.md`.
-4. Antes de editar arquivos, liste:
-   - a fase atual;
-   - os arquivos que pretende tocar;
-   - o motivo da mudança.
-5. Aguarde confirmação explícita antes de editar.
-6. Se a confirmação for vaga, responda com um plano curto em vez de escrever imediatamente.
-7. Para avançar fases, use `agentforge advance` e nunca edite `state.json` ou `plan.md` manualmente.
-8. Se `agentforge` não existir, use `npx @bcocheto/agentforge advance`.
-9. Se `state.workflow` já estiver concluído, não volte a sugerir discovery, agent-design, flow-design, policies, export ou review.
-10. Nesse caso, peça o objetivo da tarefa real e consulte os task packs disponíveis antes de alterar arquivos.
+1. Leia `.agentforge/state.json`.
+2. Leia `.agentforge/harness/context-index.yaml` e `.agentforge/harness/context-map.yaml`.
+3. Se o workflow ainda estiver em andamento, use `agentforge next` ou `agentforge handoff` para descobrir a próxima fase.
+4. Se o workflow já estiver concluído, não reencene discovery, agent-design, flow-design, policies, export ou review.
+5. Nesse caso, peça a tarefa real e resolva o task mode provável antes de editar.
+6. Use `agentforge context-pack <mode> --write` para carregar o contexto certo.
+7. Leia o flow, a skill e a policy relevantes antes de tocar nos arquivos reais do projeto.
+8. Liste os arquivos que pretende tocar e o motivo da mudança antes de editar.
+9. Aguarde confirmação explícita quando a solicitação for ambígua.
+10. Nunca edite `state.json` ou `plan.md` manualmente.
 
 ## Regras de roteamento
 
@@ -33,12 +30,14 @@ Escolher o caminho certo entre bootstrap, adopt e hybrid com base no estado do p
 ## Resultado esperado
 
 - Uma decisão clara de modo.
-- O próximo fluxo recomendado.
-- Os arquivos que precisam ser lidos antes de agir.
-- Se o ciclo já estiver concluído, o próximo passo é receber a tarefa real e não reencenar as fases de adoção.
+- O task mode mais provável quando a solicitação for uma tarefa real.
+- O `context-pack` correto antes de editar.
+- Os arquivos reais do projeto que precisam ser lidos.
+- Se o ciclo já estiver concluído, o próximo passo é a tarefa real no projeto.
 
 ## Notas
 
+- `.agentforge/` é a camada de roteamento e seleção de contexto, não o destino final da mudança.
 - Este arquivo é para leitura humana e para orientar o comportamento do orquestrador.
 - Não use web search por padrão ao ativar AgentForge.
 - Só pesquise fora do repositório se o usuário pedir explicitamente ou se a tarefa exigir informação externa/atual.

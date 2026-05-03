@@ -327,7 +327,10 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
       "utf8",
     );
     assert.match(harnessRouter, /Router/);
-    assert.match(harnessRouter, /bootstrap/);
+    assert.match(harnessRouter, /camada de roteamento e seleção de contexto/);
+    assert.match(harnessRouter, /Leia `\.agentforge\/harness\/context-index\.yaml` e `\.agentforge\/harness\/context-map\.yaml`\./);
+    assert.match(harnessRouter, /Use `agentforge context-pack <mode> --write` para carregar o contexto certo\./);
+    assert.match(harnessRouter, /Se o workflow já estiver concluído, não reencene discovery, agent-design, flow-design, policies, export ou review\./);
 
     const contextOverview = readFileSync(
       join(projectRoot, PRODUCT.internalDir, "context", "project-overview.md"),
@@ -435,11 +438,13 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
 
     const agentsEntry = readFileSync(join(projectRoot, "AGENTS.md"), "utf8");
     assert.match(agentsEntry, /<!-- agentforge:start -->/);
-    assert.match(agentsEntry, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
+    assert.match(agentsEntry, /A pasta `\.agentforge\/` não é a tarefa; ela é o harness para decidir como trabalhar no projeto\./);
+    assert.match(agentsEntry, /Leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml` e `\.agentforge\/harness\/context-map\.yaml`\./);
+    assert.match(agentsEntry, /Selecione o task mode mais provável para a solicitação do usuário\./);
+    assert.match(agentsEntry, /Gere ou leia `agentforge context-pack <mode> --write` e use o pacote para orientar a ação\./);
+    assert.match(agentsEntry, /Só então leia e edite os arquivos reais do projeto conforme o objetivo do usuário\./);
     assert.match(agentsEntry, /Não assuma Codex como o único runtime; use a IA ativa configurada no ambiente\./);
-    assert.match(agentsEntry, /Leia `\.agentforge\/harness\/router\.md` e `\.agentforge\/harness\/context-index\.yaml`\./);
-    assert.match(agentsEntry, /Leia `\.agentforge\/harness\/context-map\.yaml` para localizar itens por arquivo e linha\./);
-    assert.match(agentsEntry, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.match(agentsEntry, /Use `agentforge handoff` para obter o plano da próxima fase quando o workflow ainda estiver em andamento\./);
     assert.match(agentsEntry, /acione o agente `context-curator`/);
     assert.match(agentsEntry, /Ao concluir, rode `agentforge checkpoint <phase> --status done` e depois `agentforge validate`\./);
     assert.match(
@@ -457,11 +462,13 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
 
     const claudeEntry = readFileSync(join(projectRoot, "CLAUDE.md"), "utf8");
     assert.match(claudeEntry, /<!-- agentforge:start -->/);
-    assert.match(claudeEntry, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
+    assert.match(claudeEntry, /A pasta `\.agentforge\/` não é a tarefa; ela é o harness para decidir como trabalhar no projeto\./);
+    assert.match(claudeEntry, /Leia `\.agentforge\/harness\/router\.md`, `\.agentforge\/harness\/context-index\.yaml` e `\.agentforge\/harness\/context-map\.yaml`\./);
+    assert.match(claudeEntry, /Selecione o task mode mais provável para a solicitação do usuário\./);
+    assert.match(claudeEntry, /Gere ou leia `agentforge context-pack <mode> --write` e use o pacote para orientar a ação\./);
+    assert.match(claudeEntry, /Só então leia e edite os arquivos reais do projeto conforme o objetivo do usuário\./);
     assert.match(claudeEntry, /Não assuma Codex como o único runtime; use a IA ativa configurada no ambiente\./);
-    assert.match(claudeEntry, /Leia `\.agentforge\/harness\/router\.md` e `\.agentforge\/harness\/context-index\.yaml`\./);
-    assert.match(claudeEntry, /Leia `\.agentforge\/harness\/context-map\.yaml` para localizar itens por arquivo e linha\./);
-    assert.match(claudeEntry, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.match(claudeEntry, /Use `agentforge handoff` para obter o plano da próxima fase quando o workflow ainda estiver em andamento\./);
     assert.match(claudeEntry, /acione o agente `context-curator`/);
     assert.match(
       claudeEntry,
@@ -478,7 +485,7 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
 
     const cursorEntry = readFileSync(join(projectRoot, ".cursorrules"), "utf8");
     assert.match(cursorEntry, /<!-- agentforge:start -->/);
-    assert.match(cursorEntry, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
+    assert.match(cursorEntry, /A pasta `\.agentforge\/` não é a tarefa; ela é o harness para decidir como trabalhar no projeto\./);
     assert.match(
       cursorEntry,
       /Considere `\.agentforge\/memory\/` quando relevante\./,
@@ -498,7 +505,7 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
     );
     assert.match(cursorRulesEntry, /<!-- agentforge:start -->/);
     assert.match(cursorRulesEntry, /alwaysApply: true/);
-    assert.match(cursorRulesEntry, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
+    assert.match(cursorRulesEntry, /A pasta `\.agentforge\/` não é a tarefa; ela é o harness para decidir como trabalhar no projeto\./);
     assert.match(
       cursorRulesEntry,
       /Considere `\.agentforge\/memory\/` quando relevante\./,
@@ -517,7 +524,7 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
       "utf8",
     );
     assert.match(copilotEntry, /<!-- agentforge:start -->/);
-    assert.match(copilotEntry, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
+    assert.match(copilotEntry, /A pasta `\.agentforge\/` não é a tarefa; ela é o harness para decidir como trabalhar no projeto\./);
     assert.match(
       copilotEntry,
       /Considere `\.agentforge\/memory\/` quando relevante\./,
@@ -530,6 +537,10 @@ test("install writes the AgentForge state, config, plan, and engine entry templa
       (copilotEntry.match(/<!-- agentforge:end -->/g) ?? []).length,
       1,
     );
+
+    for (const entry of [agentsEntry, claudeEntry, cursorEntry, cursorRulesEntry, copilotEntry]) {
+      assert.ok(entry.trim().split(/\r?\n/).length <= 150);
+    }
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }

@@ -696,13 +696,15 @@ test('install applies structure on an existing project and keeps the manifest co
 
     const agents = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
     assert.match(agents, /<!-- agentforge:start -->/);
-    assert.match(agents, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
-    assert.match(agents, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.match(agents, /A pasta `\.agentforge\/` não é a tarefa; ela é o harness para decidir como trabalhar no projeto\./);
+    assert.match(agents, /Gere ou leia `agentforge context-pack <mode> --write` e use o pacote para orientar a ação\./);
+    assert.match(agents, /Use `agentforge handoff` para obter o plano da próxima fase quando o workflow ainda estiver em andamento\./);
     assert.doesNotMatch(agents, /Keep this file intact\./);
     const claude = readFileSync(join(projectRoot, 'CLAUDE.md'), 'utf8');
     assert.match(claude, /<!-- agentforge:start -->/);
-    assert.match(claude, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
-    assert.match(claude, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.match(claude, /A pasta `\.agentforge\/` não é a tarefa; ela é o harness para decidir como trabalhar no projeto\./);
+    assert.match(claude, /Gere ou leia `agentforge context-pack <mode> --write` e use o pacote para orientar a ação\./);
+    assert.match(claude, /Use `agentforge handoff` para obter o plano da próxima fase quando o workflow ainda estiver em andamento\./);
     assert.doesNotMatch(claude, /Keep this file intact\./);
 
     const validation = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
@@ -794,8 +796,9 @@ test('install leaves the workflow pending and prepares handoff artifacts', async
 
     const agents = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
     assert.match(agents, /<!-- agentforge:start -->/);
-    assert.match(agents, /A IA ativa deve conduzir discovery, agent-design, flow-design, policies, export e review com julgamento contextual\./);
-    assert.match(agents, /Use `agentforge handoff` para obter o plano da próxima fase\./);
+    assert.match(agents, /A pasta `\.agentforge\/` não é a tarefa; ela é o harness para decidir como trabalhar no projeto\./);
+    assert.match(agents, /Gere ou leia `agentforge context-pack <mode> --write` e use o pacote para orientar a ação\./);
+    assert.match(agents, /Use `agentforge handoff` para obter o plano da próxima fase quando o workflow ainda estiver em andamento\./);
     assert.match(agents, /Ao concluir, rode `agentforge checkpoint <phase> --status done` e depois `agentforge validate`\./);
     assert.doesNotMatch(agents, /O ciclo AgentForge já está concluído neste projeto\./);
 
