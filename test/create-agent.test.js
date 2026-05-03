@@ -141,6 +141,69 @@ test('agentforge create-agent creates an agent from a suggestion', async () => {
   }
 });
 
+test('agentforge create-agent promotes analyze-shaped suggestions', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-create-agent-analyze-'));
+
+  try {
+    await installFixture(projectRoot);
+    writeSuggestion(projectRoot, {
+      id: 'data-master',
+      title: 'Data Master',
+      purpose: 'Organiza contexto e decisões de dados para o projeto.',
+      reason: 'O repositório tem sinais claros de banco, migrações e contratos de dados.',
+      confidence: 'medium',
+      recommended_context: [
+        'context/architecture.md',
+        'context/deployment.md',
+      ],
+      recommended_steps: [
+        'Mapear a superfície de dados principal.',
+        'Separar responsabilidades de leitura e escrita.',
+        'Registrar riscos de migração e compatibilidade.',
+      ],
+      safety_limits: [
+        'Não executar migrações destrutivas automaticamente.',
+        'Não esconder impactos de contrato ou rollback.',
+      ],
+    });
+
+    const result = runCreateAgent(projectRoot, 'data-master', ['--force']);
+    assert.equal(result.status, 0);
+
+    const agentPath = join(projectRoot, PRODUCT.internalDir, 'agents', 'data-master.yaml');
+    assert.equal(existsSync(agentPath), true);
+
+    const agent = YAML.parse(readFileSync(agentPath, 'utf8'));
+    assert.equal(agent.id, 'data-master');
+    assert.equal(agent.name, 'Data Master');
+    assert.equal(agent.description, 'Organiza contexto e decisões de dados para o projeto.');
+    assert.equal(agent.mission, 'Organiza contexto e decisões de dados para o projeto.');
+    assert.deepEqual(agent.responsibilities, [
+      'Mapear a superfície de dados principal.',
+      'Separar responsabilidades de leitura e escrita.',
+      'Registrar riscos de migração e compatibilidade.',
+    ]);
+    assert.deepEqual(agent.reads, [
+      'context/architecture.md',
+      'context/deployment.md',
+    ]);
+    assert.deepEqual(agent.boundaries, [
+      'Não executar migrações destrutivas automaticamente.',
+      'Não esconder impactos de contrato ou rollback.',
+    ]);
+    assert.deepEqual(agent.limits, agent.boundaries);
+    assert.equal(agent.purpose, 'Organiza contexto e decisões de dados para o projeto.');
+
+    const validateResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(validateResult.status, 0);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('agentforge create-agent does not overwrite an existing agent without --force', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-create-agent-force-'));
 
