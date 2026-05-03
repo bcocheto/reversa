@@ -59,7 +59,7 @@ function runCreateSkill(projectRoot, skillId, args = []) {
   });
 }
 
-function createSuggestion(projectRoot, overrides = {}) {
+function createSuggestion(projectRoot, overrides = {}, { legacy = false } = {}) {
   const suggestion = {
     id: 'run-tests',
     name: 'Run Tests',
@@ -84,8 +84,11 @@ function createSuggestion(projectRoot, overrides = {}) {
     ...overrides,
   };
 
-  const suggestionPath = join(projectRoot, PRODUCT.internalDir, 'skill-suggestions', `${suggestion.id}.yaml`);
-  mkdirSync(join(projectRoot, PRODUCT.internalDir, 'skill-suggestions'), { recursive: true });
+  const suggestionDir = legacy
+    ? join(projectRoot, PRODUCT.internalDir, 'skill-suggestions')
+    : join(projectRoot, PRODUCT.internalDir, 'suggestions', 'skills');
+  const suggestionPath = join(suggestionDir, `${suggestion.id}.yaml`);
+  mkdirSync(suggestionDir, { recursive: true });
   writeFileSync(suggestionPath, `${YAML.stringify(suggestion).trim()}\n`, 'utf8');
   return suggestionPath;
 }
@@ -153,6 +156,49 @@ test('create-skill run-tests creates .agentforge/skills/run-tests/SKILL.md', asy
       existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md')),
       true,
     );
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('create-skill reads the canonical suggestions path first', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-create-skill-canonical-'));
+
+  try {
+    await installFixture(projectRoot);
+    createSuggestion(projectRoot);
+    removeExistingSkill(projectRoot, 'run-tests');
+
+    const result = runCreateSkill(projectRoot, 'run-tests');
+    assert.equal(result.status, 0);
+
+    const skillPath = join(projectRoot, PRODUCT.internalDir, 'skills', 'run-tests', 'SKILL.md');
+    assert.equal(existsSync(skillPath), true);
+
+    const skill = readFileSync(skillPath, 'utf8');
+    assert.match(skill, /\.agentforge\/suggestions\/skills\/run-tests\.yaml/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('create-skill still reads the legacy suggestions path', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-create-skill-legacy-'));
+
+  try {
+    await installFixture(projectRoot);
+    createSuggestion(projectRoot, {}, { legacy: true });
+    removeExistingSkill(projectRoot, 'run-tests');
+
+    const result = runCreateSkill(projectRoot, 'run-tests');
+    assert.equal(result.status, 0);
+
+    const skillPath = join(projectRoot, PRODUCT.internalDir, 'skills', 'run-tests', 'SKILL.md');
+    assert.equal(existsSync(skillPath), true);
+
+    const skill = readFileSync(skillPath, 'utf8');
+    assert.match(skill, /\.agentforge\/suggestions\/skills\/run-tests\.yaml/);
+    assert.match(result.stdout, /\.agentforge\/skill-suggestions\/run-tests\.yaml/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }

@@ -103,15 +103,18 @@ test('suggest-skills generates run-tests, run-lint, and database-migration sugge
 
     const manifest = loadManifest(projectRoot);
     assert.ok(manifest['.agentforge/reports/skill-suggestions.md']);
-    assert.ok(manifest['.agentforge/skill-suggestions/run-tests.yaml']);
-    assert.ok(manifest['.agentforge/skill-suggestions/run-lint.yaml']);
-    assert.ok(manifest['.agentforge/skill-suggestions/database-migration.yaml']);
+    assert.ok(manifest['.agentforge/suggestions/skills/run-tests.yaml']);
+    assert.ok(manifest['.agentforge/suggestions/skills/run-lint.yaml']);
+    assert.ok(manifest['.agentforge/suggestions/skills/database-migration.yaml']);
     assert.ok(manifest['.agentforge/state.json']);
+    assert.equal(manifest['.agentforge/skill-suggestions/run-tests.yaml'], undefined);
+    assert.equal(manifest['.agentforge/skill-suggestions/run-lint.yaml'], undefined);
+    assert.equal(manifest['.agentforge/skill-suggestions/database-migration.yaml'], undefined);
 
     for (const relPath of [
-      '.agentforge/skill-suggestions/run-tests.yaml',
-      '.agentforge/skill-suggestions/run-lint.yaml',
-      '.agentforge/skill-suggestions/database-migration.yaml',
+      '.agentforge/suggestions/skills/run-tests.yaml',
+      '.agentforge/suggestions/skills/run-lint.yaml',
+      '.agentforge/suggestions/skills/database-migration.yaml',
     ]) {
       const filePath = join(projectRoot, relPath);
       assert.equal(existsSync(filePath), true);
@@ -146,7 +149,7 @@ test('suggest-skills preserves a manually edited suggestion file without --force
     const first = runSuggest(projectRoot);
     assert.equal(first.status, 0);
 
-    const suggestionPath = join(projectRoot, PRODUCT.internalDir, 'skill-suggestions', 'run-tests.yaml');
+    const suggestionPath = join(projectRoot, PRODUCT.internalDir, 'suggestions', 'skills', 'run-tests.yaml');
     const manualContent = `${readFileSync(suggestionPath, 'utf8')}# manual note\n`;
     writeFileSync(suggestionPath, manualContent, 'utf8');
 
