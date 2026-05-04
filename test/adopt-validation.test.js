@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { mkdtempSync, rmSync, readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { spawnSync } from 'child_process';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
@@ -126,6 +126,23 @@ test('validate fails when adoption is marked applied without a valid blueprint',
     assert.match(report, /blueprint_exists/);
     assert.match(report, /blueprint_valid/);
     assert.match(report, /Blueprint inválido/);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('agentforge adopt --apply without --from-ai fails with a clear blueprint error', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-apply-no-blueprint-'));
+
+  try {
+    await installAdoptFixture(projectRoot);
+
+    const result = runCli(projectRoot, ['adopt', '--apply']);
+    assert.equal(result.status, 1);
+    assert.match(result.stdout, /Missing agentic blueprint/);
+    assert.match(result.stdout, /agentforge adopt --prepare/);
+    assert.match(result.stdout, /agentforge adopt --apply --from-ai <path>/);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'adoption-apply.md')), false);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }

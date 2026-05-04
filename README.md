@@ -251,7 +251,8 @@ npx @bcocheto/agentforge install
 npx @bcocheto/agentforge analyze
 npx @bcocheto/agentforge ai-evidence
 npx @bcocheto/agentforge context-pack bugfix --write
-npx @bcocheto/agentforge adopt --apply
+npx @bcocheto/agentforge adopt --prepare
+npx @bcocheto/agentforge adopt --apply --from-ai .agentforge/ai/outbox/agentic-blueprint.yaml
 npx @bcocheto/agentforge import-ai-suggestions --kind skills --file .agentforge/ai/outbox/skills.yaml
 npx @bcocheto/agentforge apply-suggestions
 npx @bcocheto/agentforge compile
@@ -413,7 +414,8 @@ npx @bcocheto/agentforge install
 npx @bcocheto/agentforge analyze
 npx @bcocheto/agentforge ai-evidence
 npx @bcocheto/agentforge context-pack bugfix --write
-npx @bcocheto/agentforge adopt --apply
+npx @bcocheto/agentforge adopt --prepare
+npx @bcocheto/agentforge adopt --apply --from-ai .agentforge/ai/outbox/agentic-blueprint.yaml
 npx @bcocheto/agentforge import-ai-suggestions --kind skills --file .agentforge/ai/outbox/skills.yaml
 npx @bcocheto/agentforge apply-suggestions
 npx @bcocheto/agentforge validate

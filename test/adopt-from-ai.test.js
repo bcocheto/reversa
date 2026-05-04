@@ -408,6 +408,8 @@ test('agentforge adopt --apply --from-ai materializes a blueprint-decided archit
     assert.match(generatedFlow, /id: adoption-materialization/);
     const generatedPolicy = readFileSync(join(projectRoot, '.agentforge', 'policies', 'permissions.yaml'), 'utf8');
     assert.match(generatedPolicy, /name: Permission Policy/);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'harness', 'context-index.yaml')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'harness', 'context-map.yaml')), true);
 
     const agentsMd = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
     assert.match(agentsMd, /<!-- agentforge:start -->/);

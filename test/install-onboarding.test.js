@@ -237,6 +237,36 @@ test('handoff context-curation points to context-curator and the curation flow',
   }
 });
 
+test('handoff on evidence_ready asks for the blueprint and blocks review', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-handoff-evidence-ready-'));
+
+  try {
+    const installResult = await runInstallWithAnswers(projectRoot, makeBaseAnswers({
+      engines: ['codex'],
+      setup_mode: 'adopt',
+    }));
+    assert.equal(installResult.status, 0);
+
+    const handoffResult = spawnSync(process.execPath, [AGENTFORGE_BIN, 'handoff'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+
+    assert.equal(handoffResult.status, 0);
+    assert.match(handoffResult.stdout, /Executor recomendado: .*?/);
+    assert.match(handoffResult.stdout, /Comando recomendado: agentforge/);
+    assert.match(handoffResult.stdout, /Próxima fase: (adoption-evidence-ready|adoption-ai-request-ready)/);
+
+    const handoffReport = readFileSync(join(projectRoot, '.agentforge', 'reports', 'handoff.md'), 'utf8');
+    assert.match(handoffReport, /Não execute review\./);
+    assert.match(handoffReport, /Não avance phase-engine\./);
+    assert.match(handoffReport, /A tarefa atual é gerar o blueprint da IA\./);
+    assert.match(handoffReport, /Não materialize agentes manualmente\./);
+  } finally {
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('handoff --mode feature points to context-pack and resolved project context', async () => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-handoff-feature-mode-'));
 
@@ -595,7 +625,7 @@ test('install runs analysis first and can stop after generating reports and sugg
     const output = lines.join('\n');
     assert.equal(promptCalls.length, 2);
     assert.equal(readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8'), originalAgents);
-    assert.equal(existsSync(join(projectRoot, '.agentforge', 'agents')), false);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'agents')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'project-analysis.md')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'analysis-plan.md')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'suggestions', 'agents', 'product-owner.yaml')), true);
@@ -664,8 +694,8 @@ test('install runs analysis first and can stop after generating reports and sugg
     assert.match(output, /Capacidades detectadas:/);
     assert.match(output, /Fluxos candidatos detectados:/);
     assert.match(output, /não são recomendação final/);
-    assert.match(output, /Evidências coletadas\./);
-    assert.match(output, /Blueprint da IA ainda necessário\./);
+    assert.match(output, /Evidências coletadas e request de blueprint gerado\./);
+    assert.match(output, /Blueprint da IA: necessário/);
     assert.match(output, /agentic-blueprint\.yaml/);
     assert.doesNotMatch(output, /Agentes sugeridos|Skills sugeridas|Flows sugeridos/);
 
@@ -789,9 +819,23 @@ test('install applies structure on an existing project and keeps the manifest co
       return {};
     };
 
-    const result = await install([]);
+    const originalLog = console.log;
+    const lines = [];
+    let result;
+    try {
+      console.log = (...args) => {
+        lines.push(args.map((value) => String(value)).join(' '));
+      };
+      result = await install([]);
+    } finally {
+      console.log = originalLog;
+    }
+    const output = lines.join('\n');
+
     assert.equal(result, 0);
     assert.equal(promptCalls.length, 2);
+    assert.match(output, /Evidências coletadas e request de blueprint gerado\./);
+    assert.doesNotMatch(output, /adoção agentic executada com sucesso/i);
 
     const manifest = loadManifest(projectRoot);
     for (const relPath of [
@@ -810,40 +854,28 @@ test('install applies structure on an existing project and keeps the manifest co
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'flows', 'context-curation.yaml')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'handoff.md')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'advance.md')), false);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'adoption-apply.md')), false);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'adoption-plan.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'agentic-dossier.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'ai', 'requests', 'agentic-blueprint.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'ai', 'evidence', 'project-evidence.json')), true);
 
     const state = JSON.parse(readFileSync(join(projectRoot, '.agentforge', 'state.json'), 'utf8'));
     assert.ok(state.flows.includes('review'));
     assert.ok(state.flows.includes('context-curation'));
     assert.equal(state.flows.every((flowId) => existsSync(join(projectRoot, '.agentforge', 'flows', `${flowId}.yaml`))), true);
-    assert.equal(state.adoption_status, 'applied');
-    assert.equal(state.adoption?.verification_status, 'verified');
-    assert.equal(state.workflow.current_phase, 'review');
-    assert.deepEqual(state.workflow.completed_phases, [
-      'agent-design',
-      'flow-design',
-      'policies',
-      'export',
-    ]);
-    assert.deepEqual(state.workflow.pending_phases, ['review']);
+    assert.equal(state.adoption_status, 'evidence_ready');
+    assert.equal(state.adoption?.status, 'evidence_ready');
+    assert.equal(state.adoption?.apply_status, 'not-run');
+    assert.equal(state.adoption?.verification_status, undefined);
+    assert.equal(state.adoption?.next_required_output, '.agentforge/ai/outbox/agentic-blueprint.yaml');
+    assert.equal(state.next_required_output, '.agentforge/ai/outbox/agentic-blueprint.yaml');
+    assert.equal(readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8'), originalAgents);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'agents')), true);
 
-    const agents = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
-    assert.match(agents, /<!-- agentforge:start -->/);
-    assert.match(agents, /A pasta `\.agentforge\/` não é a tarefa; ela é o harness para decidir como trabalhar no projeto\./);
-    assert.match(agents, /Gere ou leia `agentforge context-pack <mode> --write` e use o pacote para orientar a ação\./);
-    assert.match(agents, /Use `agentforge handoff` para obter o plano da próxima fase quando o workflow ainda estiver em andamento\./);
-    assert.doesNotMatch(agents, /Keep this file intact\./);
     const claude = readFileSync(join(projectRoot, 'CLAUDE.md'), 'utf8');
-    assert.match(claude, /<!-- agentforge:start -->/);
-    assert.match(claude, /A pasta `\.agentforge\/` não é a tarefa; ela é o harness para decidir como trabalhar no projeto\./);
-    assert.match(claude, /Gere ou leia `agentforge context-pack <mode> --write` e use o pacote para orientar a ação\./);
-    assert.match(claude, /Use `agentforge handoff` para obter o plano da próxima fase quando o workflow ainda estiver em andamento\./);
-    assert.doesNotMatch(claude, /Keep this file intact\./);
+    assert.equal(claude, originalClaude);
 
-    const validation = spawnSync(process.execPath, [AGENTFORGE_BIN, 'validate'], {
-      cwd: projectRoot,
-      encoding: 'utf8',
-    });
-    assert.equal(validation.status, 0);
   } finally {
     inquirer.prompt = originalPrompt;
     process.chdir(cwd);
@@ -914,19 +946,18 @@ test('install leaves the workflow pending and prepares handoff artifacts', async
     const state = JSON.parse(readFileSync(join(projectRoot, '.agentforge', 'state.json'), 'utf8'));
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'handoff.md')), true);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'advance.md')), false);
-    assert.equal(state.adoption_status, 'applied');
-    assert.equal(state.adoption?.status, 'applied');
-    assert.equal(state.adoption?.apply_status, 'applied');
-    assert.equal(state.adoption?.verification_status, 'verified');
-    assert.ok(state.adoption?.verified_at);
-    assert.equal(state.workflow.current_phase, 'review');
-    assert.deepEqual(state.workflow.completed_phases, [
-      'agent-design',
-      'flow-design',
-      'policies',
-      'export',
-    ]);
-    assert.deepEqual(state.workflow.pending_phases, ['review']);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'adoption-apply.md')), false);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'adoption-plan.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'agentic-dossier.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'ai', 'requests', 'agentic-blueprint.md')), true);
+    assert.equal(existsSync(join(projectRoot, '.agentforge', 'ai', 'evidence', 'project-evidence.json')), true);
+    assert.equal(state.adoption_status, 'evidence_ready');
+    assert.equal(state.adoption?.status, 'evidence_ready');
+    assert.equal(state.adoption?.apply_status, 'not-run');
+    assert.equal(state.adoption?.verification_status, undefined);
+    assert.equal(state.adoption?.next_required_output, '.agentforge/ai/outbox/agentic-blueprint.yaml');
+    assert.equal(state.next_required_output, '.agentforge/ai/outbox/agentic-blueprint.yaml');
+    assert.notEqual(state.workflow.current_phase, 'review');
 
     const agents = readFileSync(join(projectRoot, 'AGENTS.md'), 'utf8');
     assert.match(agents, /<!-- agentforge:start -->/);
@@ -941,10 +972,10 @@ test('install leaves the workflow pending and prepares handoff artifacts', async
       encoding: 'utf8',
     });
     assert.equal(nextResult.status, 0);
-    assert.match(nextResult.stdout, /Activation mode: adoption-complete/);
-    assert.match(nextResult.stdout, /Current phase: adoption-complete/);
+    assert.match(nextResult.stdout, /Activation mode: (adoption-evidence-ready|adoption-ai-request-ready)/);
+    assert.match(nextResult.stdout, /Current phase: (adoption-evidence-ready|adoption-ai-request-ready)/);
     assert.match(nextResult.stdout, /Next phase: none/);
-    assert.match(nextResult.stdout, /ask-for-real-task/);
+    assert.match(nextResult.stdout, /agentforge adopt --apply --from-ai \.agentforge\/ai\/outbox\/agentic-blueprint\.yaml/);
     assert.doesNotMatch(nextResult.stdout, /checkpoint discovery/);
     assert.doesNotMatch(nextResult.stdout, /agent-design/);
 

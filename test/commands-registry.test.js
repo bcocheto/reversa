@@ -108,7 +108,7 @@ test('agentforge adopt help advertises prepare and apply modes', () => {
   });
 
   assert.equal(result.status, 0);
-  assert.match(result.stdout, /adopt \[--prepare\] \[--apply\] \[--from-ai <path>\]/);
+  assert.match(result.stdout, /adopt \[--prepare\] \| adopt --apply --from-ai <path>/);
   assert.match(result.stdout, /Com --prepare, o comando roda ingest/);
   assert.match(result.stdout, /request de blueprint/);
 });

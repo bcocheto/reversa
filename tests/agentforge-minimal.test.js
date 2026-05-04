@@ -363,9 +363,9 @@ test('activation plan prioritizes adoption states before the phase engine', asyn
     assert.equal(plannedPlan.mode, 'adoption-pending');
     assert.equal(plannedPlan.should_continue_workflow, false);
     assert.equal(plannedPlan.current_phase, 'adoption-pending');
-    assert.equal(plannedPlan.next_action, 'apply-adoption');
-    assert.equal(plannedPlan.recommended_command, 'agentforge adopt --apply');
-    assert.deepEqual(plannedPlan.required_commands, ['agentforge adopt --apply']);
+    assert.equal(plannedPlan.next_action, 'prepare-adoption-evidence');
+    assert.equal(plannedPlan.recommended_command, 'agentforge adopt --prepare');
+    assert.deepEqual(plannedPlan.required_commands, ['agentforge adopt --prepare']);
     assert.doesNotMatch(plannedPlan.required_commands.join('\n'), /discovery|agent-design/);
 
     const verificationState = {
@@ -399,8 +399,9 @@ test('activation plan prioritizes adoption states before the phase engine', asyn
     assert.equal(failedPlan.should_continue_workflow, false);
     assert.equal(failedPlan.current_phase, 'adoption-verification-failed');
     assert.equal(failedPlan.next_action, 'review-adoption-verification');
-    assert.equal(failedPlan.recommended_command, 'agentforge adopt --apply --force');
-    assert.deepEqual(failedPlan.required_commands, ['agentforge adopt --apply --force', 'agentforge validate']);
+    assert.match(failedPlan.recommended_command, /agentforge adopt --apply --from-ai .* --force/);
+    assert.match(failedPlan.required_commands[0], /agentforge adopt --apply --from-ai .* --force/);
+    assert.deepEqual(failedPlan.required_commands.slice(1), ['agentforge validate']);
     assert.doesNotMatch(failedPlan.required_commands.join('\n'), /discovery|agent-design/);
 
     const verifiedPlan = resolveAgentForgeActivationPlan(adoptionRoot, {
@@ -490,7 +491,7 @@ test('agentforge next, handoff, and status honor adopted activation plans', asyn
 
     assert.equal(failedHandoffResult.status, 0);
     assert.match(failedHandoffResult.stdout, /Próxima fase: adoption-verification-failed/);
-    assert.match(failedHandoffResult.stdout, /Comando recomendado: agentforge adopt --apply --force/);
+    assert.match(failedHandoffResult.stdout, /Comando recomendado: agentforge adopt --apply --from-ai .* --force/);
     assert.doesNotMatch(failedHandoffResult.stdout, /checkpoint discovery/);
     assert.doesNotMatch(failedHandoffResult.stdout, /agent-design/);
 
@@ -655,10 +656,8 @@ test('install onboarding copy distinguishes planned and applied adoption', () =>
   assert.match(planned.adoptionLine, /adoption-plan\.md/);
   assert.match(planned.nextSteps.join('\n'), /agentic-blueprint\.yaml/);
 
-  assert.match(applied.label, /Evidências coletadas\./);
-  assert.match(applied.label, /Blueprint da IA ainda necessário\./);
-  assert.match(applied.adoptionLine, /aplicada/);
-  assert.match(applied.adoptionLine, /adoption-apply\.md/);
+  assert.match(applied.label, /Evidências coletadas e request de blueprint gerado\./);
+  assert.match(applied.adoptionLine, /evidence_ready/);
   assert.match(applied.deferredLine, /Entrypoints resolvidos/);
 
   assert.equal(bootstrap.adoptionLine, null);
@@ -1911,12 +1910,9 @@ test('adopt --apply migrates a legacy skill and refreshes the context index', as
       'utf8',
     );
 
-    const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'adopt', '--apply'], {
-      cwd: projectRoot,
-      encoding: 'utf8',
-    });
+    const result = await runAdoptApply(projectRoot);
 
-    assert.equal(result.status, 0);
+    assert.equal(result.ok, true);
     assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'foo', 'SKILL.md')), true);
     assert.match(readFileSync(join(projectRoot, PRODUCT.internalDir, 'skills', 'foo', 'SKILL.md'), 'utf8'), /Foo Skill/);
 
@@ -1938,11 +1934,10 @@ test('adopt --apply migrates a legacy skill and refreshes the context index', as
 
     const state = JSON.parse(readFileSync(join(projectRoot, PRODUCT.internalDir, 'state.json'), 'utf8'));
     assert.equal(state.adoption_status, 'applied');
-    assert.equal(state.adoption?.verification_status, 'verified');
+    assert.equal(state.adoption?.apply_status, undefined);
+    assert.equal(state.adoption?.verification_status, undefined);
 
-    const verificationReport = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'adoption-verification.md'), 'utf8');
-    assert.match(verificationReport, /AGENTS\.md has a managed AgentForge block/);
-    assert.match(verificationReport, /Context map was updated after migration/);
+    assert.equal(existsSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'adoption-verification.md')), false);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
