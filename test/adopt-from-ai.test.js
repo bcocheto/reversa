@@ -446,6 +446,10 @@ test('agentforge adopt --apply --from-ai materializes a blueprint-decided archit
 
     const validateResult = runCli(projectRoot, ['validate']);
     assert.equal(validateResult.status, 0);
+    const validationReport = readFileSync(join(projectRoot, '.agentforge', 'reports', 'validation.md'), 'utf8');
+    assert.match(validationReport, /Agentic adoption validation/);
+    assert.match(validationReport, /\[x\] `blueprint_exists`/);
+    assert.match(validationReport, /\[x\] `entrypoints_compiled`/);
   } finally {
     process.chdir(cwd);
     rmSync(projectRoot, { recursive: true, force: true });
@@ -466,6 +470,93 @@ test('agentforge adopt --apply --from-ai fails when the blueprint is missing', a
     assert.match(result.stdout, /Blueprint ausente/);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'adoption-apply.md')), false);
     assert.equal(existsSync(join(projectRoot, '.agentforge', 'reports', 'agentic-blueprint-validation.md')), false);
+  } finally {
+    process.chdir(cwd);
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('validate fails when a materialized agent is not declared in the blueprint', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-from-ai-rogue-agent-'));
+  const cwd = process.cwd();
+
+  try {
+    process.chdir(projectRoot);
+    await installAdoptFixture(projectRoot);
+    writeLegacySurface(projectRoot);
+    writeExistingCanonicalSurface(projectRoot);
+
+    const prepareResult = runCli(projectRoot, ['adopt', '--prepare']);
+    assert.equal(prepareResult.status, 0);
+
+    const evidenceBundle = readJson(join(projectRoot, '.agentforge', 'ai', 'evidence', 'project-evidence.json'));
+    const blueprintPath = writeBlueprintFile(projectRoot, evidenceBundle);
+
+    const applyResult = runCli(projectRoot, ['adopt', '--apply', '--from-ai', blueprintPath]);
+    assert.equal(applyResult.status, 0);
+
+    mkdirSync(join(projectRoot, '.agentforge', 'agents'), { recursive: true });
+    writeFileSync(join(projectRoot, '.agentforge', 'agents', 'rogue-agent.yaml'), [
+      'id: rogue-agent',
+      'name: Rogue Agent',
+      'description: Manual agent inserted after adoption.',
+      'responsibilities:',
+      '  - Should not exist.',
+      'boundaries:',
+      '  - Manual edits are forbidden.',
+      'generated_by: agentic-blueprint',
+      'blueprint_path: blueprint.json',
+    ].join('\n'), 'utf8');
+
+    const statePath = join(projectRoot, '.agentforge', 'state.json');
+    const state = readJson(statePath);
+    state.generated_agents = [...state.generated_agents, 'rogue-agent'];
+    writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+
+    const validateResult = runCli(projectRoot, ['validate']);
+    assert.notEqual(validateResult.status, 0);
+    const report = readFileSync(join(projectRoot, '.agentforge', 'reports', 'validation.md'), 'utf8');
+    assert.match(report, /Agentic adoption validation/);
+    assert.match(report, /agents_materialized/);
+    assert.match(report, /rogue-agent/);
+  } finally {
+    process.chdir(cwd);
+    rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('validate fails when a blueprint skill loses its agent owner', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-from-ai-skill-owner-'));
+  const cwd = process.cwd();
+
+  try {
+    process.chdir(projectRoot);
+    await installAdoptFixture(projectRoot);
+    writeLegacySurface(projectRoot);
+    writeExistingCanonicalSurface(projectRoot);
+
+    const prepareResult = runCli(projectRoot, ['adopt', '--prepare']);
+    assert.equal(prepareResult.status, 0);
+
+    const evidenceBundle = readJson(join(projectRoot, '.agentforge', 'ai', 'evidence', 'project-evidence.json'));
+    const blueprintPath = writeBlueprintFile(projectRoot, evidenceBundle);
+
+    const applyResult = runCli(projectRoot, ['adopt', '--apply', '--from-ai', blueprintPath]);
+    assert.equal(applyResult.status, 0);
+
+    const skillPath = join(projectRoot, '.agentforge', 'skills', 'blueprint-materialization', 'SKILL.md');
+    const skillContent = readFileSync(skillPath, 'utf8').replace(
+      '  owner_agents:\n    - adoption-orchestrator\n',
+      '  owner_agents: []\n',
+    );
+    writeFileSync(skillPath, skillContent, 'utf8');
+
+    const validateResult = runCli(projectRoot, ['validate']);
+    assert.notEqual(validateResult.status, 0);
+    const report = readFileSync(join(projectRoot, '.agentforge', 'reports', 'validation.md'), 'utf8');
+    assert.match(report, /Agentic adoption validation/);
+    assert.match(report, /skills_materialized/);
+    assert.match(report, /não declara agent owner/);
   } finally {
     process.chdir(cwd);
     rmSync(projectRoot, { recursive: true, force: true });

@@ -75,50 +75,57 @@ function runCli(projectRoot, args) {
   });
 }
 
-test('validate fails in adopt mode when legacy surfaces are not adopted', async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-validate-fail-'));
+test('validate skips adoption validation when adopt mode is planned and no blueprint exists', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-validate-planned-'));
 
   try {
     await installAdoptFixture(projectRoot);
-    writeLegacySurface(projectRoot);
 
     const result = runCli(projectRoot, ['validate']);
-    assert.equal(result.status, 1);
+    assert.equal(result.status, 0);
 
     const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
-    assert.match(report, /Adoption checks/);
-    assert.match(report, /legacy_entrypoints_snapshotted/);
-    assert.match(report, /agents_md_managed/);
-    assert.match(report, /legacy_skills_migrated_or_preserved/);
-    assert.match(report, /context_index_references_promoted_artifacts/);
+    assert.doesNotMatch(report, /Agentic adoption validation/);
+    assert.doesNotMatch(report, /blueprint_exists/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
 });
 
-test('validate passes after adopt --apply migrates the legacy surface', async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-validate-pass-'));
+test('validate fails when adoption is marked applied without a valid blueprint', async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'agentforge-adopt-validate-invalid-blueprint-'));
 
   try {
     await installAdoptFixture(projectRoot);
-    writeLegacySurface(projectRoot);
 
-    const applyResult = runCli(projectRoot, ['adopt', '--apply']);
-    assert.equal(applyResult.status, 0);
+    const statePath = join(projectRoot, PRODUCT.internalDir, 'state.json');
+    const state = JSON.parse(readFileSync(statePath, 'utf8'));
+    state.adoption_status = 'applied';
+    state.adoption = {
+      ...(state.adoption ?? {}),
+      status: 'applied',
+      apply_status: 'applied',
+    };
+    writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
 
-    const validateResult = runCli(projectRoot, ['validate']);
-    assert.equal(validateResult.status, 0);
+    mkdirSync(join(projectRoot, PRODUCT.internalDir, 'ai', 'outbox'), { recursive: true });
+    writeFileSync(join(projectRoot, PRODUCT.internalDir, 'ai', 'outbox', 'agentic-blueprint.yaml'), [
+      'blueprint:',
+      '  project:',
+      '    name: Invalid Blueprint Demo',
+      '    type: SaaS/Web App',
+      '    objective: broken-blueprint',
+      '  agents: []',
+    ].join('\n'), 'utf8');
 
-    const manifest = loadManifest(projectRoot);
-    assert.ok(manifest['AGENTS.md']);
-    assert.ok(manifest['CLAUDE.md']);
+    const result = runCli(projectRoot, ['validate']);
+    assert.equal(result.status, 1);
 
     const report = readFileSync(join(projectRoot, PRODUCT.internalDir, 'reports', 'validation.md'), 'utf8');
-    assert.match(report, /Adoption checks/);
-    assert.match(report, /\[x\] `legacy_entrypoints_snapshotted`/);
-    assert.match(report, /\[x\] `agents_md_managed`/);
-    assert.match(report, /\[x\] `legacy_skills_migrated_or_preserved`/);
-    assert.match(report, /\[x\] `context_index_references_promoted_artifacts`/);
+    assert.match(report, /Agentic adoption validation/);
+    assert.match(report, /blueprint_exists/);
+    assert.match(report, /blueprint_valid/);
+    assert.match(report, /Blueprint inválido/);
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
   }
