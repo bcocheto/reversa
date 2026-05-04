@@ -92,6 +92,16 @@ test('agentforge help principal uses registry data', () => {
   assert.match(helpResult.stdout, /commands\s+/);
 });
 
+test('agentforge apply-suggestions help advertises blueprint mode', () => {
+  const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'apply-suggestions', '--help'], {
+    encoding: 'utf8',
+  });
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /apply-suggestions \[--agents\] \[--skills\] \[--flows\] \[--all\] \[--dry-run\] \[--force\] \[--blueprint <path>\]/);
+  assert.match(result.stdout, /materializar uma decisão completa da IA/);
+});
+
 test('agentforge adopt help advertises prepare and apply modes', () => {
   const result = spawnSync(process.execPath, [AGENTFORGE_BIN, 'adopt', '--help'], {
     encoding: 'utf8',
