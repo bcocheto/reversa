@@ -25,9 +25,9 @@ phases:
   - id: agent-design
     name: Agent Design
     order: 20
-    purpose: Promover agentes sugeridos e consolidar papeis.
+    purpose: Materializar a equipe agentic a partir de blueprint validado.
     reads:
-      - suggestions/agents/
+      - ai/outbox/agentic-blueprint.yaml
       - agents/
       - context/project-overview.md
       - context/architecture.md

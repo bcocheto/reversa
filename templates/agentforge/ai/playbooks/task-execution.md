@@ -23,7 +23,7 @@ Executar uma tarefa específica com contexto mínimo, rastreabilidade e saída a
 
 - Não escreva contexto inteligente fora do escopo pedido.
 - Não altere `state.json` ou `plan.md` manualmente.
-- Se a tarefa envolver agentes, não crie YAML manualmente; use `agentforge create-agent <id>` ou `agentforge apply-suggestions --agents`.
+- Se a tarefa envolver agentes, nunca crie YAML manualmente; use `agentforge create-agent <id>` ou `agentforge apply-suggestions --blueprint .agentforge/ai/outbox/agentic-blueprint.yaml`.
 - Não trate a engine como identidade fixa do produto.
 
 ## Finalizar

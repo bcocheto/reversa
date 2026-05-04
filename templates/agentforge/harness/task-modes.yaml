@@ -7,9 +7,10 @@ discovery:
     - É preciso reunir contexto antes de projetar a mudança.
 agent-design:
   label: Agent Design
-  purpose: Definir ou ajustar agentes, sugestões e memória associada.
+  purpose: Materializar a equipe agentic a partir de blueprint validado.
   use_when:
-    - O trabalho altera agentes ou superfícies de sugestão.
+    - O trabalho altera agentes finais do projeto.
+    - É necessário transformar blueprint validado em arquivos reais.
     - É necessário preparar agentes para uma nova capacidade.
 flow-design:
   label: Flow Design

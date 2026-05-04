@@ -316,11 +316,34 @@ test('handoff json exposes phase-specific and adoption write policy', async () =
     };
 
     const agentDesign = resolveHandoffWritePolicy({ phase: 'agent-design' });
-    assert.equal(agentDesign.direct_write_allowed.includes('.agentforge/agents/**'), false);
-    assert.ok(agentDesign.command_write_allowed.includes('.agentforge/agents/**'));
+    assert.deepEqual([...agentDesign.direct_write_allowed].sort(), [
+      '.agentforge/memory/**',
+      '.agentforge/reports/**',
+    ]);
+    assert.deepEqual([...agentDesign.command_write_allowed].sort(), [
+      '.agentforge/agents/**',
+    ]);
     assert.ok(agentDesign.never_edit_manually.includes('.agentforge/state.json'));
     assert.ok(agentDesign.never_edit_manually.includes('.agentforge/plan.md'));
     assert.ok(agentDesign.never_edit_manually.includes('.agentforge/_config/**'));
+
+    const agentDesignPlaybook = readFileSync(new URL('../templates/agentforge/ai/playbooks/agent-design.md', import.meta.url), 'utf8');
+    assert.match(agentDesignPlaybook, /Nunca crie ou edite agentes manualmente\./);
+    assert.match(agentDesignPlaybook, /Se não houver blueprint validado, parar e pedir `\.agentforge\/ai\/outbox\/agentic-blueprint\.yaml`/);
+    assert.doesNotMatch(agentDesignPlaybook, /suggestions\/agents/);
+
+    const taskExecutionPlaybook = readFileSync(new URL('../templates/agentforge/ai/playbooks/task-execution.md', import.meta.url), 'utf8');
+    assert.match(taskExecutionPlaybook, /nunca crie YAML manualmente/);
+    assert.match(taskExecutionPlaybook, /apply-suggestions --blueprint \.agentforge\/ai\/outbox\/agentic-blueprint\.yaml/);
+    assert.doesNotMatch(taskExecutionPlaybook, /apply-suggestions --agents/);
+
+    const taskModes = readFileSync(new URL('../templates/agentforge/harness/task-modes.yaml', import.meta.url), 'utf8');
+    assert.match(taskModes, /Materializar a equipe agentic a partir de blueprint validado\./);
+    assert.match(taskModes, /transformar blueprint validado em arquivos reais/);
+
+    const phases = readFileSync(new URL('../templates/agentforge/workflow/phases.yaml', import.meta.url), 'utf8');
+    assert.match(phases, /Materializar a equipe agentic a partir de blueprint validado\./);
+    assert.doesNotMatch(phases, /suggestions\/agents/);
 
     const exportPhase = resolveHandoffWritePolicy({ phase: 'export' });
     assert.equal(exportPhase.direct_write_allowed.includes('AGENTS.md'), false);

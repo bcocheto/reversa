@@ -105,6 +105,15 @@ function writeContextPackTaskSurfaces(projectRoot) {
   writeFileSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'architect.yaml'), '# Architect\n\nAgent content.\n', 'utf8');
   writeFileSync(join(projectRoot, PRODUCT.internalDir, 'agents', 'reviewer.yaml'), '# Reviewer\n\nAgent content.\n', 'utf8');
 
+  mkdirSync(join(projectRoot, PRODUCT.internalDir, 'ai', 'outbox'), { recursive: true });
+  writeFileSync(join(projectRoot, PRODUCT.internalDir, 'ai', 'outbox', 'agentic-blueprint.yaml'), [
+    'version: 1',
+    'agents:',
+    '  - id: architect',
+    '    source_evidence:',
+    '      - path: README.md',
+  ].join('\n') + '\n', 'utf8');
+
   mkdirSync(join(projectRoot, PRODUCT.internalDir, 'suggestions', 'agents'), { recursive: true });
   writeFileSync(join(projectRoot, PRODUCT.internalDir, 'suggestions', 'agents', 'architect.yaml'), '# Suggested Architect\n\nSuggestion content.\n', 'utf8');
 
@@ -220,8 +229,9 @@ test('agentforge context-pack agent-design --write resolves agent surfaces witho
     const report = readFileSync(reportPath, 'utf8');
     assert.match(report, /## Agents/);
     assert.match(report, /\.agentforge\/agents\/architect\.yaml/);
-    assert.match(report, /## Suggestions/);
-    assert.match(report, /\.agentforge\/suggestions\/agents\/architect\.yaml/);
+    assert.match(report, /## Blueprint/);
+    assert.match(report, /\.agentforge\/ai\/outbox\/agentic-blueprint\.yaml/);
+    assert.doesNotMatch(report, /## Suggestions/);
     assert.match(report, /## Memory/);
     assert.match(report, /\.agentforge\/memory\/decisions\.md/);
     assert.doesNotMatch(report, /Selection: manual/);

@@ -102,8 +102,8 @@ task_contexts:
   agent-design:
     agents:
       - agents/
-    suggestions:
-      - suggestions/agents/
+    blueprint:
+      - ai/outbox/agentic-blueprint.yaml
     memory:
       - memory/
     reports:

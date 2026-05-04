@@ -288,13 +288,13 @@ test('handoff reports engine-specific notes and playbooks for active engines', a
     assert.match(renderHandoffReport(exportPhase), /Leia o playbook da fase: `\.agentforge\/ai\/playbooks\/export\.md`\./);
     assert.ok(exportPhase.commands.some((command) => command.includes('compile --takeover-entrypoints --include-existing-entrypoints')));
     const agentDesignPlaybook = readFileSync(new URL('../templates/agentforge/ai/playbooks/agent-design.md', import.meta.url), 'utf8');
-    assert.match(agentDesignPlaybook, /não crie agentes manualmente/);
+    assert.match(agentDesignPlaybook, /Nunca crie ou edite agentes manualmente\./);
     assert.match(agentDesignPlaybook, /`agentforge create-agent <id>`/);
-    assert.match(agentDesignPlaybook, /`agentforge apply-suggestions --agents`/);
+    assert.match(agentDesignPlaybook, /`agentforge apply-suggestions --blueprint \.agentforge\/ai\/outbox\/agentic-blueprint\.yaml`/);
     const exportPlaybook = readFileSync(new URL('../templates/agentforge/ai/playbooks/export.md', import.meta.url), 'utf8');
     assert.match(exportPlaybook, /Não editar entrypoints manualmente/);
     assert.ok(agentDesign.commands.some((command) => command.includes('create-agent <id> --force')));
-    assert.ok(agentDesign.commands.some((command) => command.includes('apply-suggestions --agents')));
+    assert.ok(agentDesign.commands.some((command) => command.includes('apply-suggestions --blueprint .agentforge/ai/outbox/agentic-blueprint.yaml')));
     assert.ok(agentDesign.commands.some((command) => command.includes('validate')));
     assert.match(renderHandoffReport(codex), /Leia a nota da engine: `\.agentforge\/ai\/engines\/codex\.md`\./);
     assert.match(renderHandoffReport(claude), /Leia a nota da engine: `\.agentforge\/ai\/engines\/claude\.md`\./);
@@ -311,9 +311,13 @@ test('handoff write policy adapts to phase and adoption mode', () => {
   const exportPolicy = resolveHandoffWritePolicy({ phase: 'export' });
   const adoptionPolicy = resolveHandoffWritePolicy({ mode: 'adopt' });
 
-  assert.equal(agentDesign.direct_write_allowed.includes('.agentforge/agents/**'), false);
-  assert.ok(agentDesign.command_write_allowed.includes('.agentforge/agents/**'));
-  assert.ok(agentDesign.command_write_allowed.includes('.agentforge/suggestions/agents/**'));
+  assert.deepEqual([...agentDesign.direct_write_allowed].sort(), [
+    '.agentforge/memory/**',
+    '.agentforge/reports/**',
+  ]);
+  assert.deepEqual([...agentDesign.command_write_allowed].sort(), [
+    '.agentforge/agents/**',
+  ]);
   assert.ok(agentDesign.never_edit_manually.includes('.agentforge/state.json'));
   assert.ok(agentDesign.never_edit_manually.includes('.agentforge/plan.md'));
   assert.ok(agentDesign.never_edit_manually.includes('.agentforge/_config/**'));
